@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import sys
-import json
-import sqlite3
-from urllib.parse import urlparse
-from bs4 import BeautifulSoup
-import requests 
+import asyncio
 import re
+import sqlite3
+import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
-import time
-from concurrent.futures import ThreadPoolExecutor  # Підключаємо пул потоків
+from urllib.parse import urlparse
+from curl_cffi.requests import AsyncSession
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -18,10 +16,59 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import HARDWARE_TARGETS, DB_FILE
+from config import DB_FILE, HARDWARE_TARGETS, SOCKETS, CHIPSET_TO_SOCKET
+
+BROKEN_PATTERN = re.compile(
+    r"неробоч|не робоч|запчастин|запчасть|ремонт|дефект|відновлен|восстановлен|"
+    r"артефакт|поломан|неисправн|не справн|на детал|запчасті|прогрів|не стартует|"
+    r"не включа|не включається|не включается|не працює|не работает|не робочий",
+    re.IGNORECASE,
+)
+
+HEADERS = {
+    "accept": "application/json",
+    "accept-language": "uk",
+    "content-type": "application/json",
+    "origin": "https://www.olx.ua",
+    "referer": "https://www.olx.ua/",
+    "sec-ch-ua": '"Not;A=Brand";v="8", "Chromium";v="124", "Google Chrome";v="124"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "x-client": "DESKTOP",
+}
+
+TIMEOUT = 12
+
+SUBCATEGORIES_TO_PARSE = [
+    {"item_type": "gpu", "subcategory": "videokarty", "name": "Відеокарти"},
+    {"item_type": "cpu", "subcategory": "protsessory", "name": "Процесори"},
+    {"item_type": "motherboard", "subcategory": "materinskie-platy", "name": "Материнські плати"},
+    {"item_type": "psu", "subcategory": "bloki-pitaniya", "name": "Блоки живлення"},
+    {"item_type": "storage", "subcategory": "zhestkie-diski", "name": "Накопичувачі"},
+]
+
+GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!] = []) {
+  clientCompatibleListings(searchParameters: $searchParameters) {
+    ... on ListingSuccess {
+      data {
+        id title url status created_time last_refresh_time description
+        location { city { name } }
+        photos { link }
+        params {
+          key name
+          value {
+            ... on PriceParam { value currency label }
+            ... on GenericParam { key label }
+          }
+        }
+      }
+    }
+  }
+}"""
 
 
-def get_db_connection():
+def get_db_connection() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_FILE)
     conn.execute("PRAGMA journal_mode=WAL;")
     return conn
@@ -32,16 +79,8 @@ def validate_title(title: str, required_keywords: list[str]) -> bool:
     return any(word.lower() in title_lower for word in required_keywords)
 
 
-def is_broken_ad(title: str) -> bool:
-    title_lower = title.lower()
-    broken_keywords = [
-        "неробоч", "не робоч", "запчастин", "запчасть", "ремонт", "дефект", 
-        "відновлен", "восстановлен", "артефакт", "поломан", "неисправн", 
-        "не справн", "на детал", "запчасті", "прогрів", "не стартует",
-        "комплект", "не включа", "не включається", "не включается", "не працює",
-        "не работает", "не працює", "не робочий"
-    ]
-    return any(word in title_lower for word in broken_keywords)
+def is_broken_ad(text: str) -> bool:
+    return bool(BROKEN_PATTERN.search(text))
 
 
 def clean_url(url: str) -> str:
@@ -49,185 +88,317 @@ def clean_url(url: str) -> str:
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
 
 
-def linkResponse(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+def detect_socket(title: str, description: str, component_name: str) -> str | None:
+    full_text = f"{title} {description}".lower()
+
+    for sock in SOCKETS:
+        pattern = r"\b" + re.escape(sock.replace("-", " ")) + r"\b"
+        if re.search(pattern, full_text.replace("-", " ")):
+            clean_sock = sock.replace("socket", "lga")
+            return clean_sock
+
+    mb_key = component_name.lower().replace("_", "")
+    if mb_key in CHIPSET_TO_SOCKET:
+        return CHIPSET_TO_SOCKET[mb_key]
+
+    return None
+
+
+def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tuple[str, dict] | None:
+    title_clean = title.lower()
+
+    for target_name, cfg in target_items_for_type.items():
+        req_keywords = cfg.get("required_keywords", [])
+
+        # 🎯 Гнучка логіка розпізнавання для накопичувачів (SSD / HDD)
+        if cfg.get("item_type") == "storage":
+            parts = target_name.split("_")  # Наприклад: ["ssd", "120gb"] або ["hdd", "1tb"]
+            if len(parts) < 2:
+                continue
+
+            st_type = parts[0]  # ssd / hdd
+            capacity_raw = parts[1]  # 120gb / 1tb
+            cap_num = re.sub(r"\D", "", capacity_raw)  # 120 / 1
+            cap_unit = "tb" if "tb" in capacity_raw else "gb"
+
+            # 1. Перевіряємо тип накопичувача
+            has_type = False
+            if st_type == "ssd":
+                has_type = "ssd" in title_clean or "ссд" in title_clean or "nvme" in title_clean
+            elif st_type == "hdd":
+                has_type = any(w in title_clean for w in [
+                "hdd", "хдд", "жорстк", "жестк", "винчестер", "жерстк", "Toshiba"
+                "wd blue", "wd red", "wd black", "wd green", "barracuda", "wd"
+            ])
+
+            if not has_type:
+                continue
+
+            # 2. Перевіряємо наявність числа об'єму (з урахуванням пробілів та варіантів одиниць)
+            if cap_unit == "tb":
+                pattern = r"\b" + cap_num + r"\s*(tb|тб|терабайт|1000\s*gb|1000\s*гб)\b"
+            else:
+                pattern = r"(?<!\w)" + cap_num + r"\s*(gb|гб|гігабайт|гигабайт)?\b"
+
+            if re.search(pattern, title_clean):
+                return target_name, cfg
+
+        # 🎯 Стандартна логіка для відеокарт, процесорів, материнок і БЖ
+        else:
+            if validate_title(title_clean, req_keywords):
+                return target_name, cfg
+
+    return None
+
+
+async def fetch_subcategory_feed(
+    session: AsyncSession,
+    subcat_info: dict,
+    hardware_targets: dict,
+    seen_urls: set[str],
+    today_sql: str,
+    max_retries: int = 3,
+) -> list[tuple]:
+    subcat_key = subcat_info["subcategory"]
+    item_type = subcat_info["item_type"]
+    cat_name = subcat_info["name"]
+
+    print(f"\n📡 Завантажуємо свіжі {cat_name} (підкатегорія: {subcat_key})...")
+
+    targets_for_this_type = {
+        k: v for k, v in hardware_targets.items() if v.get("item_type") == item_type
     }
-    response = requests.get(url, headers=headers, timeout=10)
-    soup = BeautifulSoup(response.text, 'lxml')
-    return soup
 
+    search_params = [
+        {"key": "category_id", "value": "458"},
+        {"key": "filter_enum_subcategory[0]", "value": subcat_key},
+        {"key": "currency", "value": "UAH"},
+        {"key": "sort_by", "value": "created_at:desc"},
+        {"key": "limit", "value": "50"},
+    ]
 
-def extract_price(price_str: str) -> int:
-    digits = re.sub(r"\D", "", price_str)
-    return int(digits) if digits else 0
+    json_payload = {
+        "query": GRAPHQL_QUERY,
+        "variables": {"searchParameters": search_params},
+    }
 
+    parsed_for_subcat = []
 
-def calculate_percentile_price(prices: list[int], percentile: float = 0.33) -> int:
-    if not prices:
-        return 0
-    
-    sorted_prices = sorted(prices)
-    n = len(sorted_prices)
-
-    if n > 5:
-        trim_size = int(n * 0.1)
-        if trim_size == 0:
-            trim_size = 1
-        sorted_prices = sorted_prices[trim_size : n - trim_size]
-        n = len(sorted_prices)
-
-    index = int(n * percentile)
-    
-    if index >= n:
-        index = n - 1
-        
-    return sorted_prices[index]
-
-
-def parse_single_hardware(target_name: str, config: dict, seen_urls: set[str], today_sql: str) -> list[tuple]:
-    print(f"📡 [ПОТОК] Початок парсингу: {target_name}")
-    local_parsed = []
-    
-    item_type = "gpu" if any(x in target_name.lower() for x in ["rtx", "gtx", "rx"]) else "cpu"
-
-    try:
-        soup = linkResponse(config["url"])
-        advertisament = soup.find_all('div', class_='css-ri9uxm')
-    except requests.RequestException:
-        print(f"❌ [ПОМИЛКА МЕРЕЖІ] Не вдалося завантажити OLX для {target_name}.")
-        return []
-    
-    count_added = 0
-    count_skipped_validation = 0
-    
-    for i in advertisament:
-        advert_url = "Невідомо"
+    for attempt in range(1, max_retries + 1):
         try:
-            link_element = i.find('a')
-            if not link_element: 
-                continue
-                
-            raw_url = "https://www.olx.ua" + link_element.get('href')
-            advert_url = clean_url(raw_url) 
+            await asyncio.sleep(0.5)
+            resp = await session.post(
+                "https://www.olx.ua/apigateway/graphql",
+                json=json_payload,
+                timeout=TIMEOUT,
+            )
 
+            if resp.status_code in (401, 403):
+                print(f"[WARN 403] Блокування на '{subcat_key}'. Спроба {attempt}/{max_retries}. Чекаємо 10с...")
+                await asyncio.sleep(10)
+                continue
+
+            if resp.status_code != 200:
+                print(f"[ERR] HTTP Status {resp.status_code} для '{subcat_key}'")
+                await asyncio.sleep(2)
+                continue
+
+            res_json = resp.json()
+            break
+        except Exception as e:
+            print(f"[EXC] Помилка мережі для '{subcat_key}': {e}")
+            await asyncio.sleep(2)
+            if attempt == max_retries:
+                return []
+    else:
+        return []
+
+    listings = (
+        res_json.get("data", {})
+        .get("clientCompatibleListings", {})
+        .get("data", [])
+    )
+
+    if not listings:
+        print(f"  [i] Порожній потік для підкатегорії {subcat_key}")
+        return []
+
+    print(f"  [+] Отримано {len(listings)} лотів з OLX. Починаємо обробку оголошень...")
+
+    for item in listings:
+        try:
+            # 🎯 ФІЛЬТР 1: Перевірка підкатегорії у структурі JSON
+            ad_subcat = None
+            for param in item.get("params", []):
+                if param.get("key") == "subcategory":
+                    val_obj = param.get("value") or {}
+                    ad_subcat = val_obj.get("key")
+                    break
+
+            if ad_subcat and ad_subcat != subcat_key:
+                continue
+
+            title = item.get("title", "Без назви").replace("'", "").strip()
+
+            raw_url = item.get("url", "")
+            if not raw_url:
+                continue
+
+            if not raw_url.startswith("http"):
+                raw_url = "https://www.olx.ua" + raw_url
+
+            advert_url = clean_url(raw_url)
+
+            # 🎯 ФІЛЬТР 2: Дублікати
             if advert_url in seen_urls:
-                continue
-                
-            title_element = i.find('h4', class_='css-wlcw7o')
-            if not title_element: 
+                print(f"   [🔄 ДУБЛІКАТ]: {title[:45]}...")
                 continue
 
-            city_element = i.find('p', class_='css-1453zif')
-            price_element = i.find('p', class_='css-61fb99') 
-
-            title = title_element.text.replace("'", "").strip()
-            price_raw = price_element.text.strip() if price_element else "0"
-            price = extract_price(price_raw)
-
-            # Парсинг фото прибрали. Передаємо "Невідомо" як плейсхолдер.
-            # seller_analyzer згодом перезапише його на справжній якісний URL
-            photo_url = "Невідомо"
-
-            city = "Невідомо"
-            ad_date = "Невідомо"
-            if city_element:
-                city_date_text = city_element.text.strip()
-                if " - " in city_date_text:
-                    parts = city_date_text.split(" - ", 1)
-                    city = parts[0].strip()
-                    ad_date = parts[1].strip()
-                else:
-                    city = city_date_text
-
-            if not validate_title(title, config["required_keywords"]) or is_broken_ad(title):
-                count_skipped_validation += 1
+            # 🎯 ФІЛЬТР 3: Розпізнавання моделі
+            matched = match_ad_to_hardware_target(title, targets_for_this_type)
+            if not matched:
+                print(f"   [⏭️ НЕ ВІДСТЕЖУЄТЬСЯ МОДЕЛЬ]: {title[:45]}...")
                 continue
 
-            local_parsed.append((
-                advert_url, title, None, price, item_type, target_name, 
-                city, ad_date, photo_url, today_sql, "active"
-            ))
-            count_added += 1
-        
-        except AttributeError:
+            raw_ad_id = item.get("id")
+            ad_id = int(raw_ad_id) if raw_ad_id and str(raw_ad_id).isdigit() else None
+
+            target_name, cfg = matched
+            description = (item.get("description") or "").replace("<br />", "")
+
+            full_text = f"{title} {description}"
+            has_defects = 1 if is_broken_ad(full_text) else 0
+
+            price = 0
+            for param in item.get("params", []):
+                if param.get("key") == "price":
+                    price_val = param.get("value", {}).get("value", 0)
+                    if isinstance(price_val, (int, float)) and price_val <= 1_000_000_000:
+                        price = int(price_val)
+                    break
+
+            loc_data = item.get("location", {}) or {}
+            city = loc_data.get("city", {}).get("name", "Невідомо") if loc_data.get("city") else "Невідомо"
+
+            created_time_raw = item.get("created_time", "")
+            ad_date = created_time_raw.split("T")[0] if created_time_raw else "Невідомо"
+
+            raw_photos = item.get("photos", [])
+            photo_urls_list = []
+            for p in raw_photos:
+                link = p.get("link", "")
+                if link:
+                    formatted_link = link.replace("{width}", "1000").replace("{height}", "750")
+                    photo_urls_list.append(formatted_link)
+
+            first_photo = photo_urls_list[0] if photo_urls_list else "Невідомо"
+            all_photos_str = ",".join(photo_urls_list) if photo_urls_list else None
+
+            detected_socket = None
+            if item_type in ("motherboard", "cpu"):
+                detected_socket = detect_socket(title, description, target_name)
+
+            parsed_for_subcat.append(
+                (
+                    ad_id,
+                    advert_url,
+                    title,
+                    description,
+                    price,
+                    item_type,
+                    target_name,
+                    detected_socket,
+                    has_defects,
+                    city,
+                    ad_date,
+                    first_photo,
+                    all_photos_str,
+                    today_sql,
+                    "active",
+                )
+            )
+
+            seen_urls.add(advert_url)
+
+            defect_tag = " [⚠️ ДЕФЕКТ]" if has_defects else ""
+            print(f"   🎯 [РОЗПІЗНАНО: {target_name}]{defect_tag}: {title[:40]}... ({price} грн)")
+
+        except Exception as ex:
+            print(f"   [!] Помилка обробки елемента: {ex}")
             continue
+
+    return parsed_for_subcat
+
+
+async def run_parser(
+    hardware_items: dict, seen_urls: set[str], today_sql: str
+) -> list[tuple]:
+    async with AsyncSession(headers=HEADERS, impersonate="chrome124") as session:
+        print("🔥 Прогріваємо сесію...")
+        try:
+            await session.get("https://www.olx.ua/uk/elektronika/", timeout=10)
         except Exception:
-            continue
+            pass
 
-    print(f"✨ [ГОТОВО] {target_name}: додано {count_added}, відсіяно {count_skipped_validation}")
-    return local_parsed
+        all_results = []
+        for subcat_info in SUBCATEGORIES_TO_PARSE:
+            res = await fetch_subcategory_feed(
+                session, subcat_info, hardware_items, seen_urls, today_sql
+            )
+            all_results.extend(res)
+
+    return all_results
 
 
 def main() -> None:
     today_sql = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     if not DB_FILE.exists():
-        print("[ПОМИЛКА] Базу даних не знайдено! Спочатку запустіть db_init.py.")
+        print("[ПОМИЛКА] Базу даних не знайдено!")
         return
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    for col_def in ["all_photos TEXT", "ad_id INTEGER", "socket TEXT", "has_defects INTEGER DEFAULT 0"]:
+        try:
+            cursor.execute(f"ALTER TABLE ads ADD COLUMN {col_def};")
+        except sqlite3.OperationalError:
+            pass
+
     cursor.execute("SELECT url FROM ads")
     seen_urls = set(row[0] for row in cursor.fetchall())
-    print(f"[БАЗА] Завантажено {len(seen_urls)} раніше спарсених оголошень для дедуплікації.")
 
-    new_ads_to_insert = []
-    hardware_items = {k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")}
+    hardware_items = {
+        k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")
+    }
 
-    # =====================================================================
-    # 🔥 ПАРАЛЕЛЬНИЙ МУЛЬТИТРЕДИНГ 
-    # =====================================================================
+    print(f"🚀 Стартуємо швидкісний збір по підкатегоріях для {len(hardware_items)} відстежуваних моделей...")
     start_time = time.time()
-    
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        futures = [
-            executor.submit(parse_single_hardware, name, cfg, seen_urls, today_sql)
-            for name, cfg in hardware_items.items()
-        ]
-        
-        for future in futures:
-            new_ads_to_insert.extend(future.result())
 
-    print(f"\n⏱️ Мережевий збір завершено за {time.time() - start_time:.2f} сек.")
+    new_ads_to_insert = asyncio.run(
+        run_parser(hardware_items, seen_urls, today_sql)
+    )
+
+    elapsed = time.time() - start_time
+    print(f"\n⏱️ Мережевий збір завершено за {elapsed:.2f} сек. (Знайдено нових комплектуючих: {len(new_ads_to_insert)})")
 
     if new_ads_to_insert:
-        cursor.executemany("""
+        cursor.executemany(
+            """
         INSERT OR IGNORE INTO ads (
-            url, title, description, price, item_type, component_name, 
-            city, created_at_olx, photo_url, parsed_date, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, new_ads_to_insert)
+            ad_id, url, title, description, price, item_type, component_name, 
+            socket, has_defects, city, created_at_olx, photo_url, all_photos, parsed_date, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            new_ads_to_insert,
+        )
         conn.commit()
-        print(f"\n[УСПІХ] Збережено {len(new_ads_to_insert)} нових унікальних комплектуючих в 'ads'.")
+        print(f"[УСПІХ] Збережено {len(new_ads_to_insert)} нових унікальних комплектуючих у 'ads'.")
     else:
         print("[INFO] Нових оголошень для запису не знайдено.")
 
-    # =====================================================================
-    # --- АНАЛІЗ ЦІН ---
-    # =====================================================================
-    print(f"\n--- ПОЧАТОК АНАЛІЗУ ЦІН ЗА {today_sql} ---")
-    
-    for target_name in hardware_items.keys():
-        cursor.execute("""
-            SELECT price FROM ads 
-            WHERE component_name = ? AND parsed_date = ? AND price > 100
-        """, (target_name, today_sql))
-        
-        prices_list = [row[0] for row in cursor.fetchall()]
-
-        if prices_list:
-            real_price = calculate_percentile_price(prices_list, percentile=0.33)
-            cursor.execute("""
-                INSERT OR REPLACE INTO component_prices (component_name, price, date)
-                VALUES (?, ?, ?)
-            """, (target_name, real_price, today_sql))
-            print(f"[RESULT] -> {target_name}: {real_price} uah")
-
-    conn.commit()
     conn.close()
-    print("\n[УСПІХ] База даних повністю оновлена та закрита!")
 
 
 if __name__ == "__main__":

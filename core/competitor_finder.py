@@ -1,7 +1,7 @@
 import sys
 import sqlite3
 from pathlib import Path
-from collections import Counter
+from collections import Counter, defaultdict
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -12,82 +12,83 @@ if str(PROJECT_ROOT) not in sys.path:
 from config import DB_FILE
 
 
-def get_db_connection():
+def get_db_connection() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_FILE)
     conn.execute("PRAGMA journal_mode=WAL;")
     return conn
 
 
-def calculate_market_bucket_price(component_name: str) -> int:
-    """Внутрішня функція: вираховує найбільш популярний ціновий діапазон ринку для залізяки"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT price FROM ads 
-        WHERE component_name = ? 
-          AND status = 'active' 
-          AND has_ban_word = 0 
-          AND price > 100
-          AND seller_risk_score = 'safe'
-    """, (component_name,))
-    
-    prices = [row[0] for row in cursor.fetchall()]
-    conn.close()
-
+def calculate_bucket_price(prices: list[int]) -> int:
+    """Вираховує модальну (найбільш популярну) цінову зону для списку цін"""
     if not prices:
         return 0
 
-    max_price = max(prices)
-    min_price = min(prices)
+    # Фільтруємо аномальні ціни (менше 100 грн та явно помилкові)
+    valid_prices = [p for p in prices if p > 100]
+    if not valid_prices:
+        return 0
 
-    # Динамічний крок кластеризації ринку
-    step = 200 if max_price - min_price < 2000 else 400
+    max_p = max(valid_prices)
+    min_p = min(valid_prices)
+
+    # Динамічний крок кластеризації залежно від розкиду цін
+    diff = max_p - min_p
+    if diff < 1000:
+        step = 100
+    elif diff < 3000:
+        step = 200
+    else:
+        step = 500
+
     ranges = []
-    for price in prices:
+    for price in valid_prices:
         bucket_start = (price // step) * step
-        ranges.append(bucket_start + (step // 2))  # Беремо серединну ціну популярного бакету
+        ranges.append(bucket_start + (step // 2))
 
     range_counts = Counter(ranges)
-    best_bucket_price = range_counts.most_common(1)[0][0]
+    best_bucket = range_counts.most_common(1)[0][0]
     
-    return int(best_bucket_price)
+    return int(best_bucket)
 
 
-def update_hardware_competitor_prices():
-    """Прораховує та записує моду ринкової ціни для ВСІХ активних відеокарт та процесорів"""
+def update_hardware_competitor_prices() -> None:
+    """Прораховує ринкову ціну для ВСІХ типів комплектуючих за ОДИН асинхронний прохід"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Беремо всі унікальні активні моделі комплектуючих, що зараз є на ринку та від надійних продавців
+    # 🎯 ОДИН запит: витягуємо ціни всіх активних деталей без дефектів
     cursor.execute("""
-        SELECT DISTINCT component_name FROM ads 
-        WHERE item_type IN ('gpu', 'cpu') 
+        SELECT component_name, price, id 
+        FROM ads 
+        WHERE item_type IN ('gpu', 'cpu', 'motherboard', 'psu', 'storage') 
           AND status = 'active' 
+          AND (has_defects = 0 OR has_defects IS NULL)
+          AND (seller_risk_score != 'suspicious' OR seller_risk_score IS NULL)
+          AND price > 100
           AND component_name IS NOT NULL
-          AND seller_risk_score = 'safe'
     """)
-    active_components = [row[0] for row in cursor.fetchall()]
+    rows = cursor.fetchall()
 
-    if not active_components:
+    if not rows:
         print("[COMPETITORS] Активних комплектуючих для аналізу не знайдено.")
         conn.close()
         return
 
-    print(f"[COMPETITORS] Аналізуємо ринкові бакети для {len(active_components)} моделей заліза...")
-    
+    # Групуємо ціни та ID оголошень за назвою компонента у пам'яті
+    comp_prices = defaultdict(list)
+    comp_ad_ids = defaultdict(list)
+
+    for comp_name, price, ad_id in rows:
+        comp_prices[comp_name].append(price)
+        comp_ad_ids[comp_name].append(ad_id)
+
+    print(f"[COMPETITORS] Аналізуємо ринкові ціни для {len(comp_prices)} унікальних моделей заліза...")
+
     updates = []
-    for comp_name in active_components:
-        market_price = calculate_market_bucket_price(comp_name)
+    for comp_name, prices in comp_prices.items():
+        market_price = calculate_bucket_price(prices)
         if market_price > 0:
-            # Знайдемо всі ID оголошень цієї моделі, щоб масово оновити їм ціну конкурента
-            cursor.execute("""
-                SELECT id FROM ads 
-                WHERE component_name = ? AND status = 'active'
-            """, (comp_name,))
-            ad_ids = [row[0] for row in cursor.fetchall()]
-            
-            for ad_id in ad_ids:
+            for ad_id in comp_ad_ids[comp_name]:
                 updates.append((market_price, ad_id))
 
     if updates:
@@ -97,57 +98,55 @@ def update_hardware_competitor_prices():
             WHERE id = ?
         """, updates)
         conn.commit()
-        print(f"✅ Комплектуючі оновлено! Розраховано прайсів для {len(updates)} карток заліза.")
+        print(f"✅ Комплектуючі оновлено! Розраховано середні ціни для {len(updates)} оголошень.")
 
     conn.close()
 
 
-def update_pcs_competitor_prices():
-    """Прораховує та ПЕРЕЗАПИСУЄ середню ціну конкурентів для ВСІХ активних ПК"""
+def update_pcs_competitor_prices() -> None:
+    """Прораховує середню ціну конкурентів для всіх ПК зі схожою конфігурацією (CPU + GPU)"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Беремо абсолютно всі активні ПК в базі для динамічного перерахунку ринку
+    # 1. Отримуємо всі активні ПК з розпізнаними процесором та відеокартою
     cursor.execute("""
-        SELECT id, title, gpu_detected, cpu_detected, price 
+        SELECT id, gpu_detected, cpu_detected, price 
         FROM ads 
         WHERE item_type = 'pc' 
           AND status = 'active' 
+          AND (has_defects = 0 OR has_defects IS NULL)
           AND gpu_detected IS NOT NULL 
           AND cpu_detected IS NOT NULL
+          AND price > 1000
     """)
-    pcs_to_analyze = cursor.fetchall()
+    all_pcs = cursor.fetchall()
 
-    if not pcs_to_analyze:
-        print("[COMPETITORS] Активних ПК в базі для аналізу ринку немає.")
+    if not all_pcs:
+        print("[COMPETITORS] Активних ПК з розпізнаним залізом немає.")
         conn.close()
         return
 
-    print(f"[COMPETITORS] Перераховуємо ціни конкурентів для {len(pcs_to_analyze)} активних ПК...")
-    
+    # 2. Групуємо ціни за зв'язкою (gpu, cpu) в пам'яті Python (замість 1000 SQL запитів)
+    build_prices = defaultdict(list)
+    for ad_id, gpu, cpu, price in all_pcs:
+        build_key = f"{gpu.lower()}_{cpu.lower()}"
+        build_prices[build_key].append((price, ad_id))
+
+    print(f"[COMPETITORS] Перераховуємо ціни конкурентів для {len(all_pcs)} ПК...")
+
     updates = []
-
-    for ad_id, title, gpu, cpu, seller_price in pcs_to_analyze:
-        # Шукаємо схожі збірки (такі ж CPU + GPU, крім цього ж оголошення)
-        cursor.execute("""
-            SELECT price FROM ads 
-            WHERE item_type = 'pc' 
-              AND status = 'active' 
-              AND has_ban_word = 0
-              AND gpu_detected = ? 
-              AND cpu_detected = ?
-              AND id != ?
-              AND price > 1000
-        """, (gpu, cpu, ad_id))
+    for build_key, items in build_prices.items():
+        all_prices_for_build = [price for price, _ in items]
         
-        comp_prices = [row[0] for row in cursor.fetchall()]
+        # Якщо в категорії є хоча б 2+ комп'ютери
+        for price, ad_id in items:
+            # Беремо ціни інших ПК з такою ж конфігурацією
+            other_prices = [p for p in all_prices_for_build if p != price]
+            if not other_prices:
+                other_prices = all_prices_for_build  # Якщо це єдиний ПК, беремо його ж ціну як базис
 
-        if comp_prices:
-            avg_competitor_price = int(sum(comp_prices) / len(comp_prices))
-        else:
-            avg_competitor_price = 0  # Якщо унікальний лот на ринку
-
-        updates.append((avg_competitor_price, ad_id))
+            avg_competitor_price = int(sum(other_prices) / len(other_prices))
+            updates.append((avg_competitor_price, ad_id))
 
     if updates:
         cursor.executemany("""
@@ -156,21 +155,17 @@ def update_pcs_competitor_prices():
             WHERE id = ?
         """, updates)
         conn.commit()
-        print(f"✅ Комп'ютери оновлено! Перераховано збірок: {len(updates)} шт.")
+        print(f"✅ Комп'ютери оновлено! Розраховано ціни конкурентів для {len(updates)} збірок.")
 
     conn.close()
 
 
 def main():
-    """Головна точка входу для оркестратора в main.py"""
     print("\n" + "="*50)
     print("📊 ЗАПУСК АНАЛІЗУ КОНКУРЕНТНОГО СЕРЕДОВИЩА")
     print("="*50)
     
-    # 1. Оновлюємо прайси для відях та проців
     update_hardware_competitor_prices()
-    
-    # 2. Оновлюємо ринкові прайси схожих збірок для ПК
     update_pcs_competitor_prices()
     
     print("[УСПІХ] Повний аналіз ринку конкурентів завершено успішно!")

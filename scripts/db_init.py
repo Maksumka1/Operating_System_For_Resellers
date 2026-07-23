@@ -22,10 +22,11 @@ def init_db():
     CREATE TABLE IF NOT EXISTS ads (
         -- СЛУЖБОВІ ТА СИСТЕМНІ ДАНІ
         id INTEGER PRIMARY KEY AUTOINCREMENT,  -- Унікальний порядковий номер запису в базі
+        ad_id INTEGER UNIQUE,                  -- Унікальний ID оголошення з майданчика (наприклад, OLX)
         url TEXT UNIQUE,                       -- Чисте посилання на оголошення (використовується для дедуплікації)
         parsed_date TEXT NOT NULL,             -- Дата, коли наш парсер вперше знайшов лот (РРРР-ММ-ДД)
         status TEXT NOT NULL DEFAULT 'active', -- Стан лоту в системі: 'active' (активний) або 'deactivated' (архівований)
-        deactivated_at TEXT,                   -- Дата й час, коли робот помітив, що оголошення на OLX видалили чи закрили
+        deactivated_at TEXT,                   -- Дата/час деактивації
 
         -- БАЗОВА ІНФОРМАЦІЯ ПРО ЛОТ (ПАРСЕР СПИСКІВ)
         title TEXT NOT NULL,                   -- Заголовок оголошення з OLX (як написав продавець)
@@ -33,11 +34,15 @@ def init_db():
         price INTEGER NOT NULL,                -- Початкова сира ціна, вказана продавцем на сайті (в грн)
         item_type TEXT NOT NULL,               -- Категорія лоту: 'gpu' (відяха), 'cpu' (проц) або 'pc' (готовий комп)
         component_name TEXT,                   -- Назва конкретної залізяки з нашого конфігу (наприклад, 'gtx_1060' або NULL для ПК)
+        socket TEXT,                           -- Назва сокета материнської плати
         city TEXT,                             -- Місто продажу (чисте значення з JSON або зі списку)
         created_at_olx TEXT,                   -- Чиста дата публікації оголошення продавцем на OLX
         last_refresh_time TEXT,                -- Точний час останнього підняття (refresh) оголошення на OLX
         photo_url TEXT,                        -- Лінк на головну картинку лоту (оригінальна якість з CDN OLX)
+        photos TEXT,                           -- Додаткові фотографії лоту
+        all_photos TEXT,                       -- Усі фото оголошення (JSON-масив або список посилань)
         has_ban_word INTEGER DEFAULT 0,        -- Прапорець сміття: 1 якщо знайдено бан-ворд (дефекти/ремонт), 0 якщо чисто
+        pc_category TEXT DEFAULT 'uncategorized', -- Категорія комп'ютера ( Офісний, Ігровий і т.дІ)
 
         -- ДАНІ ПРОДАВЦЯ (SELLER ANALYZER)
         seller_id TEXT,                        -- Цифровий ID профілю на OLX (потрібен для Delivery API)
@@ -49,7 +54,7 @@ def init_db():
         seller_risk_score TEXT,                -- Рівень небезпеки: 'safe' (надійний), 'neutral' (нейтральний), 'suspicious' (підозрілий новорег/без оцінок)
 
         -- АНАЛІТИКА, ОЦІНКА ВАРТОСТІ ТА ВИГОДИ
-        seller_price_clean INTEGER,            -- Очищена ціна продавця (без копійок та зайвих символів для калькуляцій)
+        seller_price_clean INTEGER,            -- Очищена ціна продавця (без копійок та зафйвих символів для калькуляцій)
         gpu_detected TEXT,                     -- Модель відеокарти, яку нейронка/оцінювач розпізнав у готовому ПК
         cpu_detected TEXT,                     -- Модель процесора, яку оцінювач розпізнав у готовому ПК
         gpu_market_price INTEGER,              -- Ринкова ціна знайденої відяхи (вирахована за 33-м перцентилем)
@@ -70,6 +75,16 @@ def init_db():
         price INTEGER NOT NULL,
         date TEXT NOT NULL,          -- Формат: YYYY-MM-DD
         UNIQUE(component_name, date)  -- Захист від дублів цін на одну дату
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS daily_stats (
+    date TEXT PRIMARY KEY,               -- Дата у форматі YYYY-MM-DD
+    total_active_ads INTEGER DEFAULT 0,  -- Всього активних оголошень у базі
+    new_ads_today INTEGER DEFAULT 0,     -- Скільки нових було додано за цей день
+    avg_price INTEGER DEFAULT 0,         -- Середня ціна активних товарів (грн)
+    updated_at TEXT                      -- Точний час останнього оновлення запису
     );
     """)
 
