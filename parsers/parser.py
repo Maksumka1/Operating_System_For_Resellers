@@ -24,7 +24,7 @@ TIMEOUT = 15
 
 # СТОП-СЛОВА: Якщо це є в назві, але немає маркерів цілого ПК — це окрема запчастина
 NOT_A_PC_WORDS = [
-    "материнська плата", "материнская плата", "материнка", "мать",
+    "материнська плата", "материнская плата", "материнка", "мать", 
     "блок питания", "блок живлення", "дбж", "ups", "бесперебойник",
     "оперативна память", "оперативная память", "озу", "ram",
     "кулер", "вентилятор", "корпус без", "видеокарта", "відеокарта", 
@@ -45,16 +45,18 @@ HEADERS = {
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-origin",
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "x-client": "DESKTOP",  # 👈 КРИТИЧНИЙ ХЕДЕР ДЛЯ GRAPHQL
+    "x-client": "DESKTOP",
 }
 
-# GraphQL запит без текстових прив'язок
+# 🎯 Повний GraphQL-запит із фотографіями, часом та даними продавця
 GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!] = []) {
   clientCompatibleListings(searchParameters: $searchParameters) {
     ... on ListingSuccess {
       data {
-        id title status url created_time description
+        id title status url created_time last_refresh_time description business
         location { city { name } }
+        photos { link }
+        user { id name created }
         params {
           key name
           value {
@@ -177,13 +179,11 @@ async def fetch_latest_pcs(
                 print(f"[WARN GraphQL] 403 Forbidden. Спроба {attempt}/{max_retries}. Прогрів та чекаємо 10s...")
                 network_errors += 1
                 
-                # Прогрів через каталог, а не просто головну
                 try:
                     await session.get("https://www.olx.ua/uk/elektronika/", timeout=10)
                 except Exception:
                     pass
                 
-                # Пауза 10 секунд дає DataDome час скинути ліміт
                 await asyncio.sleep(10)
                 continue
 
@@ -202,6 +202,7 @@ async def fetch_latest_pcs(
 
             for item in listings:
                 try:
+                    # 1. ad_id та url
                     raw_id = item.get("id")
                     ad_id = int(raw_id) if raw_id and str(raw_id).isdigit() else None
 
@@ -218,14 +219,16 @@ async def fetch_latest_pcs(
                         duplicates_count += 1
                         continue
 
+                    # 2. Перевірка назви
                     title = item.get("title", "").replace("'", "").strip()
 
                     if not is_real_pc(title):
-                        print(f"  [🚫 ВІДСІЯНО ЗАПЧАСТИНУ]: {title[:50]}...")
+                        print(f"   [🚫 ВІДСІЯНО ЗАПЧАСТИНУ]: {title[:50]}...")
                         continue
 
-                    description = item.get("description", "").strip().replace("<br />", "")
+                    description = item.get("description", "").strip().replace("<br />", "\n").replace("<br>", "\n")
 
+                    # 3. Ціна
                     price = 0
                     for param in item.get("params", []):
                         if param.get("key") == "price":
@@ -233,27 +236,67 @@ async def fetch_latest_pcs(
                             price = extract_price(val_data.get("value", 0))
                             break
 
+                    # 4. Локація
                     loc_data = item.get("location", {}) or {}
-                    city = loc_data.get("city", {}).get("name", "Невідомо")
+                    city = loc_data.get("city", {}).get("name", "Невідомо") if loc_data.get("city") else "Невідомо"
 
+                    # 5. Час створення та підняття на OLX
+                    created_time_raw = item.get("created_time", "")
+                    created_at_olx = created_time_raw.split("T")[0] if "T" in created_time_raw else "Невідомо"
+                    last_refresh_time = item.get("last_refresh_time") or "Невідомо"
+
+                    # 6. Обробка фотографій
+                    raw_photos = item.get("photos", []) or []
+                    formatted_photos = []
+                    for p in raw_photos:
+                        link = p.get("link", "")
+                        if link:
+                            formatted_link = link.replace("{width}", "1000").replace("{height}", "750")
+                            formatted_photos.append(formatted_link)
+
+                    photo_url = formatted_photos[0] if formatted_photos else "Невідомо"
+                    additional_photos_str = ",".join(formatted_photos[1:]) if len(formatted_photos) > 1 else None
+                    all_photos_str = ",".join(formatted_photos) if formatted_photos else None
+
+                    # 7. Дані продавця
+                    user_data = item.get("user") or {}
+                    seller_id = str(user_data.get("id")) if user_data.get("id") else None
+                    seller_name = user_data.get("name") or "Невідомо"
+                    
+                    user_created_raw = user_data.get("created") or ""
+                    seller_created_at = user_created_raw.split("-")[0] if user_created_raw else None
+                    
+                    is_business = item.get("business", False)
+                    seller_type = "shop" if is_business else "private_person"
+
+                    # 🎯 Кортеж даних для бази
                     new_items.append(
                         (
-                            ad_id,
-                            advert_url,
-                            today_sql,
-                            "active",
-                            title,
-                            description,
-                            price,
-                            "pc",
-                            None,
-                            city,
-                            price,
+                            ad_id,                 # 1. ad_id
+                            advert_url,            # 2. url
+                            today_sql,             # 3. parsed_date
+                            "active",              # 4. status
+                            title,                 # 5. title
+                            description,           # 6. description
+                            price,                 # 7. price
+                            "pc",                  # 8. item_type
+                            None,                  # 9. component_name
+                            city,                  # 10. city
+                            created_at_olx,        # 11. created_at_olx
+                            last_refresh_time,     # 12. last_refresh_time
+                            photo_url,             # 13. photo_url
+                            additional_photos_str, # 14. photos
+                            all_photos_str,        # 15. all_photos
+                            seller_id,             # 16. seller_id
+                            seller_name,           # 17. seller_name
+                            seller_created_at,     # 18. seller_created_at
+                            seller_type,           # 19. seller_type
+                            price                  # 20. seller_price_clean
                         )
-                    )
+                    ) 
 
                     seen_urls.add(advert_url)
-                    print(f"  [+] Новий ПК [ID: {ad_id}]: {title[:45]}... ({price} грн)")
+                    print(f"   [+] Новий ПК [ID: {ad_id}]: {title[:45]}... ({price} грн)")
 
                 except Exception as ex:
                     parsing_errors += 1
@@ -315,8 +358,17 @@ async def main_async() -> None:
                 item_type, 
                 component_name, 
                 city, 
+                created_at_olx,
+                last_refresh_time,
+                photo_url,
+                photos,
+                all_photos,
+                seller_id,
+                seller_name,
+                seller_created_at,
+                seller_type,
                 seller_price_clean
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             all_new_pcs,
         )

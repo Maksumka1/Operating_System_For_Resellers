@@ -127,7 +127,7 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tupl
                 has_type = "ssd" in title_clean or "ссд" in title_clean or "nvme" in title_clean
             elif st_type == "hdd":
                 has_type = any(w in title_clean for w in [
-                "hdd", "хдд", "жорстк", "жестк", "винчестер", "жерстк", "Toshiba"
+                "hdd", "хдд", "жорстк", "жестк", "винчестер", "жерстк", "toshiba",
                 "wd blue", "wd red", "wd black", "wd green", "barracuda", "wd"
             ])
 

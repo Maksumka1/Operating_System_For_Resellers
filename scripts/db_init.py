@@ -41,7 +41,7 @@ def init_db():
         photo_url TEXT,                        -- Лінк на головну картинку лоту (оригінальна якість з CDN OLX)
         photos TEXT,                           -- Додаткові фотографії лоту
         all_photos TEXT,                       -- Усі фото оголошення (JSON-масив або список посилань)
-        has_ban_word INTEGER DEFAULT 0,        -- Прапорець сміття: 1 якщо знайдено бан-ворд (дефекти/ремонт), 0 якщо чисто
+        has_defects INTEGER DEFAULT 0,        -- Прапорець сміття: 1 якщо знайдено бан-ворд (дефекти/ремонт), 0 якщо чисто
         pc_category TEXT DEFAULT 'uncategorized', -- Категорія комп'ютера ( Офісний, Ігровий і т.дІ)
 
         -- ДАНІ ПРОДАВЦЯ (SELLER ANALYZER)

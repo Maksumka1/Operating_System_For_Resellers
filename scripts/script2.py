@@ -1,69 +1,54 @@
-import asyncio
-import json
-from curl_cffi.requests import AsyncSession
+import sqlite3
+import sys
+from pathlib import Path
 
-# Точні заголовки з вашого cURL (без прив'язки до особистих куків)
-HEADERS = {
-    "accept": "application/json",
-    "accept-language": "uk",
-    "content-type": "application/json",
-    "origin": "https://www.olx.ua",
-    "priority": "u=1, i",
-    "referer": "https://www.olx.ua/",
-    "sec-ch-ua": '"Not;A=Brand";v="8", "Chromium";v="124", "Google Chrome";v="124"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "x-client": "DESKTOP",  # 👈 КРИТИЧНО ВАЖЛИВИЙ ХЕДЕР
-}
+# Визначення кореневої директорії проєкту
+PROJECT_ROOT = Path(__file__).resolve().parent
+if not (PROJECT_ROOT / "config.py").exists():
+    PROJECT_ROOT = PROJECT_ROOT.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-GRAPHQL_PAYLOAD = {
-    "query": """query ListingSearchQuery($searchParameters: [SearchParameter!] = []) {
-      clientCompatibleListings(searchParameters: $searchParameters) {
-        ... on ListingSuccess {
-          data {
-            id
-            title
-            status
-            url
-            user { id name created }
-          }
-        }
-      }
-    }""",
-    "variables": {
-        "searchParameters": [
-            {"key": "offset", "value": "0"},
-            {"key": "limit", "value": "10"},
-            {"key": "query", "value": "ссд диски"},
-        ]
-    },
-}
+from config import DB_FILE
 
-async def test_graphql_request():
-    async with AsyncSession(headers=HEADERS, impersonate="chrome124") as session:
-        # Крок 1: Ініціалізація сесії та отримання початкових DataDome / OLX куків
-        print("1. Отримуємо початкові cookies...")
-        resp_init = await session.get("https://www.olx.ua/uk/elektronika/", timeout=10)
-        print(f"Головна сторінка: status {resp_init.status_code}")
 
-        # Крок 2: Відправка GraphQL запиту з правильним хедром x-client
-        print("2. Відправляємо GraphQL запит...")
-        resp = await session.post(
-            "https://www.olx.ua/apigateway/graphql",
-            json=GRAPHQL_PAYLOAD,
-            timeout=15,
+def delete_ads_by_parsed_date(target_date: str):
+    """Видаляє всі записи з таблиці ads за вказану дату parsed_date (YYYY-MM-DD)."""
+    if not DB_FILE.exists():
+        print(f"[ПОМИЛКА] Файл бази даних не знайдено: {DB_FILE}")
+        return
+
+    print(
+        f"--- ОЧИЩЕННЯ ТАБЛИЦІ ads У SQLite ({DB_FILE.name}) ЗA {target_date} ---"
+    )
+
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    try:
+        # Увімкнення режиму WAL для стабільності
+        cursor.execute("PRAGMA journal_mode=WAL;")
+
+        # Виконання запиту на видалення
+        cursor.execute(
+            "DELETE FROM ads WHERE parsed_date = ?;", (target_date,)
         )
 
-        print(f"GraphQL Status: {resp.status_code}")
-        if resp.status_code == 200:
-            print("Успіх! Отримано JSON:")
-            print(json.dumps(resp.json(), indent=2, ensure_ascii=False)[:500])
-        else:
-            print("Помилка response text:", resp.text[:300])
+        deleted_count = cursor.rowcount
+        conn.commit()
+
+        print(
+            f"[УСПІХ] Видалено записів за {target_date}: {deleted_count} шт."
+        )
+
+    except sqlite3.Error as error:
+        conn.rollback()
+        print(f"[ПОМИЛКА] Не вдалося видалити дані з бази: {error}")
+
+    finally:
+        conn.close()
+
 
 if __name__ == "__main__":
-    asyncio.run(test_graphql_request())
+    TARGET_DATE = "2026-07-25"
+    delete_ads_by_parsed_date(TARGET_DATE)
