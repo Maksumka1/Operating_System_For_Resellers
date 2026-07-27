@@ -1,13 +1,12 @@
-from __future__ import annotations
-
+import os
 import asyncio
-import sqlite3
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 from curl_cffi.requests import AsyncSession
+from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -15,7 +14,10 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import DB_FILE
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 BATCH_SIZE = 50        # OLX приймає по 50 ID в один GraphQL-запит
 CONCURRENT_BATCHES = 5  # 5 паралельних пакунків одночасно
@@ -41,12 +43,6 @@ BATCH_CHECK_QUERY = """query GetListingsByIds($ids: [Int!]!) {
     }
   }
 }"""
-
-
-def get_db_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    return conn
 
 
 async def process_batch(
@@ -148,47 +144,59 @@ async def run_fast_verifier(active_ads: list[tuple[int, int]]) -> list[tuple[int
 def main() -> None:
     print("⚡ СТАРТ УЛЬТРА-ШВИДКОЇ ПАКЕТНОЇ ПЕРЕВІРКИ СТАТУСІВ")
 
-    if not DB_FILE.exists():
-        print("[ПОМИЛКА] Базу даних не знайдено!")
+    # 1. Завантажуємо активні ad_id та id прямо з Supabase
+    try:
+        response = supabase.table("ads") \
+            .select("id, ad_id") \
+            .eq("status", "active") \
+            .not_.is_("ad_id", "null") \
+            .execute()
+        raw_ads = response.data or []
+    except Exception as e:
+        print(f"❌ [SUPABASE ERROR]: {e}")
         return
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # ВИТЯГУЄМО САМЕ ad_id ТА id!
-    cursor.execute("SELECT id, ad_id FROM ads WHERE status = 'active' AND ad_id IS NOT NULL")
-    active_ads = cursor.fetchall()
-
-    if not active_ads:
+    if not raw_ads:
         print("[INFO] Немає активних оголошень з ad_id для перевірки.")
-        conn.close()
         return
 
-    print(f"[VERIFIER] Завантажено {len(active_ads)} лотів із бази.")
+    # Перетворюємо у кортежі (db_id, ad_id), які чекає асинхронний воркер
+    active_ads = [(ad["id"], ad["ad_id"]) for ad in raw_ads]
+
+    print(f"[VERIFIER] Завантажено {len(active_ads)} лотів із Supabase.")
     start_time = time.time()
 
+    # 2. Запускаємо перевірку через GraphQL API OLX
     results = asyncio.run(run_fast_verifier(active_ads))
 
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    
     deactivated_pool = [
-        ("deactivated", now_str, db_id)
+        {
+            "id": db_id,
+            "status": "deactivated",
+            "deactivated_at": now_str
+        }
         for db_id, status in results
         if status == "deactivated"
     ]
 
+    # 3. Маркуємо закриті лоти у хмарі через upsert
     if deactivated_pool:
-        cursor.executemany(
-            "UPDATE ads SET status = ?, deactivated_at = ? WHERE id = ?",
-            deactivated_pool,
-        )
-        conn.commit()
-        print(f"[УСПІХ] Знайдено та деактивовано: {len(deactivated_pool)} шт.")
+        try:
+            supabase.table("ads").upsert(deactivated_pool, on_conflict="id").execute()
+            print(f"[УСПІХ SUPABASE] Знайдено та деактивовано: {len(deactivated_pool)} шт.")
+        except Exception as e:
+            print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ СТАТУСІВ В SUPABASE]: {e}")
     else:
         print("[INFO] Усі оголошення досі активні.")
 
-    conn.close()
     elapsed = time.time() - start_time
     print(f"--- 🚀 {len(active_ads)} оголошень перевірено за {elapsed:.2f} сек ---")
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":

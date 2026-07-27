@@ -1,10 +1,9 @@
-from __future__ import annotations
-
+import os
 import json
-import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -12,7 +11,13 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import DB_FILE, STATS_FILE
+from config import STATS_FILE
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
+
 
 # 1. ЗАСТАРІЛЕ ЗАЛІЗО ТА СОКЕТИ
 OBSOLETE_WORDS = [
@@ -44,11 +49,6 @@ GAMING_WORDS = [
 MAINING_WORDS = [
     "майнинг", "майнінг"
 ]
-
-def get_db_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    return conn
 
 
 def detect_pc_category(text: str) -> str:
@@ -97,31 +97,21 @@ def update_statistics(section: str, metrics: dict) -> None:
 
 
 def main() -> None:
-    if not DB_FILE.exists():
-        print("[ПОМИЛКА] Базу даних не знайдено!")
-        return
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
+    # 1. Отримуємо з Supabase нові ПК, де pc_category ще не визначено або 'uncategorized'
     try:
-        cursor.execute("ALTER TABLE ads ADD COLUMN pc_category TEXT DEFAULT 'uncategorized';")
-        conn.commit()
-    except sqlite3.OperationalError:
-        pass
-
-    cursor.execute("""
-        SELECT id, title, description 
-        FROM ads 
-        WHERE item_type = 'pc' 
-          AND status = 'active'
-          AND (pc_category = 'uncategorized' OR pc_category IS NULL)
-    """)
-    unfiltered_pcs = cursor.fetchall()
+        response = supabase.table("ads") \
+            .select("id, title, description") \
+            .eq("item_type", "pc") \
+            .eq("status", "active") \
+            .or_("pc_category.eq.uncategorized,pc_category.is.null") \
+            .execute()
+        unfiltered_pcs = response.data or []
+    except Exception as e:
+        print(f"❌ [SUPABASE ERROR]: {e}")
+        return
 
     if not unfiltered_pcs:
         print("[INFO] Немає нових ПК для категоризації.")
-        conn.close()
         return
 
     print(f"[CATEGORY] Знайдено {len(unfiltered_pcs)} нових ПК для розподілу по категоріям...")
@@ -132,24 +122,28 @@ def main() -> None:
         "brand_office": 0,
         "gaming": 0,
         "home_office": 0,
+        "maining": 0
     }
 
     updates_pool = []
 
-    for db_id, title, description in unfiltered_pcs:
-        full_text = f"{title or ''} {description or ''}"
+    for pc in unfiltered_pcs:
+        db_id = pc["id"]
+        title = pc.get("title") or ""
+        description = pc.get("description") or ""
+        
+        full_text = f"{title} {description}"
         category = detect_pc_category(full_text)
 
         category_counts[category] += 1
-        updates_pool.append((category, db_id))
+        updates_pool.append({"id": db_id, "pc_category": category})
 
+    # 2. Оновлюємо категорії пачкою (upsert)
     if updates_pool:
-        cursor.executemany("""
-            UPDATE ads 
-            SET pc_category = ? 
-            WHERE id = ?
-        """, updates_pool)
-        conn.commit()
+        try:
+            supabase.table("ads").upsert(updates_pool, on_conflict="id").execute()
+        except Exception as e:
+            print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КАТЕГОРІЙ В SUPABASE]: {e}")
 
     print("\n✅ [УСПІХ] Розподіл по категоріям завершено:")
     print(f" 🗑️  Застарілі (obsolete):     {category_counts['obsolete']} шт.")
@@ -157,23 +151,25 @@ def main() -> None:
     print(f" 🏢 Брендові (brand_office): {category_counts['brand_office']} шт.")
     print(f" 🎮 Ігрові (gaming):          {category_counts['gaming']} шт.")
     print(f" 🖥️  Домашні (home_office):   {category_counts['home_office']} шт.")
+    print(f" ⛏️  Майнінг (maining):       {category_counts['maining']} шт.")
 
-    # Рахуємо загальну кількість чистих ПК (без дефектів та не застарілих)
-    cursor.execute("""
-        SELECT COUNT(*) FROM ads 
-        WHERE item_type = 'pc' 
-          AND status = 'active' 
-          AND (has_defects = 0 OR has_defects IS NULL) 
-          AND pc_category != 'obsolete'
-    """)
-    active_clean_total = cursor.fetchone()[0]
+    # 3. Рахуємо загальну кількість чистих ПК з Supabase для статистики
+    try:
+        active_res = supabase.table("ads") \
+            .select("id", count="exact") \
+            .eq("item_type", "pc") \
+            .eq("status", "active") \
+            .eq("has_defects", 0) \
+            .neq("pc_category", "obsolete") \
+            .execute()
+        active_clean_total = active_res.count or 0
+    except Exception:
+        active_clean_total = 0
 
     update_statistics("filtering", {
         "filtered_total_active": active_clean_total,
     })
     update_statistics("categories", category_counts)
-
-    conn.close()
 
 
 if __name__ == "__main__":

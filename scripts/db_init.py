@@ -46,6 +46,7 @@ def init_db():
 
         -- ДАНІ ПРОДАВЦЯ (SELLER ANALYZER)
         seller_id TEXT,                        -- Цифровий ID профілю на OLX (потрібен для Delivery API)
+        seller_uuid TEXT,                      -- UUID профілю продавця з OLX GraphQL
         seller_name TEXT,                      -- Ім'я або нікнейм продавця
         seller_created_at TEXT,                -- Рік реєстрації акаунту на OLX (наприклад, '2019')
         seller_successful_deals INTEGER,       -- Точна кількість успішних угод через OLX Доставку

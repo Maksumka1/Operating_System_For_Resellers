@@ -190,14 +190,56 @@
   },
   "25-07-2026": {
     "parsing": {
-      "parsed_total_new": 0,
-      "duplicates_skipped": 62,
-      "avg_parsing_time_ms": 0,
-      "total_time_seconds": 2.21
+      "parsed_total_new": 49,
+      "duplicates_skipped": 2,
+      "avg_parsing_time_ms": 39.98,
+      "total_time_seconds": 1.96
     },
     "filtering": {
       "banned_words_triggered": 0,
-      "filtered_total_active": 70
+      "filtered_total_active": 331
+    },
+    "market_analysis": {
+      "avg_ad_price_uah": 0,
+      "min_price_today": 0,
+      "max_price_today": 0
+    },
+    "system_health": {
+      "network_errors": 0,
+      "parsing_errors": 0
+    }
+  },
+  "26-07-2026": {
+    "parsing": {
+      "parsed_total_new": 3,
+      "duplicates_skipped": 46,
+      "avg_parsing_time_ms": 743.23,
+      "total_time_seconds": 2.23
+    },
+    "filtering": {
+      "banned_words_triggered": 0,
+      "filtered_total_active": 206
+    },
+    "market_analysis": {
+      "avg_ad_price_uah": 0,
+      "min_price_today": 0,
+      "max_price_today": 0
+    },
+    "system_health": {
+      "network_errors": 0,
+      "parsing_errors": 0
+    }
+  },
+  "27-07-2026": {
+    "parsing": {
+      "parsed_total_new": 3,
+      "duplicates_skipped": 48,
+      "avg_parsing_time_ms": 1802.01,
+      "total_time_seconds": 5.41
+    },
+    "filtering": {
+      "banned_words_triggered": 0,
+      "filtered_total_active": 517
     },
     "market_analysis": {
       "avg_ad_price_uah": 0,

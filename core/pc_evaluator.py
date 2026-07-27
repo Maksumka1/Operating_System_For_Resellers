@@ -1,10 +1,9 @@
-from __future__ import annotations
-
-import sys
-import sqlite3
+import os
 import re
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -12,91 +11,90 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import HARDWARE_TARGETS, DB_FILE
+from config import HARDWARE_TARGETS
 
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
-def get_db_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    return conn
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
+
+# 🎯 ОПТИМІЗАЦІЯ 1: Готуємо скомпільовані регулярки ОДИН раз при завантаженні модуля
+COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
+
+for comp_key, cfg in HARDWARE_TARGETS.items():
+    req_keywords = cfg.get("required_keywords", [])
+    compiled_list = []
+    for kw in req_keywords:
+        kw_clean = kw.lower().strip().replace("-", " ")
+        if kw_clean:
+            # Скомпільований regex з межами слів для уникнення помилкових збігів
+            pattern = re.compile(r"\b" + re.escape(kw_clean) + r"\b")
+            compiled_list.append(pattern)
+    COMPILED_PATTERNS[comp_key] = compiled_list
+
+# 🎯 ОПТИМІЗАЦІЯ 2: Списки ключів GPU та CPU готуємо та сортуємо за довжиною ОДИН раз
+GPUS_KEYS = sorted(
+    [k for k, v in HARDWARE_TARGETS.items() if v.get("item_type") == "gpu"],
+    key=lambda k: len(k),
+    reverse=True,
+)
+CPUS_KEYS = sorted(
+    [k for k, v in HARDWARE_TARGETS.items() if v.get("item_type") == "cpu"],
+    key=lambda k: len(k),
+    reverse=True,
+)
 
 
 def load_latest_prices() -> dict[str, int]:
-    """
-    Витягує актуальні середні ціни комплектуючих з таблиці ads.
-    Якщо є окрема таблиця component_prices, використовує її.
-    """
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
+    """Витягує актуальні середні ціни комплектуючих із Supabase."""
     clean_prices = {}
 
-    # 1. Пробуємо завантажити з таблиці component_prices (якщо вона існує)
     try:
-        cursor.execute("SELECT MAX(date) FROM component_prices")
-        latest_date_row = cursor.fetchone()
-        if latest_date_row and latest_date_row[0]:
-            cursor.execute("""
-                SELECT component_name, price 
-                FROM component_prices 
-                WHERE date = ?
-            """, (latest_date_row[0],))
-            clean_prices = {row[0]: row[1] for row in cursor.fetchall()}
-    except sqlite3.OperationalError:
-        pass
+        # 1. Спроба завантажити найсвіжіші ціни з component_prices
+        res = supabase.table("component_prices") \
+            .select("component_name, price") \
+            .order("date", desc=True) \
+            .execute()
+        if res.data:
+            clean_prices = {row["component_name"]: row["price"] for row in res.data}
+    except Exception as e:
+        print(f"[EVALUATOR WARN] Помилка читання component_prices: {e}")
 
-    # 2. Якщо component_prices порожня — беремо пораховані competitor_price з таблиці ads
+    # 2. Якщо component_prices порожній — беремо резервні ціни з активних оголошень
     if not clean_prices:
-        cursor.execute("""
-            SELECT component_name, competitor_price 
-            FROM ads 
-            WHERE item_type IN ('gpu', 'cpu', 'motherboard', 'psu', 'storage') 
-              AND status = 'active'
-              AND competitor_price > 0
-              AND component_name IS NOT NULL
-            GROUP BY component_name
-        """)
-        clean_prices = {row[0]: row[1] for row in cursor.fetchall()}
+        try:
+            res = supabase.table("ads") \
+                .select("component_name, competitor_price") \
+                .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage"]) \
+                .eq("status", "active") \
+                .gt("competitor_price", 0) \
+                .not_.is_("component_name", "null") \
+                .execute()
+            if res.data:
+                clean_prices = {row["component_name"]: row["competitor_price"] for row in res.data}
+        except Exception as e:
+            print(f"[EVALUATOR ERR] Помилка резервного читання цін: {e}")
 
-    conn.close()
     return clean_prices
 
 
-def detect_component_by_keywords(text_lower: str, target_keys: list[str]) -> str | None:
-    """
-    Шукає найдовший збіг ключового слова у тексті з використанням меж слів (word boundaries).
-    """
-    # Сортуємо ключі за довжиною назви для запобігання хибним збігам (наприклад, i5_10400f перед i5_10400)
-    sorted_keys = sorted(target_keys, key=lambda k: len(k), reverse=True)
-    
-    for comp_key in sorted_keys:
-        required_keywords = HARDWARE_TARGETS[comp_key].get("required_keywords", [])
-        
-        for keyword in required_keywords:
-            kw_clean = keyword.lower().strip()
-            if not kw_clean:
-                continue
-            
-            # Використовуємо \b для точного збігу слова
-            pattern = r"\b" + re.escape(kw_clean.replace("-", " ")) + r"\b"
-            if re.search(pattern, text_lower.replace("-", " ")):
+def detect_component_fast(text_clean: str, target_keys: list[str]) -> str | None:
+    """Миттєвий пошук за заздалегідь скомпільованими регулярками."""
+    for comp_key in target_keys:
+        patterns = COMPILED_PATTERNS.get(comp_key, [])
+        for pattern in patterns:
+            if pattern.search(text_clean):
                 return comp_key
-                
     return None
 
 
 def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, component_prices: dict) -> dict:
     title_clean = title.replace("-", " ")
     desc_clean = description.replace("-", " ") if description else ""
-    
     full_text_lower = f"{title_clean} {desc_clean}".lower()
 
-    # 🎯 Беремо список ключів суворо за item_type з config.py
-    gpus_keys = [k for k, v in HARDWARE_TARGETS.items() if v.get("item_type") == "gpu"]
-    cpus_keys = [k for k, v in HARDWARE_TARGETS.items() if v.get("item_type") == "cpu"]
-
     # 1. Детекція та оцінка відеокарти
-    gpu = detect_component_by_keywords(full_text_lower, gpus_keys)
+    gpu = detect_component_fast(full_text_lower, GPUS_KEYS)
     if gpu:
         gpu_price = component_prices.get(gpu, 0)
         gpu_display = gpu
@@ -105,7 +103,7 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
         gpu_price = 0
 
     # 2. Детекція та оцінка процесора
-    cpu = detect_component_by_keywords(full_text_lower, cpus_keys)
+    cpu = detect_component_fast(full_text_lower, CPUS_KEYS)
     if cpu:
         cpu_price = component_prices.get(cpu, 0)
         cpu_display = cpu
@@ -154,24 +152,23 @@ def main() -> None:
     if not prices: 
         print("[WARN] Прайс-лист комплектуючих порожній. Пропускаємо оцінку.")
         return
-        
-    conn = get_db_connection()
-    cursor = conn.cursor()
 
-    # 🎯 Беремо тільки АКТИВНІ, НЕУШКОДЖЕНІ та ЩЕ НЕ ОЦІНЕНІ ПК
-    cursor.execute("""
-        SELECT id, title, description, price, url 
-        FROM ads 
-        WHERE item_type = 'pc' 
-          AND status = 'active' 
-          AND (has_defects = 0 OR has_defects IS NULL)
-          AND estimated_fair_price IS NULL
-    """)
-    unrated_pcs = cursor.fetchall()
+    # 1. Беремо з Supabase тільки АКТИВНІ, НЕУШКОДЖЕНІ та ЩЕ НЕ ОЦІНЕНІ ПК
+    try:
+        response = supabase.table("ads") \
+            .select("id, title, description, price, url") \
+            .eq("item_type", "pc") \
+            .eq("status", "active") \
+            .eq("has_defects", 0) \
+            .is_("estimated_fair_price", "null") \
+            .execute()
+        unrated_pcs = response.data or []
+    except Exception as e:
+        print(f"❌ [SUPABASE ERROR]: {e}")
+        return
 
     if not unrated_pcs:
         print("[INFO] Немає нових чистих ПК для оцінки.")
-        conn.close()
         return
 
     print(f"[EVALUATOR] Знайдено {len(unrated_pcs)} комп'ютерів для розпізнавання та оцінки...")
@@ -179,22 +176,27 @@ def main() -> None:
     count_evaluated = 0
     updates_pool = []
 
-    for ad_id, title, description, price, url in unrated_pcs:
+    for pc in unrated_pcs:
+        ad_id = pc["id"]
+        title = pc.get("title") or ""
+        description = pc.get("description") or ""
+        price = pc.get("price") or 0
+
         evaluation = evaluate_pc(ad_id, title, description, price, prices)
             
-        updates_pool.append((
-            evaluation["seller_price_clean"],
-            evaluation["gpu_detected"],
-            evaluation["cpu_detected"],
-            evaluation["cpu_market_price"],
-            evaluation["gpu_market_price"],
-            evaluation["estimated_fair_price"],
-            evaluation["saving_uah"],
-            evaluation["saving_percent"],
-            evaluation["deal_status"],
-            evaluation["evaluated_at"],
-            evaluation["id"]
-        ))
+        updates_pool.append({
+            "id": evaluation["id"],
+            "seller_price_clean": evaluation["seller_price_clean"],
+            "gpu_detected": evaluation["gpu_detected"],
+            "cpu_detected": evaluation["cpu_detected"],
+            "gpu_market_price": evaluation["gpu_market_price"],
+            "cpu_market_price": evaluation["cpu_market_price"],
+            "estimated_fair_price": evaluation["estimated_fair_price"],
+            "saving_uah": evaluation["saving_uah"],
+            "saving_percent": evaluation["saving_percent"],
+            "deal_status": evaluation["deal_status"],
+            "evaluated_at": evaluation["evaluated_at"]
+        })
         
         count_evaluated += 1
 
@@ -204,26 +206,17 @@ def main() -> None:
             print(f"   Процесор:   {evaluation['cpu_detected']} ({evaluation['cpu_market_price']} грн)")
             print(f"   🔥 Вигода:  {evaluation['saving_uah']} грн ({evaluation['saving_percent']}%)")
 
+    # 2. Оновлюємо розраховані значення у Supabase одним швидкострільним upsert запитом
     if updates_pool:
-        cursor.executemany("""
-            UPDATE ads 
-            SET 
-                seller_price_clean = ?,
-                gpu_detected = ?,
-                cpu_detected = ?,
-                cpu_market_price = ?,
-                gpu_market_price = ?,
-                estimated_fair_price = ?,
-                saving_uah = ?,
-                saving_percent = ?,
-                deal_status = ?,
-                evaluated_at = ?
-            WHERE id = ?
-        """, updates_pool)
-        conn.commit()
-        print(f"\n✅ [УСПІХ] Успішно розпізнано та оцінено: {count_evaluated} комп'ютерів.")
-    
-    conn.close()
+        try:
+            supabase.table("ads").upsert(updates_pool, on_conflict="id").execute()
+            print(f"\n✅ [УСПІХ] Успішно розпізнано та оцінено у хмарі: {count_evaluated} комп'ютерів.")
+        except Exception as e:
+            print(f"\n❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ ОЦІНКИ В SUPABASE]: {e}")
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":

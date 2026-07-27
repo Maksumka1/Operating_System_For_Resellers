@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import re
-import sqlite3
+from supabase import create_client, Client
 import sys
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -17,12 +18,22 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import DB_FILE, HARDWARE_TARGETS, SOCKETS, CHIPSET_TO_SOCKET
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
+
 
 BROKEN_PATTERN = re.compile(
     r"неробоч|не робоч|запчастин|запчасть|ремонт|дефект|відновлен|восстановлен|"
     r"артефакт|поломан|неисправн|не справн|на детал|запчасті|прогрів|не стартует|"
     r"не включа|не включається|не включается|не працює|не работает|не робочий",
     re.IGNORECASE,
+)
+
+CLEAN_PATTERNS = re.compile(
+    r"не\s*ремонтувал\w*|без\s*дефект\w*|без\s*артефакт\w*|не\s*прогрівав\w*|без\s*ремонт\w*",
+    re.IGNORECASE
 )
 
 HEADERS = {
@@ -55,6 +66,7 @@ GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!
         id title url status created_time last_refresh_time description
         location { city { name } }
         photos { link }
+        user { id uuid name created }
         params {
           key name
           value {
@@ -68,11 +80,6 @@ GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!
 }"""
 
 
-def get_db_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    return conn
-
 
 def validate_title(title: str, required_keywords: list[str]) -> bool:
     title_lower = title.lower()
@@ -80,7 +87,10 @@ def validate_title(title: str, required_keywords: list[str]) -> bool:
 
 
 def is_broken_ad(text: str) -> bool:
-    return bool(BROKEN_PATTERN.search(text))
+    if not text:
+        return False
+    clean_text = CLEAN_PATTERNS.sub("", text)
+    return bool(BROKEN_PATTERN.search(clean_text))
 
 
 def clean_url(url: str) -> str:
@@ -110,31 +120,28 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tupl
     for target_name, cfg in target_items_for_type.items():
         req_keywords = cfg.get("required_keywords", [])
 
-        # 🎯 Гнучка логіка розпізнавання для накопичувачів (SSD / HDD)
         if cfg.get("item_type") == "storage":
-            parts = target_name.split("_")  # Наприклад: ["ssd", "120gb"] або ["hdd", "1tb"]
+            parts = target_name.split("_")
             if len(parts) < 2:
                 continue
 
-            st_type = parts[0]  # ssd / hdd
-            capacity_raw = parts[1]  # 120gb / 1tb
-            cap_num = re.sub(r"\D", "", capacity_raw)  # 120 / 1
+            st_type = parts[0]
+            capacity_raw = parts[1]
+            cap_num = re.sub(r"\D", "", capacity_raw)
             cap_unit = "tb" if "tb" in capacity_raw else "gb"
 
-            # 1. Перевіряємо тип накопичувача
             has_type = False
             if st_type == "ssd":
                 has_type = "ssd" in title_clean or "ссд" in title_clean or "nvme" in title_clean
             elif st_type == "hdd":
                 has_type = any(w in title_clean for w in [
-                "hdd", "хдд", "жорстк", "жестк", "винчестер", "жерстк", "toshiba",
-                "wd blue", "wd red", "wd black", "wd green", "barracuda", "wd"
-            ])
+                    "hdd", "хдд", "жорстк", "жестк", "винчестер", "жерстк", "toshiba",
+                    "wd blue", "wd red", "wd black", "wd green", "barracuda", "wd"
+                ])
 
             if not has_type:
                 continue
 
-            # 2. Перевіряємо наявність числа об'єму (з урахуванням пробілів та варіантів одиниць)
             if cap_unit == "tb":
                 pattern = r"\b" + cap_num + r"\s*(tb|тб|терабайт|1000\s*gb|1000\s*гб)\b"
             else:
@@ -143,7 +150,6 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tupl
             if re.search(pattern, title_clean):
                 return target_name, cfg
 
-        # 🎯 Стандартна логіка для відеокарт, процесорів, материнок і БЖ
         else:
             if validate_title(title_clean, req_keywords):
                 return target_name, cfg
@@ -151,30 +157,31 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tupl
     return None
 
 
-async def fetch_subcategory_feed(
+async def fetch_subcategory_page(
     session: AsyncSession,
     subcat_info: dict,
     hardware_targets: dict,
     seen_urls: set[str],
     today_sql: str,
+    offset: int = 0,
+    limit: int = 40,
     max_retries: int = 3,
 ) -> list[tuple]:
     subcat_key = subcat_info["subcategory"]
     item_type = subcat_info["item_type"]
-    cat_name = subcat_info["name"]
-
-    print(f"\n📡 Завантажуємо свіжі {cat_name} (підкатегорія: {subcat_key})...")
 
     targets_for_this_type = {
         k: v for k, v in hardware_targets.items() if v.get("item_type") == item_type
     }
 
+    # 🎯 Включаємо offset у параметри пошуку
     search_params = [
         {"key": "category_id", "value": "458"},
         {"key": "filter_enum_subcategory[0]", "value": subcat_key},
         {"key": "currency", "value": "UAH"},
         {"key": "sort_by", "value": "created_at:desc"},
-        {"key": "limit", "value": "50"},
+        {"key": "limit", "value": str(limit)},
+        {"key": "offset", "value": str(offset)},
     ]
 
     json_payload = {
@@ -186,7 +193,7 @@ async def fetch_subcategory_feed(
 
     for attempt in range(1, max_retries + 1):
         try:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.3)
             resp = await session.post(
                 "https://www.olx.ua/apigateway/graphql",
                 json=json_payload,
@@ -220,14 +227,10 @@ async def fetch_subcategory_feed(
     )
 
     if not listings:
-        print(f"  [i] Порожній потік для підкатегорії {subcat_key}")
         return []
-
-    print(f"  [+] Отримано {len(listings)} лотів з OLX. Починаємо обробку оголошень...")
 
     for item in listings:
         try:
-            # 🎯 ФІЛЬТР 1: Перевірка підкатегорії у структурі JSON
             ad_subcat = None
             for param in item.get("params", []):
                 if param.get("key") == "subcategory":
@@ -249,15 +252,16 @@ async def fetch_subcategory_feed(
 
             advert_url = clean_url(raw_url)
 
-            # 🎯 ФІЛЬТР 2: Дублікати
+            user_data = item.get("user") or {}
+            seller_id = str(user_data.get("id")) if user_data.get("id") else None
+            seller_uuid = str(user_data.get("uuid")) if user_data.get("uuid") else None
+            seller_name = user_data.get("name") or "Невідомо"
+
             if advert_url in seen_urls:
-                print(f"   [🔄 ДУБЛІКАТ]: {title[:45]}...")
                 continue
 
-            # 🎯 ФІЛЬТР 3: Розпізнавання моделі
             matched = match_ad_to_hardware_target(title, targets_for_this_type)
             if not matched:
-                print(f"   [⏭️ НЕ ВІДСТЕЖУЄТЬСЯ МОДЕЛЬ]: {title[:45]}...")
                 continue
 
             raw_ad_id = item.get("id")
@@ -294,29 +298,39 @@ async def fetch_subcategory_feed(
             first_photo = photo_urls_list[0] if photo_urls_list else "Невідомо"
             all_photos_str = ",".join(photo_urls_list) if photo_urls_list else None
 
+            user_created_raw = str(user_data.get("created") or "")
+            seller_created_at = user_created_raw.split("-")[0] if "-" in user_created_raw else None
+
+            is_business = item.get("business", False)
+            seller_type = "shop" if is_business else "private_person"
+
             detected_socket = None
             if item_type in ("motherboard", "cpu"):
                 detected_socket = detect_socket(title, description, target_name)
 
-            parsed_for_subcat.append(
-                (
-                    ad_id,
-                    advert_url,
-                    title,
-                    description,
-                    price,
-                    item_type,
-                    target_name,
-                    detected_socket,
-                    has_defects,
-                    city,
-                    ad_date,
-                    first_photo,
-                    all_photos_str,
-                    today_sql,
-                    "active",
-                )
-            )
+            parsed_for_subcat.append({
+                "ad_id": ad_id,
+                "url": advert_url,
+                "title": title,
+                "description": description,
+                "price": price,
+                "item_type": item_type,
+                "component_name": target_name,
+                "socket": detected_socket,
+                "has_defects": has_defects,
+                "city": city,
+                "created_at_olx": ad_date,
+                "photo_url": first_photo,
+                "all_photos": all_photos_str,
+                "parsed_date": today_sql,
+                "status": "active",
+                "seller_id": seller_id,
+                "seller_uuid": seller_uuid,
+                "seller_name": seller_name,
+                "seller_created_at": seller_created_at,
+                "seller_type": seller_type,
+                "seller_price_clean": price
+            })
 
             seen_urls.add(advert_url)
 
@@ -331,7 +345,7 @@ async def fetch_subcategory_feed(
 
 
 async def run_parser(
-    hardware_items: dict, seen_urls: set[str], today_sql: str
+    hardware_items: dict, seen_urls: set[str], today_sql: str, pages_to_parse: int = 1
 ) -> list[tuple]:
     async with AsyncSession(headers=HEADERS, impersonate="chrome124") as session:
         print("🔥 Прогріваємо сесію...")
@@ -342,63 +356,70 @@ async def run_parser(
 
         all_results = []
         for subcat_info in SUBCATEGORIES_TO_PARSE:
-            res = await fetch_subcategory_feed(
-                session, subcat_info, hardware_items, seen_urls, today_sql
-            )
-            all_results.extend(res)
+            subcat_key = subcat_info["subcategory"]
+            cat_name = subcat_info["name"]
+            print(f"\n📡 Завантажуємо свіжі {cat_name} (підкатегорія: {subcat_key}, сторінок: {pages_to_parse})...")
+
+            for page in range(pages_to_parse):
+                offset = page * 40
+                if pages_to_parse > 1:
+                    print(f"   📂 Сторінка {page + 1}/{pages_to_parse} (offset={offset})...")
+
+                res = await fetch_subcategory_page(
+                    session, subcat_info, hardware_items, seen_urls, today_sql, offset=offset, limit=40
+                )
+                all_results.extend(res)
+
+                if pages_to_parse > 1 and page < pages_to_parse - 1:
+                    await asyncio.sleep(1.0)
 
     return all_results
 
 
-def main() -> None:
+def main(pages_to_parse: int = 1) -> None:
     today_sql = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    if not DB_FILE.exists():
-        print("[ПОМИЛКА] Базу даних не знайдено!")
-        return
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    for col_def in ["all_photos TEXT", "ad_id INTEGER", "socket TEXT", "has_defects INTEGER DEFAULT 0"]:
-        try:
-            cursor.execute(f"ALTER TABLE ads ADD COLUMN {col_def};")
-        except sqlite3.OperationalError:
-            pass
-
-    cursor.execute("SELECT url FROM ads")
-    seen_urls = set(row[0] for row in cursor.fetchall())
+    # 1. Завантажуємо існуючі URL прямо з Supabase для дедуплікації
+    try:
+        response = supabase.table("ads").select("url").execute()
+        seen_urls = set(row["url"] for row in (response.data or []))
+        print(f"[БАЗА SUPABASE] Завантажено {len(seen_urls)} комплектуючих для дедуплікації.")
+    except Exception as e:
+        print(f"[ПОМИЛКА ЧИТАННЯ SUPABASE]: {e}")
+        seen_urls = set()
 
     hardware_items = {
         k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")
     }
 
-    print(f"🚀 Стартуємо швидкісний збір по підкатегоріях для {len(hardware_items)} відстежуваних моделей...")
+    print(f"🚀 Стартуємо збір по підкатегоріях для {len(hardware_items)} моделей (сторінок на категорію: {pages_to_parse})...")
     start_time = time.time()
 
     new_ads_to_insert = asyncio.run(
-        run_parser(hardware_items, seen_urls, today_sql)
+        run_parser(hardware_items, seen_urls, today_sql, pages_to_parse=pages_to_parse)
     )
 
     elapsed = time.time() - start_time
     print(f"\n⏱️ Мережевий збір завершено за {elapsed:.2f} сек. (Знайдено нових комплектуючих: {len(new_ads_to_insert)})")
 
+    # 2. Збереження у хмарний PostgreSQL Supabase та тригер WebSockets
     if new_ads_to_insert:
-        cursor.executemany(
-            """
-        INSERT OR IGNORE INTO ads (
-            ad_id, url, title, description, price, item_type, component_name, 
-            socket, has_defects, city, created_at_olx, photo_url, all_photos, parsed_date, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-            new_ads_to_insert,
-        )
-        conn.commit()
-        print(f"[УСПІХ] Збережено {len(new_ads_to_insert)} нових унікальних комплектуючих у 'ads'.")
+        try:
+            supabase.table("ads").upsert(new_ads_to_insert, on_conflict="url").execute()
+            print(f"[УСПІХ SUPABASE] Збережено {len(new_ads_to_insert)} нових комплектуючих у хмару!")
+
+            # 3. Тригеримо WebSocket на сервері для появи зеленого спалаху у стрічці
+            try:
+                import requests
+                requests.post("http://localhost:8000/api/trigger-new-ad", json=new_ads_to_insert, timeout=2)
+                print("📢 [WEBSOCKET] Живий стрим оновлено!")
+            except Exception:
+                pass
+
+        except Exception as ex:
+            print(f"❌ [ПОМИЛКА SUPABASE]: {ex}")
     else:
         print("[INFO] Нових оголошень для запису не знайдено.")
-
-    conn.close()
 
 
 if __name__ == "__main__":

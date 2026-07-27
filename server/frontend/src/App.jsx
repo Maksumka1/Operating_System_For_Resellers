@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// Легка локальна SVG-заглушка замість неефективного зовнішнього сервісу
 const PLACEHOLDER_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'><rect width='100%' height='100%' fill='%23e2e8f0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%2364748b'>Немає фото</text></svg>";
 
-// Компонент для безпечного завантаження картинок (перехоплює 404 та помилки CDN)
 function SafeImage({ src, alt, style, onClick }) {
   const [imgSrc, setImgSrc] = useState(src || PLACEHOLDER_IMG);
 
@@ -19,7 +17,7 @@ function SafeImage({ src, alt, style, onClick }) {
       onClick={onClick}
       onError={() => {
         if (imgSrc !== PLACEHOLDER_IMG) {
-          setImgSrc(PLACEHOLDER_IMG); // Безпечна заміна при 404 помилці OLX
+          setImgSrc(PLACEHOLDER_IMG);
         }
       }}
     />
@@ -32,11 +30,25 @@ function SafeImage({ src, alt, style, onClick }) {
 function ModalDetail({ ad, onClose }) {
   if (!ad) return null;
 
+  // 🎯 Окремий хук для форматування опису (прибираємо зайві нові рядки)
+  const formattedDescription = useMemo(() => {
+    if (!ad?.description) return "Опис відсутній...";
+    
+    return ad.description
+      .replace(/\r\n/g, '\n')        // Приводимо переноси до єдиного формату
+      .replace(/\n\s*\n+/g, '\n')     // Замінюємо 2+ послідовні порожні рядки на один перенос
+      .trim();
+  }, [ad?.description]);
+
+  // 🎯 Покращений парсинг фоток з будь-якого формату (масив, JSON-рядок, рядок через кому)
   const allPhotosList = useMemo(() => {
     const list = [];
     const pushIfValid = (url) => {
-      if (url && typeof url === 'string' && url !== 'Невідомо' && !list.includes(url)) {
-        list.push(url);
+      if (url && typeof url === 'string' && url !== 'Невідомо' && url.trim() !== '') {
+        const cleanUrl = url.trim();
+        if (!list.includes(cleanUrl)) {
+          list.push(cleanUrl);
+        }
       }
     };
 
@@ -50,8 +62,10 @@ function ModalDetail({ ad, onClose }) {
         try {
           const parsed = JSON.parse(field);
           if (Array.isArray(parsed)) parsed.forEach(pushIfValid);
+          else if (typeof parsed === 'string') pushIfValid(parsed);
         } catch {
-          field.split(',').forEach(item => pushIfValid(item.trim()));
+          // Якщо не JSON — розділяємо за комами або пробілами
+          field.split(/[\n,]+/).forEach(item => pushIfValid(item));
         }
       }
     };
@@ -75,7 +89,7 @@ function ModalDetail({ ad, onClose }) {
             {ad.pc_category && ad.pc_category !== 'uncategorized' && (
               <span style={styles.catBadge}>{ad.pc_category}</span>
             )}
-            {ad.has_ban_word === 1 && (
+            {ad.has_defects === 1 && (
               <span style={styles.banBadge}>⚠️ Знайдено дефект / бан-слово</span>
             )}
           </div>
@@ -120,7 +134,7 @@ function ModalDetail({ ad, onClose }) {
 
             <div style={styles.card}>
               <h4 style={styles.sectionTitle}>📝 Повний опис з OLX</h4>
-              <div style={styles.descriptionBox}>{ad.description || "Опис відсутній..."}</div>
+              <div style={styles.descriptionBox}>{formattedDescription}</div>
             </div>
           </div>
 
@@ -226,7 +240,7 @@ function ModalDetail({ ad, onClose }) {
                 <div>
                   <span style={styles.label}>Статус системний:</span>
                   <div style={styles.smallValue}>
-                    {ad.status} {ad.deactivated_at ? `(до ${ad.deactivated_at})` : ''}
+                    {ad.status || 'active'} {ad.deactivated_at ? `(до ${ad.deactivated_at})` : ''}
                   </div>
                 </div>
                 <div>
@@ -270,7 +284,6 @@ function App() {
       .catch(err => console.error("Помилка завантаження бази:", err));
   }, []);
 
-  // Виправлена робота WebSocket для запобігання фальшивих закриттів у React Strict Mode
   useEffect(() => {
     let ws;
     let timer;
@@ -281,7 +294,29 @@ function App() {
       ws.onmessage = (event) => {
         try {
           const newAd = JSON.parse(event.data);
-          setAds(prevAds => [newAd, ...prevAds]);
+          setAds(prevAds => {
+            const exists = prevAds.some(item => 
+              (item.id && newAd.id && item.id === newAd.id) || 
+              (item.ad_id && newAd.ad_id && item.ad_id === newAd.ad_id)
+            );
+
+            if (exists) {
+              return prevAds.map(item => {
+                const isMatch = (item.id && newAd.id && item.id === newAd.id) || 
+                                (item.ad_id && newAd.ad_id && item.ad_id === newAd.ad_id);
+                return isMatch ? { ...item, ...newAd } : item;
+              });
+            }
+            return [newAd, ...prevAds];
+          });
+
+          setSelectedAd(prev => {
+            if (!prev) return null;
+            const isMatch = (prev.id && newAd.id && prev.id === newAd.id) || 
+                            (prev.ad_id && newAd.ad_id && prev.ad_id === newAd.ad_id);
+            return isMatch ? { ...prev, ...newAd } : prev;
+          });
+
         } catch (e) {
           console.error("Помилка WS:", e);
         }
@@ -297,7 +332,7 @@ function App() {
     return () => {
       clearTimeout(timer);
       if (ws) {
-        ws.onclose = null; // Скасовуємо автореконнект при розмотуванні
+        ws.onclose = null;
         if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
           ws.close();
         }
@@ -311,7 +346,14 @@ function App() {
       const matchType = filterType === 'all' || ad.item_type === filterType;
       const matchPrice = !filterMaxPrice || (ad.price && ad.price <= parseInt(filterMaxPrice, 10));
       const matchDate = !filterDate || (ad.created_at_olx && ad.created_at_olx.toLowerCase().includes(filterDate.toLowerCase()));
-      const matchDeal = filterDeal === 'all' || ad.deal_status === filterDeal;
+      
+      let matchDeal = true;
+      if (filterDeal !== 'all') {
+        const status = (ad.deal_status || '').toLowerCase();
+        if (filterDeal === 'super') matchDeal = status.includes('super');
+        else if (filterDeal === 'good') matchDeal = status.includes('good');
+        else if (filterDeal === 'overpriced') matchDeal = status.includes('overpriced');
+      }
 
       return matchCity && matchType && matchPrice && matchDate && matchDeal;
     });
@@ -339,6 +381,9 @@ function App() {
           <option value="all">Усі категорії</option>
           <option value="gpu">Відеокарти (GPU)</option>
           <option value="cpu">Процесори (CPU)</option>
+          <option value="motherboard">Материнські плати</option>
+          <option value="psu">Блоки живлення</option>
+          <option value="storage">Накопичувачі (SSD/HDD)</option>
           <option value="pc">Готові ПК</option>
         </select>
         <input 
@@ -350,7 +395,7 @@ function App() {
         />
         <input 
           type="text" 
-          placeholder="Дата (напр. 11 липня)" 
+          placeholder="Дата (напр. 2026-07-25)" 
           value={filterDate} 
           onChange={(e) => setFilterDate(e.target.value)} 
           style={styles.input}
@@ -403,12 +448,11 @@ function App() {
 // ==========================================
 const getDealStatusStyle = (status) => {
   const base = { fontWeight: 'bold', fontSize: '12px', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' };
-  switch(status) {
-    case 'super': return { ...base, backgroundColor: '#dcfce7', color: '#15803d' };
-    case 'good': return { ...base, backgroundColor: '#e0f2fe', color: '#0369a1' };
-    case 'overpriced': return { ...base, backgroundColor: '#fee2e2', color: '#b91c1c' };
-    default: return { ...base, backgroundColor: '#f1f5f9', color: '#475569' };
-  }
+  const str = (status || '').toLowerCase();
+  if (str.includes('super')) return { ...base, backgroundColor: '#dcfce7', color: '#15803d' };
+  if (str.includes('good')) return { ...base, backgroundColor: '#e0f2fe', color: '#0369a1' };
+  if (str.includes('overpriced')) return { ...base, backgroundColor: '#fee2e2', color: '#b91c1c' };
+  return { ...base, backgroundColor: '#f1f5f9', color: '#475569' };
 };
 
 const getRiskStyle = (score) => {
@@ -560,11 +604,6 @@ const styles = {
     cursor: 'pointer',
     fontSize: '16px',
   },
-  header: {
-    borderBottom: '1px solid #e2e8f0',
-    paddingBottom: '12px',
-    marginBottom: '16px',
-  },
   modalTitle: {
     margin: '4px 0',
     fontSize: '20px',
@@ -699,14 +738,14 @@ const styles = {
   descriptionBox: {
     backgroundColor: '#fff',
     border: '1px solid #e2e8f0',
-    padding: '10px',
+    padding: '12px',
     borderRadius: '6px',
-    fontSize: '12px',
-    lineHeight: '1.4',
+    fontSize: '13px',
+    lineHeight: '1.5',
     color: '#334155',
+    textAlign: 'left',
     whiteSpace: 'pre-line',
-    maxHeight: '150px',
-    overflowY: 'auto',
+    wordBreak: 'break-word',
   },
   olxLink: {
     display: 'block',

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import os
 import asyncio
 import json
 import re
-import sqlite3
 import sys
 import time
 from datetime import datetime, timezone
@@ -11,6 +11,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from curl_cffi.requests import AsyncSession
+from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -18,11 +19,19 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import DB_FILE, STATS_FILE
+from config import STATS_FILE
+
+# --- ПІДКТЮЧЕННЯ ДО SUPABASE ---
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+
+if not SUPABASE_KEY:
+    print("⚠️ [УВАГА] Не вказано SUPABASE_SECRET_KEY / SUPABASE_PUBLISHABLE_KEY у змінних середовища!")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 TIMEOUT = 15
 
-# СТОП-СЛОВА: Якщо це є в назві, але немає маркерів цілого ПК — це окрема запчастина
 NOT_A_PC_WORDS = [
     "материнська плата", "материнская плата", "материнка", "мать", 
     "блок питания", "блок живлення", "дбж", "ups", "бесперебойник",
@@ -48,7 +57,6 @@ HEADERS = {
     "x-client": "DESKTOP",
 }
 
-# 🎯 Повний GraphQL-запит із фотографіями, часом та даними продавця
 GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!] = []) {
   clientCompatibleListings(searchParameters: $searchParameters) {
     ... on ListingSuccess {
@@ -56,7 +64,7 @@ GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!
         id title status url created_time last_refresh_time description business
         location { city { name } }
         photos { link }
-        user { id name created }
+        user { id uuid name created }
         params {
           key name
           value {
@@ -67,12 +75,6 @@ GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!
     }
   }
 }"""
-
-
-def get_db_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    return conn
 
 
 def clean_url(url: str) -> str:
@@ -88,7 +90,6 @@ def extract_price(price_val: str | int | float) -> int:
 
 
 def is_real_pc(title: str) -> bool:
-    """Перевіряє, чи є оголошення цілим комп'ютером, а не окремою запчастиною."""
     if not title:
         return False
         
@@ -143,19 +144,21 @@ def update_statistics(section: str, metrics: dict) -> None:
     )
 
 
-async def fetch_latest_pcs(
+async def fetch_pcs_page(
     session: AsyncSession,
     seen_urls: set[str],
+    offset: int = 0,
+    limit: int = 40,
     max_retries: int = 5,
-) -> tuple[list[tuple], int, int, int]:
-    print("\n🎯 Завантажуємо свіжий потік комп'ютерів (Категорія 78)...")
-
+) -> tuple[list[dict], int, int, int]:
     json_payload = {
         "query": GRAPHQL_QUERY,
         "variables": {
             "searchParameters": [
                 {"key": "category_id", "value": "78"},
-                {"key": "limit", "value": "50"},
+                {"key": "limit", "value": str(limit)},
+                {"key": "sort_by", "value": "created_at:desc"},
+                {"key": "offset", "value": str(offset)},
             ]
         },
     }
@@ -178,12 +181,10 @@ async def fetch_latest_pcs(
             if resp.status_code in (401, 403):
                 print(f"[WARN GraphQL] 403 Forbidden. Спроба {attempt}/{max_retries}. Прогрів та чекаємо 10s...")
                 network_errors += 1
-                
                 try:
                     await session.get("https://www.olx.ua/uk/elektronika/", timeout=10)
                 except Exception:
                     pass
-                
                 await asyncio.sleep(10)
                 continue
 
@@ -202,7 +203,6 @@ async def fetch_latest_pcs(
 
             for item in listings:
                 try:
-                    # 1. ad_id та url
                     raw_id = item.get("id")
                     ad_id = int(raw_id) if raw_id and str(raw_id).isdigit() else None
 
@@ -219,7 +219,6 @@ async def fetch_latest_pcs(
                         duplicates_count += 1
                         continue
 
-                    # 2. Перевірка назви
                     title = item.get("title", "").replace("'", "").strip()
 
                     if not is_real_pc(title):
@@ -228,7 +227,6 @@ async def fetch_latest_pcs(
 
                     description = item.get("description", "").strip().replace("<br />", "\n").replace("<br>", "\n")
 
-                    # 3. Ціна
                     price = 0
                     for param in item.get("params", []):
                         if param.get("key") == "price":
@@ -236,31 +234,26 @@ async def fetch_latest_pcs(
                             price = extract_price(val_data.get("value", 0))
                             break
 
-                    # 4. Локація
                     loc_data = item.get("location", {}) or {}
                     city = loc_data.get("city", {}).get("name", "Невідомо") if loc_data.get("city") else "Невідомо"
 
-                    # 5. Час створення та підняття на OLX
                     created_time_raw = item.get("created_time", "")
                     created_at_olx = created_time_raw.split("T")[0] if "T" in created_time_raw else "Невідомо"
                     last_refresh_time = item.get("last_refresh_time") or "Невідомо"
 
-                    # 6. Обробка фотографій
                     raw_photos = item.get("photos", []) or []
-                    formatted_photos = []
-                    for p in raw_photos:
-                        link = p.get("link", "")
-                        if link:
-                            formatted_link = link.replace("{width}", "1000").replace("{height}", "750")
-                            formatted_photos.append(formatted_link)
+                    formatted_photos = [
+                        p.get("link", "").replace("{width}", "1000").replace("{height}", "750")
+                        for p in raw_photos if p.get("link")
+                    ]
 
                     photo_url = formatted_photos[0] if formatted_photos else "Невідомо"
                     additional_photos_str = ",".join(formatted_photos[1:]) if len(formatted_photos) > 1 else None
                     all_photos_str = ",".join(formatted_photos) if formatted_photos else None
 
-                    # 7. Дані продавця
                     user_data = item.get("user") or {}
                     seller_id = str(user_data.get("id")) if user_data.get("id") else None
+                    seller_uuid = str(user_data.get("uuid")) if user_data.get("uuid") else None
                     seller_name = user_data.get("name") or "Невідомо"
                     
                     user_created_raw = user_data.get("created") or ""
@@ -269,32 +262,32 @@ async def fetch_latest_pcs(
                     is_business = item.get("business", False)
                     seller_type = "shop" if is_business else "private_person"
 
-                    # 🎯 Кортеж даних для бази
-                    new_items.append(
-                        (
-                            ad_id,                 # 1. ad_id
-                            advert_url,            # 2. url
-                            today_sql,             # 3. parsed_date
-                            "active",              # 4. status
-                            title,                 # 5. title
-                            description,           # 6. description
-                            price,                 # 7. price
-                            "pc",                  # 8. item_type
-                            None,                  # 9. component_name
-                            city,                  # 10. city
-                            created_at_olx,        # 11. created_at_olx
-                            last_refresh_time,     # 12. last_refresh_time
-                            photo_url,             # 13. photo_url
-                            additional_photos_str, # 14. photos
-                            all_photos_str,        # 15. all_photos
-                            seller_id,             # 16. seller_id
-                            seller_name,           # 17. seller_name
-                            seller_created_at,     # 18. seller_created_at
-                            seller_type,           # 19. seller_type
-                            price                  # 20. seller_price_clean
-                        )
-                    ) 
+                    # Замість tuple створюємо дикт для Supabase
+                    ad_dict = {
+                        "ad_id": ad_id,
+                        "url": advert_url,
+                        "parsed_date": today_sql,
+                        "status": "active",
+                        "title": title,
+                        "description": description,
+                        "price": price,
+                        "item_type": "pc",
+                        "component_name": None,
+                        "city": city,
+                        "created_at_olx": created_at_olx,
+                        "last_refresh_time": last_refresh_time,
+                        "photo_url": photo_url,
+                        "photos": additional_photos_str,
+                        "all_photos": all_photos_str,
+                        "seller_id": seller_id,
+                        "seller_uuid": seller_uuid,
+                        "seller_name": seller_name,
+                        "seller_created_at": seller_created_at,
+                        "seller_type": seller_type,
+                        "seller_price_clean": price
+                    }
 
+                    new_items.append(ad_dict)
                     seen_urls.add(advert_url)
                     print(f"   [+] Новий ПК [ID: {ad_id}]: {title[:45]}... ({price} грн)")
 
@@ -312,20 +305,18 @@ async def fetch_latest_pcs(
     print(f"❌ [КРИТИЧНО] Не вдалося завантажити ПК після {max_retries} спроб.")
     return new_items, duplicates_count, network_errors, parsing_errors
 
-async def main_async() -> None:
-    if not DB_FILE.exists():
-        print("[ПОМИЛКА] Базу даних не знайдено!")
-        return
 
+async def main_async(pages_to_parse: int = 1) -> None:
     start_time = time.time()
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT url FROM ads")
-    seen_urls = set(row[0] for row in cursor.fetchall())
-    conn.close()
-    print(f"[БАЗА] Завантажено {len(seen_urls)} оголошень для дедуплікації.")
+    # Завантажуємо існуючі URL з Supabase для дедуплікації
+    try:
+        response = supabase.table("ads").select("url").execute()
+        seen_urls = set(row["url"] for row in (response.data or []))
+        print(f"[БАЗА SUPABASE] Завантажено {len(seen_urls)} оголошень для дедуплікації.")
+    except Exception as e:
+        print(f"[ПОМИЛКА ЧИТАННЯ SUPABASE]: {e}")
+        seen_urls = set()
 
     async with AsyncSession(headers=HEADERS, impersonate="chrome124") as session:
         print("🔥 Прогріваємо сесію OLX...")
@@ -335,46 +326,45 @@ async def main_async() -> None:
         except Exception as e:
             print(f"[WARN Warmup] Помилка прогріву: {e}")
 
-        all_new_pcs, duplicates_count, network_errors_count, parsing_errors_count = (
-            await fetch_latest_pcs(session, seen_urls, max_retries=5)
-        )
+        all_new_pcs = []
+        total_duplicates = 0
+        total_net_errors = 0
+        total_parse_errors = 0
+
+        print(f"\n🎯 [ПАРСИНГ] Починаємо збір (кількість сторінок: {pages_to_parse})...")
+        for page in range(pages_to_parse):
+            offset = page * 40
+            print(f"   📂 Сторінка {page + 1}/{pages_to_parse} (offset={offset})...")
+            
+            items, dups, net_err, parse_err = await fetch_pcs_page(
+                session, seen_urls, offset=offset, limit=40
+            )
+            all_new_pcs.extend(items)
+            total_duplicates += dups
+            total_net_errors += net_err
+            total_parse_errors += parse_err
+            
+            if pages_to_parse > 1 and page < pages_to_parse - 1:
+                await asyncio.sleep(1.5)
 
     new_parsed_count = len(all_new_pcs)
 
+    # Збереження в Supabase та трансляція через WebSocket
     if all_new_pcs:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        try:
+            # Upsert у хмарний PostgreSQL
+            supabase.table("ads").upsert(all_new_pcs, on_conflict="url").execute()
+            print(f"\n[УСПІХ SUPABASE] Збережено {new_parsed_count} нових ПК у хмару!")
 
-        cursor.executemany(
-            """
-            INSERT OR IGNORE INTO ads (
-                ad_id, 
-                url, 
-                parsed_date, 
-                status, 
-                title, 
-                description, 
-                price, 
-                item_type, 
-                component_name, 
-                city, 
-                created_at_olx,
-                last_refresh_time,
-                photo_url,
-                photos,
-                all_photos,
-                seller_id,
-                seller_name,
-                seller_created_at,
-                seller_type,
-                seller_price_clean
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            all_new_pcs,
-        )
-        conn.commit()
-        conn.close()
-        print(f"\n[УСПІХ] Збережено {new_parsed_count} нових ПК у таблицю 'ads'.")
+            # Надсилаємо нові лоти на наш FastAPI server.py, щоб спрацювала WebSocket-анімація на сайті
+            try:
+                await session.post("http://localhost:8000/api/trigger-new-ad", json=all_new_pcs)
+                print("📢 [WEBSOCKET] Трансляцію нових лотів на фронтенд успішно відправлено!")
+            except Exception as ws_err:
+                print(f"⚠️ [WEBSOCKET WARN] Не вдалося тригернути WebSocket на сервері: {ws_err}")
+
+        except Exception as e:
+            print(f"\n❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ В SUPABASE]: {e}")
     else:
         print("\n[INFO] Нових комп'ютерів у цій ітерації немає.")
 
@@ -393,7 +383,7 @@ async def main_async() -> None:
         "parsing",
         {
             "parsed_total_new": new_parsed_count,
-            "duplicates_skipped": duplicates_count,
+            "duplicates_skipped": total_duplicates,
             "avg_parsing_time_ms": avg_time,
             "total_time_seconds": round(total_time_seconds, 2),
         },
@@ -402,14 +392,14 @@ async def main_async() -> None:
     update_statistics(
         "system_health",
         {
-            "network_errors": network_errors_count,
-            "parsing_errors": parsing_errors_count,
+            "network_errors": total_net_errors,
+            "parsing_errors": total_parse_errors,
         },
     )
 
 
-def main() -> None:
-    asyncio.run(main_async())
+def main(pages_to_parse: int = 1) -> None:
+    asyncio.run(main_async(pages_to_parse=pages_to_parse))
 
 
 if __name__ == "__main__":

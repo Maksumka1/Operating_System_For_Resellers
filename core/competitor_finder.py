@@ -1,7 +1,8 @@
+import os
 import sys
-import sqlite3
 from pathlib import Path
-from collections import Counter, defaultdict
+from collections import defaultdict
+from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -9,165 +10,182 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import DB_FILE
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 
-def get_db_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_FILE)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    return conn
 
-
-def calculate_bucket_price(prices: list[int]) -> int:
-    """Вираховує модальну (найбільш популярну) цінову зону для списку цін"""
-    if not prices:
-        return 0
-
-    # Фільтруємо аномальні ціни (менше 100 грн та явно помилкові)
+def calculate_real_market_price(prices: list[int]) -> int:
+    """Вираховує справедливу ринкову ціну на основі медіани після відсікання аномалій."""
     valid_prices = [p for p in prices if p > 100]
     if not valid_prices:
         return 0
 
-    max_p = max(valid_prices)
-    min_p = min(valid_prices)
+    sorted_p = sorted(valid_prices)
+    n = len(sorted_p)
 
-    # Динамічний крок кластеризації залежно від розкиду цін
-    diff = max_p - min_p
-    if diff < 1000:
-        step = 100
-    elif diff < 3000:
-        step = 200
+    # Відсікаємо 10% найдешевших і 10% найдорожчих (аномалії/скам)
+    if n >= 6:
+        trim = int(n * 0.1)
+        sorted_p = sorted_p[trim : n - trim]
+
+    mid = len(sorted_p) // 2
+    if len(sorted_p) % 2 == 0:
+        return int((sorted_p[mid - 1] + sorted_p[mid]) / 2)
+    return int(sorted_p[mid])
+
+
+def calculate_deal_metrics(seller_price: int, fair_price: int) -> tuple[int, float, str]:
+    """Універсальний розрахунок вигоди для комплектуючих без нулів і зсувів."""
+    safe_seller_price = max(int(seller_price), 1)
+    safe_fair_price = max(int(fair_price), 1)
+
+    saving = safe_fair_price - safe_seller_price
+    saving_percent = (saving / safe_fair_price) * 100.0
+
+    # Обмеження відсоткових аномалій для чистоти інтерфейсу
+    if saving_percent < -100:
+        saving_percent = -100.0
+    elif saving_percent > 100:
+        saving_percent = 100.0
+
+    if saving_percent >= 20:
+        deal_status = "🔥 SUPER DEAL"
+    elif saving_percent >= 10:
+        deal_status = "⭐ GOOD DEAL"
+    elif saving_percent <= -15:
+        deal_status = "❌ OVERPRICED"
     else:
-        step = 500
+        deal_status = "regular"
 
-    ranges = []
-    for price in valid_prices:
-        bucket_start = (price // step) * step
-        ranges.append(bucket_start + (step // 2))
-
-    range_counts = Counter(ranges)
-    best_bucket = range_counts.most_common(1)[0][0]
-    
-    return int(best_bucket)
+    return saving, round(saving_percent, 1), deal_status
 
 
 def update_hardware_competitor_prices() -> None:
-    """Прораховує ринкову ціну для ВСІХ типів комплектуючих за ОДИН асинхронний прохід"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    # 1. Завантажуємо орієнтири цін із component_prices у Supabase
+    component_fair_prices = {}
+    try:
+        res = supabase.table("component_prices").select("component_name, price").order("date", desc=True).execute()
+        if res.data:
+            component_fair_prices = {row["component_name"]: row["price"] for row in res.data}
+    except Exception as e:
+        print(f"[COMPETITORS WARN] Помилка завантаження component_prices: {e}")
 
-    # 🎯 ОДИН запит: витягуємо ціни всіх активних деталей без дефектів
-    cursor.execute("""
-        SELECT component_name, price, id 
-        FROM ads 
-        WHERE item_type IN ('gpu', 'cpu', 'motherboard', 'psu', 'storage') 
-          AND status = 'active' 
-          AND (has_defects = 0 OR has_defects IS NULL)
-          AND (seller_risk_score != 'suspicious' OR seller_risk_score IS NULL)
-          AND price > 100
-          AND component_name IS NOT NULL
-    """)
-    rows = cursor.fetchall()
+    # 2. Отримуємо всі активні комплектуючі
+    try:
+        response = supabase.table("ads") \
+            .select("id, component_name, price") \
+            .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage"]) \
+            .eq("status", "active") \
+            .eq("has_defects", 0) \
+            .gt("price", 100) \
+            .not_.is_("component_name", "null") \
+            .execute()
+        rows = response.data or []
+    except Exception as e:
+        print(f"❌ [SUPABASE ERROR]: {e}")
+        return
 
     if not rows:
         print("[COMPETITORS] Активних комплектуючих для аналізу не знайдено.")
-        conn.close()
         return
 
-    # Групуємо ціни та ID оголошень за назвою компонента у пам'яті
-    comp_prices = defaultdict(list)
-    comp_ad_ids = defaultdict(list)
+    comp_items = defaultdict(list)
+    for row in rows:
+        comp_items[row["component_name"]].append({"id": row["id"], "price": row["price"]})
 
-    for comp_name, price, ad_id in rows:
-        comp_prices[comp_name].append(price)
-        comp_ad_ids[comp_name].append(ad_id)
-
-    print(f"[COMPETITORS] Аналізуємо ринкові ціни для {len(comp_prices)} унікальних моделей заліза...")
+    print(f"[COMPETITORS] Аналізуємо ринкові ціни та вигоду для {len(comp_items)} моделей заліза...")
 
     updates = []
-    for comp_name, prices in comp_prices.items():
-        market_price = calculate_bucket_price(prices)
+    for comp_name, items in comp_items.items():
+        all_prices = [it["price"] for it in items]
+        market_price = calculate_real_market_price(all_prices)
+
         if market_price > 0:
-            for ad_id in comp_ad_ids[comp_name]:
-                updates.append((market_price, ad_id))
+            # Якщо є в таблиці component_prices — беремо звідти, якщо ні — беремо медіану ринку
+            fair_price = component_fair_prices.get(comp_name, market_price)
+
+            for item in items:
+                ad_id = item["id"]
+                seller_price = item["price"]
+
+                saving, saving_percent, deal_status = calculate_deal_metrics(seller_price, fair_price)
+                updates.append({"id": ad_id, "market_price": market_price, "fair_price": fair_price, "saving": saving, "saving_percent": saving_percent, "deal_status": deal_status})
 
     if updates:
-        cursor.executemany("""
-            UPDATE ads 
-            SET competitor_price = ? 
-            WHERE id = ?
-        """, updates)
-        conn.commit()
-        print(f"✅ Комплектуючі оновлено! Розраховано середні ціни для {len(updates)} оголошень.")
+        # Формуємо список об'єктів із первинним ключем (id)
+        records_to_upsert = [
+            {
+                "id": item["id"],
+                "competitor_price": item["market_price"],
+                "estimated_fair_price": item["fair_price"],
+                "saving_uah": item["saving"],
+                "saving_percent": item["saving_percent"],
+                "deal_status": item["deal_status"]
+            }
+            for item in updates
+        ]
 
-    conn.close()
+        # Один мережевий запит замість сотні циклів!
+        supabase.table("ads").upsert(records_to_upsert, on_conflict="id").execute()
+
+        print(f"✅ Комплектуючі оновлено! Розраховано ціни та вигоду для {len(updates)} оголошень.")
 
 
 def update_pcs_competitor_prices() -> None:
-    """Прораховує середню ціну конкурентів для всіх ПК зі схожою конфігурацією (CPU + GPU)"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # 1. Отримуємо всі активні ПК з розпізнаними процесором та відеокартою
-    cursor.execute("""
-        SELECT id, gpu_detected, cpu_detected, price 
-        FROM ads 
-        WHERE item_type = 'pc' 
-          AND status = 'active' 
-          AND (has_defects = 0 OR has_defects IS NULL)
-          AND gpu_detected IS NOT NULL 
-          AND cpu_detected IS NOT NULL
-          AND price > 1000
-    """)
-    all_pcs = cursor.fetchall()
+    """Прораховує середню ціну конкурентів для всіх ПК зі схожою конфігурацією (CPU + GPU) (БЕЗ ЗМІН)."""
+    try:
+        response = supabase.table("ads") \
+            .select("id, gpu_detected, cpu_detected, price") \
+            .eq("item_type", "pc") \
+            .eq("status", "active") \
+            .eq("has_defects", 0) \
+            .not_.is_("gpu_detected", "null") \
+            .not_.is_("cpu_detected", "null") \
+            .gt("price", 1000) \
+            .execute()
+        all_pcs = response.data or []
+    except Exception as e:
+        print(f"❌ [SUPABASE ERROR]: {e}")
+        return
 
     if not all_pcs:
         print("[COMPETITORS] Активних ПК з розпізнаним залізом немає.")
-        conn.close()
         return
 
-    # 2. Групуємо ціни за зв'язкою (gpu, cpu) в пам'яті Python (замість 1000 SQL запитів)
-    build_prices = defaultdict(list)
-    for ad_id, gpu, cpu, price in all_pcs:
+    build_items = defaultdict(list)
+    for pc in all_pcs:
+        gpu = pc.get("gpu_detected") or ""
+        cpu = pc.get("cpu_detected") or ""
+        if "unknown" in gpu.lower() or "unknown" in cpu.lower():
+            continue
         build_key = f"{gpu.lower()}_{cpu.lower()}"
-        build_prices[build_key].append((price, ad_id))
+        build_items[build_key].append({"id": pc["id"], "price": pc["price"]})
 
     print(f"[COMPETITORS] Перераховуємо ціни конкурентів для {len(all_pcs)} ПК...")
 
-    updates = []
-    for build_key, items in build_prices.items():
-        all_prices_for_build = [price for price, _ in items]
-        
-        # Якщо в категорії є хоча б 2+ комп'ютери
-        for price, ad_id in items:
-            # Беремо ціни інших ПК з такою ж конфігурацією
-            other_prices = [p for p in all_prices_for_build if p != price]
-            if not other_prices:
-                other_prices = all_prices_for_build  # Якщо це єдиний ПК, беремо його ж ціну як базис
+    for build_key, items in build_items.items():
+        for current_item in items:
+            cur_id = current_item["id"]
+            other_prices = [it["price"] for it in items if it["id"] != cur_id]
 
-            avg_competitor_price = int(sum(other_prices) / len(other_prices))
-            updates.append((avg_competitor_price, ad_id))
+            avg_competitor_price = current_item["price"] if not other_prices else int(sum(other_prices) / len(other_prices))
 
-    if updates:
-        cursor.executemany("""
-            UPDATE ads 
-            SET competitor_price = ? 
-            WHERE id = ?
-        """, updates)
-        conn.commit()
-        print(f"✅ Комп'ютери оновлено! Розраховано ціни конкурентів для {len(updates)} збірок.")
+            supabase.table("ads").update({"competitor_price": avg_competitor_price}).eq("id", cur_id).execute()
 
-    conn.close()
+    print(f"✅ Комп'ютери оновлено! Розраховано ціни конкурентів.")
 
 
 def main():
     print("\n" + "="*50)
     print("📊 ЗАПУСК АНАЛІЗУ КОНКУРЕНТНОГО СЕРЕДОВИЩА")
     print("="*50)
-    
+
     update_hardware_competitor_prices()
     update_pcs_competitor_prices()
-    
+
     print("[УСПІХ] Повний аналіз ринку конкурентів завершено успішно!")
 
 

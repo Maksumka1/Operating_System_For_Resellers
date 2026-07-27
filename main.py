@@ -1,13 +1,12 @@
+import os
 import sys
 import time
-import sqlite3
 import subprocess
-import os
 import atexit
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 import requests
+from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -15,7 +14,10 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import DB_FILE
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 try:
     import scripts.db_init as db_init
@@ -36,7 +38,6 @@ frontend_process = None
 
 
 def start_web_servers():
-    """Запускає FastAPI бекенд та React фронтенд у фонових процесах"""
     global server_process, frontend_process
 
     server_dir = PROJECT_ROOT / "server"
@@ -68,7 +69,6 @@ def start_web_servers():
 
 
 def cleanup_servers():
-    """Зупиняє фонові вебсервери при виході"""
     global server_process, frontend_process
     print("\n🛑 [SERVERS] Зупинка веб-серверів...")
     if server_process:
@@ -80,88 +80,51 @@ def cleanup_servers():
 atexit.register(cleanup_servers)
 
 
-def should_calculate_prices() -> bool:
-    """Перевіряє, чи пройшов тиждень від останнього розрахунку цін у component_prices"""
-    if not DB_FILE.exists():
-        return True
-
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("SELECT MAX(date) FROM component_prices")
-        row = cursor.fetchone()
-        
-        if not row or not row[0]:
-            print("[ORCHESTRATOR] Таблиця 'component_prices' порожня. Потрібно порахувати ціни.")
-            return True
-            
-        latest_date_str = row[0] 
-        latest_date = datetime.strptime(latest_date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        today = datetime.now(timezone.utc)
-        
-        days_passed = (today - latest_date).days
-        
-        if days_passed >= 7:
-            print(f"[ORCHESTRATOR] Ціни рахувалися {days_passed} днів тому (>= 7). Запускаємо price_hardware.")
-            return True
-        else:
-            print(f"[ORCHESTRATOR] Ціни заліза актуальні ({latest_date_str}, {days_passed} дн. тому). Пропускаємо price_hardware.")
-            return False
-            
-    except sqlite3.OperationalError:
-        return True
-    finally:
-        conn.close()
-
-
 def count_unprocessed_ads() -> int:
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM ads WHERE seller_id IS NULL AND status = 'active' AND has_defects = 0")
-    count = cursor.fetchone()[0]
-    conn.close()
-    return count
+    """Підраховує кількість нових активних оголошень, які ще не пройшли повний аналіз."""
+    try:
+        res = supabase.table("ads") \
+            .select("id", count="exact") \
+            .is_("seller_risk_score", "null") \
+            .eq("status", "active") \
+            .is_("evaluated_at", "null") \
+            .execute()
+        return res.count or 0
+    except Exception as e:
+        print(f"⚠️ [ORCHESTRATOR] Помилка підрахунку неоцінених лотів: {e}")
+        return 0
 
 
 def broadcast_updated_ads(updated_ids: list[int]):
+    """Отримує актуальні оновлені оголошення з Supabase та тригерить їх трансляцію на веб-сайт."""
     if not updated_ids:
         return
 
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    
-    placeholders = ','.join('?' for _ in updated_ids)
-    cursor.execute(f"""
-        SELECT 
-            id, url, title, description, price, item_type, city, created_at_olx, photo_url,
-            seller_name, seller_created_at, seller_successful_deals, seller_rating, seller_risk_score,
-            estimated_fair_price, competitor_price, saving_uah, saving_percent, evaluated_at
-        FROM ads 
-        WHERE id IN ({placeholders}) AND status = 'active'
-    """, updated_ids)
-    
-    rows = cursor.fetchall()
-    conn.close()
+    try:
+        response = supabase.table("ads") \
+            .select("*") \
+            .in_("id", updated_ids) \
+            .eq("status", "active") \
+            .execute()
+        rows = response.data or []
+    except Exception as e:
+        print(f"⚠️ [ORCHESTRATOR] Помилка отримання оновлених лотів з Supabase: {e}")
+        return
 
-    ads_to_broadcast = [
-        {
-            "id": r[0], "url": r[1], "title": r[2], "description": r[3], "price": r[4], "item_type": r[5],
-            "city": r[6], "created_at_olx": r[7], "photo_url": r[8],
-            "seller_name": r[9], "seller_created_at": r[10], "seller_successful_deals": r[11] or 0,
-            "seller_rating": r[12] or "немає оцінок", "seller_risk": r[13] or "neutral",
-            "estimated_fair_price": r[14], "competitor_price": r[15],
-            "saving_uah": r[16], "saving_percent": r[17], "evaluated_at": r[18]
-        }
-        for r in rows
-    ]
+    ads_to_broadcast = []
+    for ad_dict in rows:
+        ad_dict["seller_successful_deals"] = ad_dict.get("seller_successful_deals") or 0
+        ad_dict["seller_rating"] = ad_dict.get("seller_rating") or "немає оцінок"
+        ad_dict["seller_risk_score"] = ad_dict.get("seller_risk_score") or ad_dict.get("seller_risk") or "neutral"
+        ad_dict["deal_status"] = ad_dict.get("deal_status") or "regular"
+        ads_to_broadcast.append(ad_dict)
 
     if ads_to_broadcast:
-        print(f"🚀 [BROADCAST] Пушимо пачку з {len(ads_to_broadcast)} лотів на Live-сайт...")
+        print(f"🚀 [BROADCAST] Пушимо пачку з {len(ads_to_broadcast)} повних лотів на Live-сайт...")
         try:
             requests.post("http://localhost:8000/api/trigger-new-ad", json=ads_to_broadcast, timeout=5)
         except Exception as e:
-            print(f"  ⚠️ Помилка пакетного пушу: {e}")
+            print(f"   ⚠️ Помилка пакетного пушу: {e}")
 
 
 def run_step(step_name: str, step_function, *args, **kwargs):
@@ -180,20 +143,27 @@ def run_step(step_name: str, step_function, *args, **kwargs):
         return None
 
 
-def run_pipeline_iteration():
+def run_pipeline_iteration(is_first_run: bool = False):
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     print(f"\n⚡ [24/7 LOOP] Перевірка OLX та залізо-ринку ({today_str})...")
 
-    # 2. Парсинг готових ПК
-    run_step("Парсинг сирих оголошень ПК", parser.main)
+    # 1. Визначення кількості сторінок залежно від запуску
+    pages_to_parse = 4 if is_first_run else 1
+    if is_first_run:
+        print("🚀 [ПЕРШИЙ ЗАПУСК] Парсимо 4 сторінки для глибокого первинного збору...")
+    else:
+        print("🔄 [РЕГУЛЯРНИЙ ЗАПУСК] Парсимо 1 першу сторінку (40 найновіших)...")
 
-    # 1. Парсинг заліза (кожні N секунд)
-    run_step("Парсинг комплектуючих", parser_hardware.main)
+    # 2. Парсинг сирих оголошень ПК
+    run_step("Парсинг сирих оголошень ПК", parser.main, pages_to_parse=pages_to_parse)
 
-    # 3. Фільтрація бан-слів
+    # 3. Парсинг заліза
+    run_step("Парсинг комплектуючих", parser_hardware.main, pages_to_parse=pages_to_parse)
+
+    # 4. Фільтрація бан-слів
     run_step("Фільтрація бан-слів", filter_ads.main)
 
-    # 4. Аналіз нових лотів
+    # 5. Аналіз нових лотів
     unprocessed_count = count_unprocessed_ads()
     print(f"🔎 [АНАЛІЗ] Нових релевантних лотів для повної оцінки: {unprocessed_count}")
 
@@ -207,34 +177,35 @@ def run_pipeline_iteration():
     else:
         print("💤 Нових лотів не виявлено. Пропускаємо етапи глибокого аналізу.")
     
-    # 5. Розрахунок прайсів заліза (раз на 7 днів)
-    if should_calculate_prices():
-        run_step("Перерахунок прайсів заліза", price_hardware.main)
+    # 6. Розрахунок прайсів заліза
+    run_step("Перерахунок прайсів заліза", price_hardware.main)
 
-    print(f"\n⏳Пауза 25 сек для скидання ліміту DataDome...\n")
-    time.sleep(25)
-    # 6. Очищення архіву
+    if pages_to_parse == 4:
+        print(f"\n⏳ Пауза 25 сек для скидання ліміту DataDome...\n")
+        time.sleep(25)
+    
+    # 7. Очищення архіву
     run_step("Верифікація активності оголошень", clean_archive.main)
 
 
 def main():
     print(f"==========================================================")
-    print(f"🏁    СТАРТ СИСТЕМИ АВТОМАТИЗАЦІЇ 24/7 (ALL-IN-ONE)       ")
+    print(f"🏁     СТАРТ СИСТЕМИ АВТОМАТИЗАЦІЇ 24/7 (ALL-IN-ONE)       ")
     print(f"==========================================================")
-
-    run_step("Ініціалізація бази даних", db_init.init_db)
 
     # Запускаємо Uvicorn + React
     start_web_servers()
 
-    # Пауза між повторними скануваннями OLX (рекомендовано 15-30 сек)
     CYCLE_DELAY_SECONDS = 20
+    is_first_run = True
 
     try:
         while True:
             cycle_start = time.time()
-            run_pipeline_iteration()
             
+            run_pipeline_iteration(is_first_run=is_first_run)
+            is_first_run = False  # Наступні ітерації працюватимуть в режимі 1 сторінки
+
             elapsed = time.time() - cycle_start
             print(f"\n⏱️ Ітерацію завершено за {elapsed:.2f} сек. Наступна перевірка через {CYCLE_DELAY_SECONDS} сек...")
             time.sleep(CYCLE_DELAY_SECONDS)
