@@ -3,6 +3,7 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from dotenv import load_dotenv
 from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -12,7 +13,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import STATS_FILE
-
+load_dotenv(PROJECT_ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
@@ -47,7 +48,7 @@ GAMING_WORDS = [
 ]
 
 MAINING_WORDS = [
-    "майнинг", "майнінг"
+    "майнинг", "майнінг", "майнер", "майнит"
 ]
 
 
@@ -141,7 +142,12 @@ def main() -> None:
     # 2. Оновлюємо категорії пачкою (upsert)
     if updates_pool:
         try:
-            supabase.table("ads").upsert(updates_pool, on_conflict="id").execute()
+            for item in updates_pool:
+                supabase.table("ads") \
+                    .update({"pc_category": item["pc_category"]}) \
+                    .eq("id", item["id"]) \
+                    .execute()
+            print(f"✅ Успішно оновлено категорії для {len(updates_pool)} ПК")
         except Exception as e:
             print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КАТЕГОРІЙ В SUPABASE]: {e}")
 

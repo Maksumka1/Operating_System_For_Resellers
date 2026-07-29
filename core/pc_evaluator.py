@@ -3,6 +3,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from dotenv import load_dotenv
 from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -12,7 +13,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import HARDWARE_TARGETS
-
+load_dotenv(PROJECT_ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
@@ -92,6 +93,7 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
     title_clean = title.replace("-", " ")
     desc_clean = description.replace("-", " ") if description else ""
     full_text_lower = f"{title_clean} {desc_clean}".lower()
+    full_text_lower = re.split(r"додатков|опці|за доплат|доплати", full_text_lower)[0]
 
     # 1. Детекція та оцінка відеокарти
     gpu = detect_component_fast(full_text_lower, GPUS_KEYS)
@@ -120,14 +122,18 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
     saving = fair_price - safe_seller_price
     saving_percent = (saving / fair_price) * 100 if fair_price > 0 else 0
     
-    if saving_percent >= 20:
+    if saving_percent >= 20 or saving >= 2000:
         deal_status = "🔥 SUPER DEAL"
-    elif saving_percent >= 10:
+    elif saving_percent >= 8 or saving >= 800:
         deal_status = "⭐ GOOD DEAL"
-    elif saving_percent <= -15:
+    elif saving_percent <= -5:
         deal_status = "❌ OVERPRICED"
     else:
         deal_status = "regular"
+
+    if cpu_display == "Unknown CPU": 
+        deal_status = "regular"
+        saving = 0
 
     return {
         "id": ad_id,
@@ -137,8 +143,8 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
         "cpu_detected": cpu_display,
         "cpu_market_price": cpu_price,
         "estimated_fair_price": fair_price,
-        "saving_uah": saving,
-        "saving_percent": round(saving_percent, 1),
+        "saving_uah": int(round(saving)),
+        "saving_percent": int(round(saving_percent, 1)),
         "deal_status": deal_status,
         "evaluated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     }
@@ -159,7 +165,7 @@ def main() -> None:
             .select("id, title, description, price, url") \
             .eq("item_type", "pc") \
             .eq("status", "active") \
-            .eq("has_defects", 0) \
+            .or_("has_defects.eq.0,has_defects.is.null") \
             .is_("estimated_fair_price", "null") \
             .execute()
         unrated_pcs = response.data or []
@@ -209,14 +215,13 @@ def main() -> None:
     # 2. Оновлюємо розраховані значення у Supabase одним швидкострільним upsert запитом
     if updates_pool:
         try:
-            supabase.table("ads").upsert(updates_pool, on_conflict="id").execute()
+            for item in updates_pool:
+                ad_id = item.pop("id")  # Витягуємо ID для умови .eq()
+                supabase.table("ads").update(item).eq("id", ad_id).execute()
+
             print(f"\n✅ [УСПІХ] Успішно розпізнано та оцінено у хмарі: {count_evaluated} комп'ютерів.")
         except Exception as e:
             print(f"\n❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ ОЦІНКИ В SUPABASE]: {e}")
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":

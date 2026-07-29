@@ -7,6 +7,8 @@ import re
 import sys
 import time
 from datetime import datetime, timezone
+import aiohttp
+from dotenv import load_dotenv
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -20,7 +22,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import STATS_FILE
-
+load_dotenv(PROJECT_ROOT / ".env")
 # --- ПІДКТЮЧЕННЯ ДО SUPABASE ---
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
@@ -311,7 +313,7 @@ async def main_async(pages_to_parse: int = 1) -> None:
 
     # Завантажуємо існуючі URL з Supabase для дедуплікації
     try:
-        response = supabase.table("ads").select("url").execute()
+        response = supabase.table("ads").select("url").limit(50000).execute()
         seen_urls = set(row["url"] for row in (response.data or []))
         print(f"[БАЗА SUPABASE] Завантажено {len(seen_urls)} оголошень для дедуплікації.")
     except Exception as e:
@@ -352,13 +354,18 @@ async def main_async(pages_to_parse: int = 1) -> None:
     # Збереження в Supabase та трансляція через WebSocket
     if all_new_pcs:
         try:
-            # Upsert у хмарний PostgreSQL
-            supabase.table("ads").upsert(all_new_pcs, on_conflict="url").execute()
-            print(f"\n[УСПІХ SUPABASE] Збережено {new_parsed_count} нових ПК у хмару!")
+            # 1. Upsert у Supabase
+            supabase.table("ads").upsert(all_new_pcs, on_conflict="ad_id").execute()
+            print(f"\n[УСПІХ SUPABASE] Збережено {len(all_new_pcs)} нових ПК у хмару!")
 
-            # Надсилаємо нові лоти на наш FastAPI server.py, щоб спрацювала WebSocket-анімація на сайті
+            # 2. Тригер на FastAPI через нову тимчасову сесію
             try:
-                await session.post("http://localhost:8000/api/trigger-new-ad", json=all_new_pcs)
+                async with aiohttp.ClientSession() as trigger_session:
+                    await trigger_session.post(
+                        "http://localhost:8000/api/trigger-new-ad", 
+                        json=all_new_pcs,
+                        timeout=5
+                    )
                 print("📢 [WEBSOCKET] Трансляцію нових лотів на фронтенд успішно відправлено!")
             except Exception as ws_err:
                 print(f"⚠️ [WEBSOCKET WARN] Не вдалося тригернути WebSocket на сервері: {ws_err}")

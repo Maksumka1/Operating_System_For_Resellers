@@ -3,6 +3,7 @@ import asyncio
 import sys
 import time
 from datetime import datetime, timezone
+from dotenv import load_dotenv
 from pathlib import Path
 
 from curl_cffi.requests import AsyncSession
@@ -13,7 +14,7 @@ if not (PROJECT_ROOT / "config.py").exists():
     PROJECT_ROOT = PROJECT_ROOT.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-
+load_dotenv(PROJECT_ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 

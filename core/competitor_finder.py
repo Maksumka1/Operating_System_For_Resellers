@@ -2,13 +2,16 @@ import os
 import sys
 from pathlib import Path
 from collections import defaultdict
+from dotenv import load_dotenv
 from supabase import create_client, Client
+from concurrent.futures import ThreadPoolExecutor
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
     PROJECT_ROOT = PROJECT_ROOT.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+load_dotenv(PROJECT_ROOT / ".env")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
@@ -16,17 +19,18 @@ SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHAB
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 
-
 def calculate_real_market_price(prices: list[int]) -> int:
     """Вираховує справедливу ринкову ціну на основі медіани після відсікання аномалій."""
     valid_prices = [p for p in prices if p > 100]
-    if not valid_prices:
+    
+    # 🎯 Якщо менше 3 оголошень — вибірка занадто мала, медіану рахувати небезпечно
+    if len(valid_prices) < 3:
         return 0
 
     sorted_p = sorted(valid_prices)
     n = len(sorted_p)
 
-    # Відсікаємо 10% найдешевших і 10% найдорожчих (аномалії/скам)
+    # Відсікаємо 10% найдешевших і 10% найдорожчих
     if n >= 6:
         trim = int(n * 0.1)
         sorted_p = sorted_p[trim : n - trim]
@@ -38,14 +42,13 @@ def calculate_real_market_price(prices: list[int]) -> int:
 
 
 def calculate_deal_metrics(seller_price: int, fair_price: int) -> tuple[int, float, str]:
-    """Універсальний розрахунок вигоди для комплектуючих без нулів і зсувів."""
+    """Універсальний розрахунок вигоди для комплектуючих."""
     safe_seller_price = max(int(seller_price), 1)
     safe_fair_price = max(int(fair_price), 1)
 
     saving = safe_fair_price - safe_seller_price
     saving_percent = (saving / safe_fair_price) * 100.0
 
-    # Обмеження відсоткових аномалій для чистоти інтерфейсу
     if saving_percent < -100:
         saving_percent = -100.0
     elif saving_percent > 100:
@@ -63,8 +66,18 @@ def calculate_deal_metrics(seller_price: int, fair_price: int) -> tuple[int, flo
     return saving, round(saving_percent, 1), deal_status
 
 
+def _safe_update_ad(item: dict) -> bool:
+    """Безпечне оновлення одного запису з ізоляцією сокет-помилок."""
+    try:
+        ad_id = item.pop("id")
+        supabase.table("ads").update(item).eq("id", ad_id).execute()
+        return True
+    except Exception:
+        return False
+
+
 def update_hardware_competitor_prices() -> None:
-    # 1. Завантажуємо орієнтири цін із component_prices у Supabase
+    # 1. Завантажуємо орієнтири цін із component_prices
     component_fair_prices = {}
     try:
         res = supabase.table("component_prices").select("component_name, price").order("date", desc=True).execute()
@@ -73,7 +86,7 @@ def update_hardware_competitor_prices() -> None:
     except Exception as e:
         print(f"[COMPETITORS WARN] Помилка завантаження component_prices: {e}")
 
-    # 2. Отримуємо всі активні комплектуючі
+    # 2. Отримуємо всі активні комплектуючі (БЕЗ підозрілих продавців)
     try:
         response = supabase.table("ads") \
             .select("id, component_name, price") \
@@ -82,6 +95,7 @@ def update_hardware_competitor_prices() -> None:
             .eq("has_defects", 0) \
             .gt("price", 100) \
             .not_.is_("component_name", "null") \
+            .neq("seller_risk_score", "suspicious") \
             .execute()
         rows = response.data or []
     except Exception as e:
@@ -103,39 +117,36 @@ def update_hardware_competitor_prices() -> None:
         all_prices = [it["price"] for it in items]
         market_price = calculate_real_market_price(all_prices)
 
-        if market_price > 0:
-            # Якщо є в таблиці component_prices — беремо звідти, якщо ні — беремо медіану ринку
-            fair_price = component_fair_prices.get(comp_name, market_price)
+        # Шукаємо справедливу ціну: з таблиці довідника АБО з медіани ринку
+        fair_price = component_fair_prices.get(comp_name) or market_price
 
+        if fair_price > 0:
             for item in items:
                 ad_id = item["id"]
                 seller_price = item["price"]
 
                 saving, saving_percent, deal_status = calculate_deal_metrics(seller_price, fair_price)
-                updates.append({"id": ad_id, "market_price": market_price, "fair_price": fair_price, "saving": saving, "saving_percent": saving_percent, "deal_status": deal_status})
+                
+                updates.append({
+                    "id": ad_id,
+                    "competitor_price": int(market_price if market_price > 0 else fair_price),
+                    "estimated_fair_price": int(fair_price),
+                    "saving_uah": int(round(saving)),
+                    "saving_percent": int(round(saving_percent)),
+                    "deal_status": deal_status
+                })
 
     if updates:
-        # Формуємо список об'єктів із первинним ключем (id)
-        records_to_upsert = [
-            {
-                "id": item["id"],
-                "competitor_price": item["market_price"],
-                "estimated_fair_price": item["fair_price"],
-                "saving_uah": item["saving"],
-                "saving_percent": item["saving_percent"],
-                "deal_status": item["deal_status"]
-            }
-            for item in updates
-        ]
-
-        # Один мережевий запит замість сотні циклів!
-        supabase.table("ads").upsert(records_to_upsert, on_conflict="id").execute()
-
-        print(f"✅ Комплектуючі оновлено! Розраховано ціни та вигоду для {len(updates)} оголошень.")
+        try:
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                list(executor.map(_safe_update_ad, updates))
+            print(f"✅ Комплектуючі оновлено! Розраховано ціни для {len(updates)} оголошень.")
+        except Exception as e:
+            print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КОНКУРЕНТІВ ЗАЛІЗА]: {e}")
 
 
 def update_pcs_competitor_prices() -> None:
-    """Прораховує середню ціну конкурентів для всіх ПК зі схожою конфігурацією (CPU + GPU) (БЕЗ ЗМІН)."""
+    """Прораховує середню ціну конкурентів для всіх ПК зі схожою конфігурацією (CPU + GPU)."""
     try:
         response = supabase.table("ads") \
             .select("id, gpu_detected, cpu_detected, price") \
@@ -144,6 +155,7 @@ def update_pcs_competitor_prices() -> None:
             .eq("has_defects", 0) \
             .not_.is_("gpu_detected", "null") \
             .not_.is_("cpu_detected", "null") \
+            .neq("seller_risk_score", "suspicious") \
             .gt("price", 1000) \
             .execute()
         all_pcs = response.data or []
@@ -166,6 +178,7 @@ def update_pcs_competitor_prices() -> None:
 
     print(f"[COMPETITORS] Перераховуємо ціни конкурентів для {len(all_pcs)} ПК...")
 
+    pc_updates = []
     for build_key, items in build_items.items():
         for current_item in items:
             cur_id = current_item["id"]
@@ -173,9 +186,18 @@ def update_pcs_competitor_prices() -> None:
 
             avg_competitor_price = current_item["price"] if not other_prices else int(sum(other_prices) / len(other_prices))
 
-            supabase.table("ads").update({"competitor_price": avg_competitor_price}).eq("id", cur_id).execute()
+            pc_updates.append({
+                "id": cur_id,
+                "competitor_price": avg_competitor_price
+            })
 
-    print(f"✅ Комп'ютери оновлено! Розраховано ціни конкурентів.")
+    if pc_updates:
+        try:
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                list(executor.map(_safe_update_ad, pc_updates))
+            print(f"✅ Комп'ютери оновлено! Розраховано ціни конкурентів для {len(pc_updates)} ПК.")
+        except Exception as e:
+            print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КОНКУРЕНТІВ ПК]: {e}")
 
 
 def main():

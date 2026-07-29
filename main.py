@@ -3,7 +3,9 @@ import sys
 import time
 import subprocess
 import atexit
+import threading
 from datetime import datetime, timezone
+from dotenv import load_dotenv
 from pathlib import Path
 import requests
 from supabase import create_client, Client
@@ -13,6 +15,8 @@ if not (PROJECT_ROOT / "config.py").exists():
     PROJECT_ROOT = PROJECT_ROOT.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+load_dotenv(PROJECT_ROOT / ".env")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
@@ -35,6 +39,7 @@ except ImportError as e:
 
 server_process = None
 frontend_process = None
+is_heavy_analysis_running = False
 
 
 def start_web_servers():
@@ -81,14 +86,14 @@ atexit.register(cleanup_servers)
 
 
 def count_unprocessed_ads() -> int:
-    """Підраховує кількість нових активних оголошень, які ще не пройшли повний аналіз."""
+    """Підраховує кількість нових активних оголошень, які потребують оцінки заліза та продавця."""
     try:
         res = supabase.table("ads") \
             .select("id", count="exact") \
-            .is_("seller_risk_score", "null") \
             .eq("status", "active") \
-            .is_("evaluated_at", "null") \
+            .or_("seller_risk_score.is.null,estimated_fair_price.is.null") \
             .execute()
+            
         return res.count or 0
     except Exception as e:
         print(f"⚠️ [ORCHESTRATOR] Помилка підрахунку неоцінених лотів: {e}")
@@ -143,6 +148,23 @@ def run_step(step_name: str, step_function, *args, **kwargs):
         return None
 
 
+def run_heavy_analysis_in_background():
+    """Фоновий потік для важких тривалих розрахунків ринку."""
+    global is_heavy_analysis_running
+    if is_heavy_analysis_running:
+        return
+
+    is_heavy_analysis_running = True
+    try:
+        run_step("Визначення ринкової ціни продажів (конкуренти)", competitor_finder.main)
+        run_step("Перерахунок прайсів заліза", price_hardware.main)
+        run_step("Верифікація активності оголошень (архів)", clean_archive.main)
+    except Exception as e:
+        print(f"❌ [ФОНОВИЙ АНАЛІЗ ПОМИЛКА]: {e}")
+    finally:
+        is_heavy_analysis_running = False
+
+
 def run_pipeline_iteration(is_first_run: bool = False):
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     print(f"\n⚡ [24/7 LOOP] Перевірка OLX та залізо-ринку ({today_str})...")
@@ -154,38 +176,31 @@ def run_pipeline_iteration(is_first_run: bool = False):
     else:
         print("🔄 [РЕГУЛЯРНИЙ ЗАПУСК] Парсимо 1 першу сторінку (40 найновіших)...")
 
-    # 2. Парсинг сирих оголошень ПК
+    # 2. Швидкі етапи: парсинг та фільтрація
     run_step("Парсинг сирих оголошень ПК", parser.main, pages_to_parse=pages_to_parse)
-
-    # 3. Парсинг заліза
     run_step("Парсинг комплектуючих", parser_hardware.main, pages_to_parse=pages_to_parse)
-
-    # 4. Фільтрація бан-слів
     run_step("Фільтрація бан-слів", filter_ads.main)
 
-    # 5. Аналіз нових лотів
+    # 3. Аналіз та швидкий пуш нових лотів
     unprocessed_count = count_unprocessed_ads()
-    print(f"🔎 [АНАЛІЗ] Нових релевантних лотів для повної оцінки: {unprocessed_count}")
+    print(f"🔎 [АНАЛІЗ] Нових релевантних лотів для оцінки: {unprocessed_count}")
 
     if unprocessed_count > 0:
         run_step("Оцінка вигідності ПК", pc_evaluator.main)
-        run_step("Визначення ринкової ціни продажів", competitor_finder.main)
         updated_ids = run_step("Оцінка продавців", seller_analyzer.run_seller_analysis)
 
         if updated_ids:
             run_step("Пуш нових лотів на Live-сайт", broadcast_updated_ads, updated_ids)
     else:
-        print("💤 Нових лотів не виявлено. Пропускаємо етапи глибокого аналізу.")
-    
-    # 6. Розрахунок прайсів заліза
-    run_step("Перерахунок прайсів заліза", price_hardware.main)
+        print("💤 Нових лотів не виявлено. Пропускаємо швидку оцінку.")
+
+    # 4. Важка аналітика у фоновому потоці (не блокує наступні ітерації парсингу)
+    if is_first_run or (not is_heavy_analysis_running):
+        threading.Thread(target=run_heavy_analysis_in_background, daemon=True).start()
 
     if pages_to_parse == 4:
         print(f"\n⏳ Пауза 25 сек для скидання ліміту DataDome...\n")
         time.sleep(25)
-    
-    # 7. Очищення архіву
-    run_step("Верифікація активності оголошень", clean_archive.main)
 
 
 def main():
@@ -207,7 +222,7 @@ def main():
             is_first_run = False  # Наступні ітерації працюватимуть в режимі 1 сторінки
 
             elapsed = time.time() - cycle_start
-            print(f"\n⏱️ Ітерацію завершено за {elapsed:.2f} сек. Наступна перевірка через {CYCLE_DELAY_SECONDS} сек...")
+            print(f"\n⏱️ Ітерацію збору завершено за {elapsed:.2f} сек. Наступна перевірка через {CYCLE_DELAY_SECONDS} сек...")
             time.sleep(CYCLE_DELAY_SECONDS)
 
     except KeyboardInterrupt:

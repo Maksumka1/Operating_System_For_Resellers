@@ -28,8 +28,8 @@ VIDEOCARDS = [
     "rtx_2070", "rtx_2080_ti", "rtx_2080_super", "rtx_2080", "rtx_3050_6gb", "rtx_3080_12gb", "rtx_3050", "rtx_3060_ti", "rtx_3060", "rtx_3070_ti",
     "rtx_3070", "rtx_3080_ti", "rtx_3080", "rtx_3090_ti", "rtx_3090", "rtx_4060_ti", "rtx_4060", "rtx_4070_ti_super",
     "rtx_4070_ti", "rtx_4070_super", "rtx_4070", "rtx_4080_super", "rtx_4080", "rtx_4090", "rtx_5090", "rtx_5080", "rtx_5070_ti", "rtx_5070", 
-    "rtx_5060_ti", "rtx_5060", "rtx_5050", "rx_460", "rx_470", "rx_480", "rx_550", "rx_560", "rx_570", "rx_580", "rx_590", "rx_5500_xt", "rx_5500", 
-    "rx_5600_xt", "rx_5300", "rx_5600", "rx_5700_xt", "rx_5700", "rx_6400", "rx_6500_xt", "rx_6650_xt", "rx_6600_xt", "rx_6600", "rx_6750_xt", "rx_6700_xt",
+    "rtx_5060_ti", "rtx_5060", "rtx_5050", "rx_460", "rx_470", "rx_480", "rx_5500_xt", "rx_5500","rx_550", "rx_560", "rx_5700_xt", "rx_5700", "rx_570", "rx_580", "rx_590",  
+    "rx_5600_xt", "rx_5300", "rx_5600", "rx_6400", "rx_6500_xt", "rx_6650_xt", "rx_6600_xt", "rx_6600", "rx_6750_xt", "rx_6700_xt",
     "rx_6700", "rx_6800_xt", "rx_6800", "rx_6950_xt", "rx_6900_xt", "rx_7600_xt", "rx_7600", "rx_7700_xt", "rx_7800_xt",
     "rx_7900_gre", "rx_7900_xtx", "rx_7900_xt", "rx_9060_xt", "rx_9070_xt", "rx_9070",
     "quadro_k620", "quadro_k2000", "quadro_k2200", "quadro_k4000", "quadro_k4200", "quadro_k5000", "quadro_k6000",
@@ -165,7 +165,6 @@ STORAGES = [
 HARDWARE_TARGETS = {}
 
 def make_variants(name: str, replaces: list) -> list:
-    """Генерує валідаційні ключові слова з урахуванням розкладки клавіатури"""
     raw = name.replace("_", " ")
     dash = name.replace("_", "-")
     joined = name.replace("_", "")
@@ -175,19 +174,19 @@ def make_variants(name: str, replaces: list) -> list:
         variants.extend([v.replace(eng, ukr) for v in variants.copy()])
     return list(set(variants))
 
-# 1. Генерація для відеокарт (videokarty / gpu)
+# 1. Генерація для відеокарт
 for card in VIDEOCARDS:
-    card_clean = card.replace("sурер", "super")
-    keywords = make_variants(card_clean, [("gtx", "гтх"), ("rtx", "ртх"), ("rx", "рх"), ("ti", "ті"), ("super", "sурер")])
+    card_clean = card.replace("супер", "super")
+    keywords = make_variants(card_clean, [("gtx", "гтх"), ("rtx", "ртх"), ("rx", "рх"), ("ti", "ті"), ("super", "супер")])
     HARDWARE_TARGETS[card] = {
         "item_type": "gpu",
         "subcategory": "videokarty",
         "required_keywords": keywords
     }
-
 # 2. Генерація для Intel проців (protsessory / cpu)
 for cpu in INTEL_CPUS:
-    keywords = make_variants(cpu, [("i3", "і3"), ("i5", "і5"), ("i7", "і7"), ("i9", "і9"), ("k", "к"), ("t", "т"), ("f", "ф")])
+    # Замінюємо префікси "i3/i5/i7/i9" на кириличні "і3/і5/і7/і9"
+    keywords = make_variants(cpu, [("i3", "і3"), ("i5", "і5"), ("i7", "і7"), ("i9", "і9")])
     HARDWARE_TARGETS[cpu] = {
         "item_type": "cpu",
         "subcategory": "protsessory",
@@ -196,7 +195,8 @@ for cpu in INTEL_CPUS:
 
 # 3. Генерація для AMD проців (protsessory / cpu)
 for cpu in AMD_CPUS:
-    keywords = make_variants(cpu, [("ryzen", "руzen"), ("x", "х")])
+    # Додаємо популярну кириличну транслітерацію "райзен"
+    keywords = make_variants(cpu, [("ryzen", "райзен"), ("ryzen", "ризен")])
     HARDWARE_TARGETS[cpu] = {
         "item_type": "cpu",
         "subcategory": "protsessory",
@@ -205,24 +205,26 @@ for cpu in AMD_CPUS:
 
 # 4. Генерація для Xeon проців (protsessory / cpu)
 for cpu in XEON_CPUS:
-    keywords = make_variants(cpu, [("xeon", "ксеон"), ("xeon", "зеон"), ("v", "в"), ("e", "е")])
+    keywords = make_variants(cpu, [("xeon", "ксеон"), ("xeon", "зеон"), ("xeon", "еон")])
     HARDWARE_TARGETS[cpu] = {
         "item_type": "cpu",
         "subcategory": "protsessory",
         "required_keywords": keywords
     }
 
+# 4b. Материнські плати (без заміни поодиноких "a/x/b", які ламають чипсети)
 for mb in MOTHERBOARDS:
-    keywords = make_variants(mb, [("b", "б"), ("h", "х"), ("z", "з"), ("a", "а"), ("x", "х")])
+    # Беремо чисті варіанти назви чипсета (пробіл, дефіс, разом)
+    keywords = make_variants(mb, [])
     HARDWARE_TARGETS[mb] = {
         "item_type": "motherboard",
         "subcategory": "materinskie-platy",
         "required_keywords": keywords
     }
 
-# 5. Блоки живлення
+# 5. Блоки живлення (забираємо коротку "в", залишаємо тільки "вт" і "ват")
 for psu in PSUS:
-    keywords = make_variants(psu, [("w", "вт"), ("w", "ват"), ("w", "в")])
+    keywords = make_variants(psu, [("w", "вт"), ("w", "ват")])
     HARDWARE_TARGETS[psu] = {
         "item_type": "psu",
         "subcategory": "bloki-pitaniya",

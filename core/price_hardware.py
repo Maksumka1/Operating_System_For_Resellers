@@ -2,6 +2,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from dotenv import load_dotenv
 from supabase import create_client, Client
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -11,32 +12,39 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import HARDWARE_TARGETS
-
+load_dotenv(PROJECT_ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
-
 hardware_items = {k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")}
 
 
-def calculate_percentile_price(prices: list[int], percentile: float = 0.33) -> int:
+def calculate_percentile_price(prices: list[int]) -> int:
     if not prices:
         return 0
 
     sorted_prices = sorted(prices)
     n = len(sorted_prices)
 
-    # Відсікаємо крайні аномалії тільки якщо вибірка велика
-    if n >= 8:
-        trim_size = int(n * 0.1)
+    # 1. Якщо менше 3 оголошень — вибірка нерелевантна для ринкової оцінки
+    if n < 3:
+        return 0
+
+    # 2. Для малих вибірок (3-5 шт) беремо медіану, щоб не схопити найнижчий аномальний скам
+    if n < 6:
+        mid = n // 2
+        return sorted_prices[mid]
+
+    # 3. Для великих вибірок (>= 6) відсікаємо 10% аномалій з країв і беремо 33-й перцентиль
+    trim_size = int(n * 0.1)
+    if trim_size > 0:
         sorted_prices = sorted_prices[trim_size : n - trim_size]
         n = len(sorted_prices)
 
-    index = int(n * percentile)
-    if index >= n:
-        index = n - 1
+    index = int(n * 0.33)
+    index = min(index, n - 1)
 
     return sorted_prices[index]
 
@@ -46,7 +54,6 @@ def main() -> None:
 
     print(f"--- ПОЧАТОК АНАЛІЗУ ЦІН КОМПЛЕКТУЮЧИХ ЗА {today_sql} ---")
 
-    # 1. Завантажуємо всі активні чисті оголошення заліза одним запитом
     try:
         response = supabase.table("ads") \
             .select("component_name, price") \
@@ -62,7 +69,6 @@ def main() -> None:
         print(f"❌ [SUPABASE ERROR]: {e}")
         return
 
-    # Групуємо ціни по кожній моделі заліза
     prices_by_component: dict[str, list[int]] = {}
     for ad in all_ads:
         comp_name = ad["component_name"]
@@ -71,19 +77,20 @@ def main() -> None:
 
     records_to_upsert = []
 
-    # 2. Вираховуємо 33-й перцентиль ціни для кожної моделі
     for target_name, prices_list in prices_by_component.items():
-        if prices_list:
-            real_price = calculate_percentile_price(prices_list, percentile=0.33)
-            
+        real_price = calculate_percentile_price(prices_list)
+        
+        # Записуємо тільки якщо вибірка була достатньою (> 0)
+        if real_price > 0:
             records_to_upsert.append({
                 "component_name": target_name,
                 "price": real_price,
                 "date": today_sql
             })
             print(f"  [RESULT] -> {target_name}: {real_price} UAH (вибірка: {len(prices_list)} оголошень)")
+        else:
+            print(f"  [SKIP] -> {target_name}: недостатньо оголошень для оцінки ({len(prices_list)} шт)")
 
-    # 3. Зберігаємо всі розраховані ціни в Supabase (Upsert захистить від дублікатів за датою)
     if records_to_upsert:
         try:
             supabase.table("component_prices").upsert(
@@ -94,11 +101,7 @@ def main() -> None:
         except Exception as e:
             print(f"\n❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ ЦІН В SUPABASE]: {e}")
     else:
-        print("[INFO] Немає даних для розрахунку ринкових цін.")
-
-
-if __name__ == "__main__":
-    main()
+        print("[INFO] Немає достатніх даних для розрахунку ринкових цін.")
 
 
 if __name__ == "__main__":

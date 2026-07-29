@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-from supabase import create_client, Client
 import sys
 import os
 import time
@@ -10,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 from curl_cffi.requests import AsyncSession
+from supabase import create_client, Client
+from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -18,6 +19,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import DB_FILE, HARDWARE_TARGETS, SOCKETS, CHIPSET_TO_SOCKET
+load_dotenv(PROJECT_ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
@@ -33,6 +35,12 @@ BROKEN_PATTERN = re.compile(
 
 CLEAN_PATTERNS = re.compile(
     r"не\s*ремонтувал\w*|без\s*дефект\w*|без\s*артефакт\w*|не\s*прогрівав\w*|без\s*ремонт\w*",
+    re.IGNORECASE
+)
+
+# 🎯 Патерн для очищення порівняльних слів ("сильніше за gtx 1650", "аналог rx 580" тощо)
+COMPARISON_PATTERN = re.compile(
+    r"(сильніше\s+за|мощнее\s+чем|быстрее\s+чем|аналог|замість|вмісто|вместо|похожа\s+на)\s+[a-z0-9\s_]+",
     re.IGNORECASE
 )
 
@@ -80,10 +88,15 @@ GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!
 }"""
 
 
-
-def validate_title(title: str, required_keywords: list[str]) -> bool:
+def validate_title_strict(title: str, required_keywords: list[str]) -> bool:
+    """Сувора перевірка ключових слів з урахуванням меж слів."""
     title_lower = title.lower()
-    return any(word.lower() in title_lower for word in required_keywords)
+    for kw in required_keywords:
+        kw_clean = kw.lower().strip()
+        pattern = r"(?<![a-z0-9])" + re.escape(kw_clean) + r"(?![a-z0-9])"
+        if re.search(pattern, title_lower):
+            return True
+    return False
 
 
 def is_broken_ad(text: str) -> bool:
@@ -117,7 +130,17 @@ def detect_socket(title: str, description: str, component_name: str) -> str | No
 def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tuple[str, dict] | None:
     title_clean = title.lower()
 
-    for target_name, cfg in target_items_for_type.items():
+    # 🎯 1. Прибираємо порівняльні фрази на кшталт "сильніше за gtx 1650"
+    title_for_match = COMPARISON_PATTERN.sub("", title_clean)
+
+    # 🎯 2. Сортуємо моделі за довжиною назви від найдовших до найкоротших
+    sorted_targets = sorted(
+        target_items_for_type.items(),
+        key=lambda x: len(x[0]),
+        reverse=True
+    )
+
+    for target_name, cfg in sorted_targets:
         req_keywords = cfg.get("required_keywords", [])
 
         if cfg.get("item_type") == "storage":
@@ -132,9 +155,9 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tupl
 
             has_type = False
             if st_type == "ssd":
-                has_type = "ssd" in title_clean or "ссд" in title_clean or "nvme" in title_clean
+                has_type = "ssd" in title_for_match or "ссд" in title_for_match or "nvme" in title_for_match
             elif st_type == "hdd":
-                has_type = any(w in title_clean for w in [
+                has_type = any(w in title_for_match for w in [
                     "hdd", "хдд", "жорстк", "жестк", "винчестер", "жерстк", "toshiba",
                     "wd blue", "wd red", "wd black", "wd green", "barracuda", "wd"
                 ])
@@ -143,15 +166,15 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tupl
                 continue
 
             if cap_unit == "tb":
-                pattern = r"\b" + cap_num + r"\s*(tb|тб|терабайт|1000\s*gb|1000\s*гб)\b"
+                pattern = r"(?<![a-z0-9])" + cap_num + r"\s*(tb|тб|терабайт|1000\s*gb|1000\s*гб)(?![a-z0-9])"
             else:
-                pattern = r"(?<!\w)" + cap_num + r"\s*(gb|гб|гігабайт|гигабайт)?\b"
+                pattern = r"(?<![a-z0-9])" + cap_num + r"\s*(gb|гб|гігабайт|гигабайт)?(?![a-z0-9])"
 
-            if re.search(pattern, title_clean):
+            if re.search(pattern, title_for_match):
                 return target_name, cfg
 
         else:
-            if validate_title(title_clean, req_keywords):
+            if validate_title_strict(title_for_match, req_keywords):
                 return target_name, cfg
 
     return None
@@ -166,7 +189,7 @@ async def fetch_subcategory_page(
     offset: int = 0,
     limit: int = 40,
     max_retries: int = 3,
-) -> list[tuple]:
+) -> list[dict]:
     subcat_key = subcat_info["subcategory"]
     item_type = subcat_info["item_type"]
 
@@ -174,7 +197,6 @@ async def fetch_subcategory_page(
         k: v for k, v in hardware_targets.items() if v.get("item_type") == item_type
     }
 
-    # 🎯 Включаємо offset у параметри пошуку
     search_params = [
         {"key": "category_id", "value": "458"},
         {"key": "filter_enum_subcategory[0]", "value": subcat_key},
@@ -252,13 +274,13 @@ async def fetch_subcategory_page(
 
             advert_url = clean_url(raw_url)
 
+            if advert_url in seen_urls:
+                continue
+
             user_data = item.get("user") or {}
             seller_id = str(user_data.get("id")) if user_data.get("id") else None
             seller_uuid = str(user_data.get("uuid")) if user_data.get("uuid") else None
             seller_name = user_data.get("name") or "Невідомо"
-
-            if advert_url in seen_urls:
-                continue
 
             matched = match_ad_to_hardware_target(title, targets_for_this_type)
             if not matched:
@@ -346,7 +368,7 @@ async def fetch_subcategory_page(
 
 async def run_parser(
     hardware_items: dict, seen_urls: set[str], today_sql: str, pages_to_parse: int = 1
-) -> list[tuple]:
+) -> list[dict]:
     async with AsyncSession(headers=HEADERS, impersonate="chrome124") as session:
         print("🔥 Прогріваємо сесію...")
         try:
@@ -379,9 +401,9 @@ async def run_parser(
 def main(pages_to_parse: int = 1) -> None:
     today_sql = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    # 1. Завантажуємо існуючі URL прямо з Supabase для дедуплікації
+    # 1. Завантажуємо існуючі URL з лімітом 50000 записів для стабільної дедуплікації
     try:
-        response = supabase.table("ads").select("url").execute()
+        response = supabase.table("ads").select("url").limit(50000).execute()
         seen_urls = set(row["url"] for row in (response.data or []))
         print(f"[БАЗА SUPABASE] Завантажено {len(seen_urls)} комплектуючих для дедуплікації.")
     except Exception as e:
@@ -405,10 +427,10 @@ def main(pages_to_parse: int = 1) -> None:
     # 2. Збереження у хмарний PostgreSQL Supabase та тригер WebSockets
     if new_ads_to_insert:
         try:
-            supabase.table("ads").upsert(new_ads_to_insert, on_conflict="url").execute()
+            supabase.table("ads").upsert(new_ads_to_insert, on_conflict="ad_id").execute()
             print(f"[УСПІХ SUPABASE] Збережено {len(new_ads_to_insert)} нових комплектуючих у хмару!")
 
-            # 3. Тригеримо WebSocket на сервері для появи зеленого спалаху у стрічці
+            # 3. Тригеримо WebSocket на сервері для оновлення живого стріму
             try:
                 import requests
                 requests.post("http://localhost:8000/api/trigger-new-ad", json=new_ads_to_insert, timeout=2)

@@ -3,8 +3,10 @@ import asyncio
 import re
 import sys
 import time
+from dotenv import load_dotenv
 from datetime import datetime, timezone
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 
 from curl_cffi.requests import AsyncSession
 from supabase import create_client, Client
@@ -14,6 +16,7 @@ if not (PROJECT_ROOT / "config.py").exists():
     PROJECT_ROOT = PROJECT_ROOT.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+load_dotenv(PROJECT_ROOT / ".env")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
@@ -65,7 +68,6 @@ async def fetch_seller_rating(session: AsyncSession, seller_uuid: str) -> str:
     if not seller_uuid or str(seller_uuid).strip() in ("", "failed", "None"):
         return "немає оцінок"
 
-    # Виправлено: видалено зайвий слеш на кінці URL
     url = f"https://rating-cdn.css.olx.io/ratings/v1/public/olxua/user/{seller_uuid}/eligibleClusters?includeScores=true"
     try:
         resp = await session.get(url, timeout=TIMEOUT)
@@ -97,23 +99,25 @@ async def process_single_seller_worker(
         async with COUNT_LOCK:
             PROCESSED_COUNT += 1
 
-        # Одночасний виклик обох ендпоінтів для прискорення
+        # Одночасний виклик обох ендпоінтів
         successful_deals, rating_str = await asyncio.gather(
             fetch_delivery_deals(session, seller_id),
             fetch_seller_rating(session, seller_uuid),
         )
 
-    # 🎯 РОЗРАХУНОК ЗІРОК
+    # 🎯 1. РОЗРАХУНОК ЗІРОК
     seller_stars = 0.0
+    has_rating = False
     if rating_str and rating_str != "немає оцінок":
         try:
             match = re.match(r"([0-9.]+)/5\.0", rating_str)
             if match:
                 seller_stars = float(match.group(1))
+                has_rating = True
         except Exception:
             pass
 
-    # 🎯 РОЗРАХУНОК ВІКУ АКАУНТУ
+    # 🎯 2. РОЗРАХУНОК ВІКУ АКАУНТУ
     today_year = datetime.now(timezone.utc).year
     acc_age_years = 0
 
@@ -123,19 +127,23 @@ async def process_single_seller_worker(
             reg_year = int(match.group(0))
             acc_age_years = max(0, today_year - reg_year)
 
-    # 🎯 СКОРИНГ РИЗИКУ
-    is_low_deals = successful_deals < 10
-    is_bad_rating = 0.0 < seller_stars < 4.0
-    is_new_account = acc_age_years <= 1
+    # 🎯 3. СКОРИНГ РИЗИКУ
+    stars = seller_stars if has_rating else 0.0
 
-    if is_low_deals or is_bad_rating or is_new_account:
-        seller_risk = "suspicious"
-    elif acc_age_years >= 2 or successful_deals >= 30:
+    # SAFE: >= 20 угод AND рейтинг >= 4.0 AND акаунту понад 2 роки
+    is_safe = (successful_deals >= 20) and (stars >= 4.0) and (acc_age_years > 2)
+
+    # NEUTRAL: >= 10 угод AND рейтинг > 3.0 AND акаунту >= 2 років
+    is_neutral = (successful_deals >= 10) and (stars > 3.0) and (acc_age_years >= 2)
+
+    if is_safe:
         seller_risk = "safe"
-    else:
+    elif is_neutral:
         seller_risk = "neutral"
+    else:
+        seller_risk = "suspicious"
 
-    # 🎯 КЛАСИФІКАЦІЯ ПРОДАВЦЯ
+    # 🎯 4. КЛАСИФІКАЦІЯ ТИПУ ПРОДАВЦЯ
     is_shop = seller_type_raw == "shop"
     if is_shop or (successful_deals > 50 and seller_stars >= 4.0):
         final_seller_type = "shop"
@@ -177,14 +185,14 @@ def run_seller_analysis() -> list[int]:
     print("🕵️‍♂️ ЗАПУСК АНАЛІЗУ ПРОДАВЦІВ (УГОДИ ТА РЕЙТИНГ)")
     print("=" * 60)
 
-    # 1. Завантажуємо з Supabase оголошення з неперевіреними продавцями
+    # 🎯 Забираємо лише ті активні оголошення, де продавець ще НЕ перевірений (seller_checked == 0)
     try:
         response = supabase.table("ads") \
             .select("id, seller_id, seller_uuid, seller_created_at, seller_type") \
             .not_.is_("seller_id", "null") \
             .neq("seller_id", "failed") \
             .eq("status", "active") \
-            .or_("seller_successful_deals.is.null,seller_rating.is.null") \
+            .eq("seller_checked", 0) \
             .execute()
         
         raw_ads = response.data or []
@@ -193,10 +201,9 @@ def run_seller_analysis() -> list[int]:
         return []
 
     if not raw_ads:
-        print("[ANALYZER] Усі активні продавці вже проаналізовані.")
+        print("[ANALYZER] Усі нові продавці вже перевірені (seller_checked = 1).")
         return []
 
-    # Перетворюємо дикти з Supabase у кортежі, які чекає асинхронний воркер
     ads_to_check = [
         (
             ad["id"], 
@@ -208,13 +215,11 @@ def run_seller_analysis() -> list[int]:
         for ad in raw_ads
     ]
 
-    print(f"[ANALYZER] Знайдено {len(ads_to_check)} продавців для перевірки. Аналізуємо...")
+    print(f"[ANALYZER] Знайдено {len(ads_to_check)} неперевірених продавців. Аналізуємо...")
     start_time = time.time()
 
-    # Запускаємо асинхронні запити
     results = asyncio.run(run_seller_analysis_async(ads_to_check))
 
-    # 2. Формуємо масив результатів для пакетного upsert у Supabase
     updates_pool = []
     success_ids = []
 
@@ -229,14 +234,25 @@ def run_seller_analysis() -> list[int]:
             "seller_rating": res["seller_rating"],
             "seller_type": res["seller_type"],
             "seller_risk_score": res["seller_risk"],
+            "parsed_date": datetime.now(timezone.utc).isoformat(),
+            "seller_checked": 1  # 🎯 Позначаємо оголошення як перевірене
         })
         success_ids.append(db_id)
 
     print("\n💾 Оновлення даних про продавців у хмарі Supabase...")
     if updates_pool:
+        def update_single_seller(item):
+            ad_id = item.pop("id")
+            try:
+                supabase.table("ads").update(item).eq("id", ad_id).execute()
+            except Exception as err:
+                print(f"  ⚠️ Не вдалося оновити seller_checked для ID {ad_id}: {err}")
+
         try:
-            supabase.table("ads").upsert(updates_pool, on_conflict="id").execute()
-            print(f"✅ [УСПІХ] Оновлено інформацію для {len(updates_pool)} продавців!")
+            # Паралельно оновлюємо записи у 10 потоків
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                list(executor.map(update_single_seller, updates_pool))
+            print(f"✅ [УСПІХ] Пакетно оновлено та позначено seller_checked=1 для {len(updates_pool)} продавців!")
         except Exception as e:
             print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ В SUPABASE]: {e}")
 
