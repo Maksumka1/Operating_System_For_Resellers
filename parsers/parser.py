@@ -313,7 +313,7 @@ async def main_async(pages_to_parse: int = 1) -> None:
 
     # Завантажуємо існуючі URL з Supabase для дедуплікації
     try:
-        response = supabase.table("ads").select("url").limit(50000).execute()
+        response = supabase.table("ads").select("ad_id").limit(50000).execute()
         seen_urls = set(row["url"] for row in (response.data or []))
         print(f"[БАЗА SUPABASE] Завантажено {len(seen_urls)} оголошень для дедуплікації.")
     except Exception as e:

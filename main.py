@@ -156,8 +156,20 @@ def run_heavy_analysis_in_background():
 
     is_heavy_analysis_running = True
     try:
-        run_step("Визначення ринкової ціни продажів (конкуренти)", competitor_finder.main)
-        run_step("Перерахунок прайсів заліза", price_hardware.main)
+        # 🎯 1. Запускаємо аналіз конкурентів і одержуємо списки оновлених ID ПК та комплектуючих
+        updated_comp_ids = run_step("Визначення ринкової ціни продажів (конкуренти)", competitor_finder.main)
+        
+        # Якщо competitor_finder повертає масив оновлених ID (або беремо їх з бази), пушимо на сайт
+        if updated_comp_ids and isinstance(updated_comp_ids, list):
+            print(f"🔄 [RE-BROADCAST] Пушимо {len(updated_comp_ids)} оновлених цін конкурентів на сайт...")
+            broadcast_updated_ads(updated_comp_ids)
+
+        # 🎯 2. Запускаємо перерахунок заліза
+        updated_hw_ids = run_step("Перерахунок прайсів заліза", price_hardware.main)
+        if updated_hw_ids and isinstance(updated_hw_ids, list):
+            print(f"🔄 [RE-BROADCAST] Пушимо {len(updated_hw_ids)} оновлених цін заліза на сайт...")
+            broadcast_updated_ads(updated_hw_ids)
+
         run_step("Верифікація активності оголошень (архів)", clean_archive.main)
     except Exception as e:
         print(f"❌ [ФОНОВИЙ АНАЛІЗ ПОМИЛКА]: {e}")

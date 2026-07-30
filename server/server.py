@@ -13,7 +13,6 @@ from supabase import create_client, Client
 
 # --- ПІДКТЮЧЕННЯ ДО SUPABASE ---
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
-# Використовуємо SERVICE_ROLE_KEY або PUBLISHABLE_KEY із змінних середовища
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
 if not SUPABASE_KEY:
@@ -21,14 +20,13 @@ if not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
-# Схема перевірки Bearer токена в заголовках Authorization
 security = HTTPBearer()
 
 app = FastAPI(title="Edge.Feed API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Для продакшну замінити на конкретний домен Vercel
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,10 +34,8 @@ app.add_middleware(
 
 # --- МІДЛВЕРА ДЛЯ ПЕРЕВІРКИ АВТОРИЗАЦІЇ КОРИСТУВАЧА ---
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Перевіряє JWT-токен, надісланий з React-фронтенду через Supabase Auth."""
     token = credentials.credentials
     try:
-        # Звертаємося до Supabase, щоб валідувати токен
         user_response = supabase.auth.get_user(token)
         if not user_response or not user_response.user:
             raise HTTPException(
@@ -109,12 +105,17 @@ class ConnectionManager:
             print(f"🛑 [WS] Клієнт відключився. Залишилось: {len(self.active_connections)}")
 
     async def broadcast(self, message: dict):
-        print(f"📢 [WS BROADCAST] Розкидаємо лот: {message.get('title', 'Без назви')[:40]}...")
+        if not self.active_connections:
+            print(f"⚠️ [WS WARN] Немає підключених браузерів для відправки лоту: {message.get('title', '')[:30]}")
+            return
+
+        print(f"📢 [WS BROADCAST] Відправляємо на {len(self.active_connections)} клієнтів: {message.get('title', '')[:30]}...")
         for connection in list(self.active_connections):
             try:
                 await connection.send_json(message)
             except Exception as e:
                 print(f"❌ [WS ERROR] Помилка відправки клієнту: {e}")
+                self.disconnect(connection)
 
 manager = ConnectionManager()
 
@@ -129,19 +130,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.get("/api/ads")
 def get_ads(current_user = Depends(get_current_user)):
-    """
-    Повертає список активних оголошень з бази Supabase.
-    Доступ дозволено ТІЛЬКИ авторизованим користувачам.
-    """
     print(f"\n🔍 [API GET] Запит бази від користувача: {current_user.email}")
     
     try:
-        # Запит до таблиці 'ads' у Supabase
         response = (
             supabase.table("ads")
             .select("*")
             .eq("status", "active")
             .order("id", desc=True)
+            .limit(50000)
             .execute()
         )
         rows = response.data or []
@@ -151,7 +148,6 @@ def get_ads(current_user = Depends(get_current_user)):
     
     print(f"📊 [API GET] Віддаємо {len(rows)} повних лотів для фронтенду.")
 
-    # Обробка та подвійна страховка фолбеків для фронтенду
     result = []
     for ad_dict in rows:
         ad_dict["seller_successful_deals"] = ad_dict.get("seller_successful_deals") or 0
@@ -163,9 +159,40 @@ def get_ads(current_user = Depends(get_current_user)):
     return result
 
 
+@app.get("/api/ads/{ad_id}")
+def get_single_ad(ad_id: str, current_user = Depends(get_current_user)):
+    """🎯 Отримання одного детального лоту за його id або ad_id."""
+    print(f"🔍 [API GET SINGLE] Запит лоту {ad_id} від: {current_user.email}")
+
+    try:
+        # Перевіряємо, чи ad_id це число (для bigint колонок)
+        try_id = int(ad_id) if ad_id.isdigit() else None
+
+        if try_id is not None:
+            response = supabase.table("ads").select("*").or_(f"id.eq.{try_id},ad_id.eq.{try_id}").execute()
+        else:
+            response = supabase.table("ads").select("*").eq("id", ad_id).execute()
+
+        rows = response.data or []
+        if not rows:
+            raise HTTPException(status_code=404, detail="Товар не знайдено")
+
+        ad_dict = rows[0]
+        ad_dict["seller_successful_deals"] = ad_dict.get("seller_successful_deals") or 0
+        ad_dict["seller_rating"] = ad_dict.get("seller_rating") or "немає оцінок"
+        ad_dict["seller_risk_score"] = ad_dict.get("seller_risk_score") or "neutral"
+        ad_dict["deal_status"] = ad_dict.get("deal_status") or "regular"
+
+        return ad_dict
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ [SUPABASE SINGLE FETCH ERROR]: {e}")
+        raise HTTPException(status_code=500, detail="Помилка завантаження лоту з Supabase")
+
+
 @app.post("/api/trigger-new-ad")
 async def trigger_new_ad(payload: Union[List[NewAdModel], NewAdModel] = Body(...)):
-    """Приймає нові лоти від парсера і транслює їх підключеним клієнтам через WebSocket."""
     if isinstance(payload, list):
         print(f"📥 [API POST] Отримано пачку з {len(payload)} лотів від парсера!")
         for ad in payload:

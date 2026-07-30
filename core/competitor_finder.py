@@ -23,14 +23,12 @@ def calculate_real_market_price(prices: list[int]) -> int:
     """Вираховує справедливу ринкову ціну на основі медіани після відсікання аномалій."""
     valid_prices = [p for p in prices if p > 100]
     
-    # 🎯 Якщо менше 3 оголошень — вибірка занадто мала, медіану рахувати небезпечно
     if len(valid_prices) < 3:
         return 0
 
     sorted_p = sorted(valid_prices)
     n = len(sorted_p)
 
-    # Відсікаємо 10% найдешевших і 10% найдорожчих
     if n >= 6:
         trim = int(n * 0.1)
         sorted_p = sorted_p[trim : n - trim]
@@ -76,7 +74,9 @@ def _safe_update_ad(item: dict) -> bool:
         return False
 
 
-def update_hardware_competitor_prices() -> None:
+def update_hardware_competitor_prices() -> set[int]:
+    updated_ids = set()
+
     # 1. Завантажуємо орієнтири цін із component_prices
     component_fair_prices = {}
     try:
@@ -86,7 +86,7 @@ def update_hardware_competitor_prices() -> None:
     except Exception as e:
         print(f"[COMPETITORS WARN] Помилка завантаження component_prices: {e}")
 
-    # 2. Отримуємо всі активні комплектуючі (БЕЗ підозрілих продавців)
+    # 2. Отримуємо всі активні комплектуючі
     try:
         response = supabase.table("ads") \
             .select("id, component_name, price") \
@@ -100,11 +100,11 @@ def update_hardware_competitor_prices() -> None:
         rows = response.data or []
     except Exception as e:
         print(f"❌ [SUPABASE ERROR]: {e}")
-        return
+        return updated_ids
 
     if not rows:
         print("[COMPETITORS] Активних комплектуючих для аналізу не знайдено.")
-        return
+        return updated_ids
 
     comp_items = defaultdict(list)
     for row in rows:
@@ -117,7 +117,6 @@ def update_hardware_competitor_prices() -> None:
         all_prices = [it["price"] for it in items]
         market_price = calculate_real_market_price(all_prices)
 
-        # Шукаємо справедливу ціну: з таблиці довідника АБО з медіани ринку
         fair_price = component_fair_prices.get(comp_name) or market_price
 
         if fair_price > 0:
@@ -135,6 +134,7 @@ def update_hardware_competitor_prices() -> None:
                     "saving_percent": int(round(saving_percent)),
                     "deal_status": deal_status
                 })
+                updated_ids.add(ad_id)
 
     if updates:
         try:
@@ -144,9 +144,12 @@ def update_hardware_competitor_prices() -> None:
         except Exception as e:
             print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КОНКУРЕНТІВ ЗАЛІЗА]: {e}")
 
+    return updated_ids
 
-def update_pcs_competitor_prices() -> None:
+
+def update_pcs_competitor_prices() -> set[int]:
     """Прораховує середню ціну конкурентів для всіх ПК зі схожою конфігурацією (CPU + GPU)."""
+    updated_ids = set()
     try:
         response = supabase.table("ads") \
             .select("id, gpu_detected, cpu_detected, price") \
@@ -161,11 +164,11 @@ def update_pcs_competitor_prices() -> None:
         all_pcs = response.data or []
     except Exception as e:
         print(f"❌ [SUPABASE ERROR]: {e}")
-        return
+        return updated_ids
 
     if not all_pcs:
         print("[COMPETITORS] Активних ПК з розпізнаним залізом немає.")
-        return
+        return updated_ids
 
     build_items = defaultdict(list)
     for pc in all_pcs:
@@ -190,6 +193,7 @@ def update_pcs_competitor_prices() -> None:
                 "id": cur_id,
                 "competitor_price": avg_competitor_price
             })
+            updated_ids.add(cur_id)
 
     if pc_updates:
         try:
@@ -199,16 +203,21 @@ def update_pcs_competitor_prices() -> None:
         except Exception as e:
             print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КОНКУРЕНТІВ ПК]: {e}")
 
+    return updated_ids
 
-def main():
+
+def main() -> list[int]:
     print("\n" + "="*50)
     print("📊 ЗАПУСК АНАЛІЗУ КОНКУРЕНТНОГО СЕРЕДОВИЩА")
     print("="*50)
 
-    update_hardware_competitor_prices()
-    update_pcs_competitor_prices()
+    hw_ids = update_hardware_competitor_prices()
+    pc_ids = update_pcs_competitor_prices()
 
-    print("[УСПІХ] Повний аналіз ринку конкурентів завершено успішно!")
+    all_updated_ids = list(hw_ids | pc_ids)
+
+    print(f"[УСПІХ] Повний аналіз ринку конкурентів завершено! Змінено {len(all_updated_ids)} лотів.")
+    return all_updated_ids
 
 
 if __name__ == "__main__":
