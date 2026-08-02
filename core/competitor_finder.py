@@ -86,11 +86,11 @@ def update_hardware_competitor_prices() -> set[int]:
     except Exception as e:
         print(f"[COMPETITORS WARN] Помилка завантаження component_prices: {e}")
 
-    # 2. Отримуємо всі активні комплектуючі
+    # 2. Отримуємо всі активні комплектуючі (додано ram та bundle)
     try:
         response = supabase.table("ads") \
             .select("id, component_name, price") \
-            .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage"]) \
+            .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"]) \
             .eq("status", "active") \
             .eq("has_defects", 0) \
             .gt("price", 100) \

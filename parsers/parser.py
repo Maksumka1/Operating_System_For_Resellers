@@ -7,13 +7,14 @@ import re
 import sys
 import time
 from datetime import datetime, timezone
-import aiohttp
-from dotenv import load_dotenv
 from pathlib import Path
+from collections import defaultdict
 from urllib.parse import urlparse
+import aiohttp
 
 from curl_cffi.requests import AsyncSession
 from supabase import create_client, Client
+from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -23,7 +24,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from config import STATS_FILE
 load_dotenv(PROJECT_ROOT / ".env")
-# --- ПІДКТЮЧЕННЯ ДО SUPABASE ---
+# --- ПІДДКЛЮЧЕННЯ ДО SUPABASE ---
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
@@ -31,6 +32,87 @@ if not SUPABASE_KEY:
     print("⚠️ [УВАГА] Не вказано SUPABASE_SECRET_KEY / SUPABASE_PUBLISHABLE_KEY у змінних середовища!")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
+
+
+# ------------------------------------------------------------------------------
+# КЛАС АСИНХРОННОГО ДЕБАГЕРА (ЗБЕРІГАЄ У debug/debug_report_parse_pc.md)
+# ------------------------------------------------------------------------------
+class PipelineDebugger:
+    """Дебаггер для аналізу результатів парсингу ПК (category_id=78)."""
+    def __init__(self, filename="debug_report_parse_pc.md"):
+        self.debug_dir = PROJECT_ROOT / "debug"
+        self.debug_dir.mkdir(parents=True, exist_ok=True)
+        self.filepath = self.debug_dir / filename
+        
+        self.start_time = datetime.now()
+        self.stats = defaultdict(lambda: defaultdict(int))
+        self.samples = defaultdict(list)
+        self.lock = asyncio.Lock()
+
+    async def record_stat(self, category: str, metric: str, count: int = 1):
+        async with self.lock:
+            self.stats[category][metric] += count
+
+    async def add_sample(self, category: str, item: dict, max_samples: int = 100):
+        async with self.lock:
+            if len(self.samples[category]) < max_samples:
+                self.samples[category].append(item)
+
+    def save_report(self):
+        duration = (datetime.now() - self.start_time).total_seconds()
+        
+        report = []
+        report.append("# 🐛 ДЕБАГ-ЗВІТ ПАРСИНГУ ГОТОВИХ ПК (OLX Category 78)")
+        report.append(f"**Дата та час запуску:** {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        report.append(f"**Тривалість виконання:** {duration:.2f} сек")
+        report.append(f"**Шлях до звіту:** `{self.filepath}`\n")
+        
+        report.append("## 📌 1. Задача та мета коду")
+        report.append(
+            "Основна мета: асинхронний збір оголошень готових ПК та системних блоків з OLX GraphQL API.\n"
+            "1. Запит до категорії 78 (Комп'ютери та комплектуючі / ПК).\n"
+            "2. Перевірка на дублікати за URL серед збережених раніше оголошень у Supabase.\n"
+            "3. Фільтрація поодиноких комплектуючих/запчастин за допомогою функції `is_real_pc` та стоп-слів (`NOT_A_PC_WORDS`).\n"
+            "4. Парсинг цін, продавця (тип: shop/private), локації, фотографій та дат.\n"
+            "5. Масовий `upsert` нових лотів у таблицю `ads` та надсилання тригеру для WebSocket-стріму.\n"
+        )
+
+        report.append("## 📊 2. Загальна статистика вхідних даних та відсіювання")
+        for cat, metrics in self.stats.items():
+            report.append(f"### ⚙️ Секція: {cat}")
+            for metric, val in metrics.items():
+                report.append(f"- **{metric}:** {val}")
+            report.append("")
+
+        report.append("## 🔄 3. Детальні приклади даних")
+        
+        sections_order = [
+            ("Filtered_Out_Non_PCs", "Відсіяні оголошення (запчастини, окремі комплектуючі, дублікати)", 100),
+            ("Valid_PC_Matches", "Валідовані оголошення ПК (пройшли перевірку is_real_pc)", 100)
+        ]
+
+        for sample_key, title, max_cnt in sections_order:
+            sample_list = self.samples.get(sample_key, [])
+            report.append(f"### 🔹 {title} (Показано {len(sample_list)} з max {max_cnt}):")
+            if not sample_list:
+                report.append("_Дані відсутні або під час цього запуску відповідних записів не було._\n")
+                continue
+            
+            for idx, sample in enumerate(sample_list, 1):
+                report.append(f"**Семпл #{idx}:**")
+                report.append("```json\n" + json.dumps(sample, indent=2, ensure_ascii=False) + "\n```")
+            report.append("")
+
+        report.append("=" * 60 + "\n")
+        
+        with open(self.filepath, "w", encoding="utf-8") as f:
+            f.write("\n".join(report))
+        
+        print(f"📝 [DEBUG] Повний дебаг-звіт парсингу ПК збережено у `{self.filepath}`")
+
+
+# Глобальний екземпляр дебаггера
+debugger = PipelineDebugger()
 
 TIMEOUT = 15
 
@@ -91,9 +173,9 @@ def extract_price(price_val: str | int | float) -> int:
     return int(digits) if digits else 0
 
 
-def is_real_pc(title: str) -> bool:
+def is_real_pc(title: str) -> tuple[bool, str]:
     if not title:
-        return False
+        return False, "empty_title"
         
     title_lower = title.lower()
     pc_indicators = ["пк", "комп", "системний блок", "системный блок", "компьютер", "комп’ютер", "системник", "pc", "mac", "блок"]
@@ -101,11 +183,11 @@ def is_real_pc(title: str) -> bool:
     for bad_word in NOT_A_PC_WORDS:
         if bad_word in title_lower:
             if title_lower.startswith(bad_word):
-                return False
+                return False, f"starts_with_banned_word: {bad_word}"
             if not any(indicator in title_lower for indicator in pc_indicators):
-                return False
+                return False, f"banned_word_without_pc_indicator: {bad_word}"
 
-    return True
+    return True, "valid_pc"
 
 
 def update_statistics(section: str, metrics: dict) -> None:
@@ -181,6 +263,7 @@ async def fetch_pcs_page(
             )
 
             if resp.status_code in (401, 403):
+                await debugger.record_stat("Network", "HTTP 403 Forbidden")
                 print(f"[WARN GraphQL] 403 Forbidden. Спроба {attempt}/{max_retries}. Прогрів та чекаємо 10s...")
                 network_errors += 1
                 try:
@@ -191,6 +274,7 @@ async def fetch_pcs_page(
                 continue
 
             if resp.status_code != 200:
+                await debugger.record_stat("Network", f"HTTP Status {resp.status_code}")
                 print(f"[ERR GraphQL] HTTP status {resp.status_code}. Спроба {attempt}/{max_retries}...")
                 network_errors += 1
                 await asyncio.sleep(attempt * 3)
@@ -203,6 +287,12 @@ async def fetch_pcs_page(
                 .get("data", [])
             )
 
+            await debugger.record_stat("OLX_GraphQL", "Отримано сирих оголошень ПК", len(listings))
+
+            if not listings:
+                await debugger.record_stat("OLX_GraphQL", "Відсіяно if (Порожній список у відповіді)")
+                return new_items, duplicates_count, network_errors, parsing_errors
+
             for item in listings:
                 try:
                     raw_id = item.get("id")
@@ -210,6 +300,7 @@ async def fetch_pcs_page(
 
                     raw_url = item.get("url", "")
                     if not raw_url:
+                        await debugger.record_stat("Filtering_Rules", "Відсіяно if (Порожній URL)")
                         continue
 
                     if not raw_url.startswith("http"):
@@ -219,13 +310,31 @@ async def fetch_pcs_page(
 
                     if advert_url in seen_urls:
                         duplicates_count += 1
+                        await debugger.record_stat("Filtering_Rules", "Відсіяно if (Дублікат URL в DB)")
+                        await debugger.add_sample("Filtered_Out_Non_PCs", {
+                            "reason": "duplicate_url_already_in_db",
+                            "url": advert_url,
+                            "title": item.get("title")
+                        }, max_samples=100)
                         continue
 
                     title = item.get("title", "").replace("'", "").strip()
 
-                    if not is_real_pc(title):
+                    is_pc, reason = is_real_pc(title)
+                    if not is_pc:
+                        await debugger.record_stat("Filtering_Rules", "Відсіяно if (Спрацював фільтр запчастин is_real_pc)")
+                        await debugger.add_sample("Filtered_Out_Non_PCs", {
+                            "reason": reason,
+                            "title": title
+                        }, max_samples=100)
                         print(f"   [🚫 ВІДСІЯНО ЗАПЧАСТИНУ]: {title[:50]}...")
                         continue
+
+                    await debugger.add_sample("Valid_PC_Matches", {
+                        "ad_id": ad_id,
+                        "title": title,
+                        "status": "passed_is_real_pc"
+                    }, max_samples=100)
 
                     description = item.get("description", "").strip().replace("<br />", "\n").replace("<br>", "\n")
 
@@ -264,7 +373,6 @@ async def fetch_pcs_page(
                     is_business = item.get("business", False)
                     seller_type = "shop" if is_business else "private_person"
 
-                    # Замість tuple створюємо дикт для Supabase
                     ad_dict = {
                         "ad_id": ad_id,
                         "url": advert_url,
@@ -291,16 +399,21 @@ async def fetch_pcs_page(
 
                     new_items.append(ad_dict)
                     seen_urls.add(advert_url)
+
+                    await debugger.record_stat("Parsing_Metrics", "Успішно розпаршено ПК")
+                    
                     print(f"   [+] Новий ПК [ID: {ad_id}]: {title[:45]}... ({price} грн)")
 
                 except Exception as ex:
                     parsing_errors += 1
+                    await debugger.record_stat("Errors", f"Помилка елемента ПК: {str(ex)[:40]}")
                     print(f"[ПОМИЛКА ПАРСИНГУ] Елемент оголошення: {ex}")
 
             return new_items, duplicates_count, network_errors, parsing_errors
 
         except Exception as ex:
             network_errors += 1
+            await debugger.record_stat("Network", f"Помилка запиту: {str(ex)[:40]}")
             print(f"[ПОМИЛКА МЕРЕЖІ] Спроба {attempt}/{max_retries}: {ex}")
             await asyncio.sleep(attempt * 2)
 
@@ -313,10 +426,12 @@ async def main_async(pages_to_parse: int = 1) -> None:
 
     # Завантажуємо існуючі URL з Supabase для дедуплікації
     try:
-        response = supabase.table("ads").select("ad_id").limit(50000).execute()
+        response = supabase.table("ads").select("url").limit(50000).execute()
         seen_urls = set(row["url"] for row in (response.data or []))
+        await debugger.record_stat("Supabase_Input", "Завантажено URLs для дедуплікації", len(seen_urls))
         print(f"[БАЗА SUPABASE] Завантажено {len(seen_urls)} оголошень для дедуплікації.")
     except Exception as e:
+        await debugger.record_stat("Supabase_Input", "Помилка читання URLs")
         print(f"[ПОМИЛКА ЧИТАННЯ SUPABASE]: {e}")
         seen_urls = set()
 
@@ -350,12 +465,15 @@ async def main_async(pages_to_parse: int = 1) -> None:
                 await asyncio.sleep(1.5)
 
     new_parsed_count = len(all_new_pcs)
+    await debugger.record_stat("Summary", "Знайдено нових ПК", new_parsed_count)
+    await debugger.record_stat("Summary", "Пропущено дублікатів", total_duplicates)
 
     # Збереження в Supabase та трансляція через WebSocket
     if all_new_pcs:
         try:
             # 1. Upsert у Supabase
             supabase.table("ads").upsert(all_new_pcs, on_conflict="ad_id").execute()
+            await debugger.record_stat("Supabase_Output", "Успішно збережено в DB", len(all_new_pcs))
             print(f"\n[УСПІХ SUPABASE] Збережено {len(all_new_pcs)} нових ПК у хмару!")
 
             # 2. Тригер на FastAPI через нову тимчасову сесію
@@ -366,13 +484,17 @@ async def main_async(pages_to_parse: int = 1) -> None:
                         json=all_new_pcs,
                         timeout=5
                     )
+                await debugger.record_stat("WebSocket", "Успішно тригернуто живий стрім")
                 print("📢 [WEBSOCKET] Трансляцію нових лотів на фронтенд успішно відправлено!")
             except Exception as ws_err:
+                await debugger.record_stat("WebSocket", "Помилка відправки тригеру")
                 print(f"⚠️ [WEBSOCKET WARN] Не вдалося тригернути WebSocket на сервері: {ws_err}")
 
         except Exception as e:
+            await debugger.record_stat("Supabase_Output", f"Помилка Upsert DB: {str(e)[:40]}")
             print(f"\n❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ В SUPABASE]: {e}")
     else:
+        await debugger.record_stat("Summary", "Немає нових лотів для відправки")
         print("\n[INFO] Нових комп'ютерів у цій ітерації немає.")
 
     end_time = time.time()
@@ -403,6 +525,9 @@ async def main_async(pages_to_parse: int = 1) -> None:
             "parsing_errors": total_parse_errors,
         },
     )
+
+    # Зберігаємо підсумковий дебаг-звіт у debug/debug_report_parse_pc.md
+    debugger.save_report()
 
 
 def main(pages_to_parse: int = 1) -> None:

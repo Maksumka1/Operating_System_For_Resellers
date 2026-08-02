@@ -292,5 +292,72 @@
       "network_errors": 0,
       "parsing_errors": 0
     }
+  },
+  "31-07-2026": {
+    "parsing": {
+      "parsed_total_new": 152,
+      "duplicates_skipped": 51,
+      "avg_parsing_time_ms": 66.81,
+      "total_time_seconds": 10.16
+    },
+    "filtering": {
+      "banned_words_triggered": 0,
+      "filtered_total_active": 0
+    },
+    "market_analysis": {
+      "avg_ad_price_uah": 0,
+      "min_price_today": 0,
+      "max_price_today": 0
+    },
+    "system_health": {
+      "network_errors": 0,
+      "parsing_errors": 0
+    }
+  },
+  "01-08-2026": {
+    "parsing": {
+      "parsed_total_new": 112,
+      "duplicates_skipped": 91,
+      "avg_parsing_time_ms": 105.59,
+      "total_time_seconds": 11.83
+    },
+    "filtering": {
+      "banned_words_triggered": 0,
+      "filtered_total_active": 0
+    },
+    "market_analysis": {
+      "avg_ad_price_uah": 0,
+      "min_price_today": 0,
+      "max_price_today": 0
+    },
+    "system_health": {
+      "network_errors": 0,
+      "parsing_errors": 0
+    }
+  },
+  "02-08-2026": {
+    "parsing": {
+      "parsed_total_new": 0,
+      "duplicates_skipped": 51,
+      "avg_parsing_time_ms": 0,
+      "total_time_seconds": 7.32
+    },
+    "filtering": {
+      "defects_found": 0,
+      "filtered_total_active": 2058
+    },
+    "categories": {
+      "obsolete": 4,
+      "wholesale": 6,
+      "brand_office": 6,
+      "gaming": 11,
+      "home_office": 7,
+      "maining": 0
+    },
+    "market_analysis": {
+      "avg_ad_price_uah": 0,
+      "min_price_today": 0,
+      "max_price_today": 0
+    }
   }
 }

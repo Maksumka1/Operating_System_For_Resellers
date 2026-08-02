@@ -13,37 +13,21 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import HARDWARE_TARGETS
+from hardware_matchers import (
+    normalize_title,
+    extract_gpu,
+    extract_cpu,
+    extract_motherboard,
+    extract_ram,
+    extract_storage,
+    extract_psu,
+)
+
 load_dotenv(PROJECT_ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
-
-# 🎯 ОПТИМІЗАЦІЯ 1: Готуємо скомпільовані регулярки ОДИН раз при завантаженні модуля
-COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
-
-for comp_key, cfg in HARDWARE_TARGETS.items():
-    req_keywords = cfg.get("required_keywords", [])
-    compiled_list = []
-    for kw in req_keywords:
-        kw_clean = kw.lower().strip().replace("-", " ")
-        if kw_clean:
-            # Скомпільований regex з межами слів для уникнення помилкових збігів
-            pattern = re.compile(r"\b" + re.escape(kw_clean) + r"\b")
-            compiled_list.append(pattern)
-    COMPILED_PATTERNS[comp_key] = compiled_list
-
-# 🎯 ОПТИМІЗАЦІЯ 2: Списки ключів GPU та CPU готуємо та сортуємо за довжиною ОДИН раз
-GPUS_KEYS = sorted(
-    [k for k, v in HARDWARE_TARGETS.items() if v.get("item_type") == "gpu"],
-    key=lambda k: len(k),
-    reverse=True,
-)
-CPUS_KEYS = sorted(
-    [k for k, v in HARDWARE_TARGETS.items() if v.get("item_type") == "cpu"],
-    key=lambda k: len(k),
-    reverse=True,
-)
 
 
 def load_latest_prices() -> dict[str, int]:
@@ -61,12 +45,12 @@ def load_latest_prices() -> dict[str, int]:
     except Exception as e:
         print(f"[EVALUATOR WARN] Помилка читання component_prices: {e}")
 
-    # 2. Якщо component_prices порожній — беремо резервні ціни з активних оголошень
+    # 2. Якщо component_prices порожній — беремо резервні ціни з активних оголошень (включаючи ram та bundle)
     if not clean_prices:
         try:
             res = supabase.table("ads") \
                 .select("component_name, competitor_price") \
-                .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage"]) \
+                .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"]) \
                 .eq("status", "active") \
                 .gt("competitor_price", 0) \
                 .not_.is_("component_name", "null") \
@@ -79,49 +63,56 @@ def load_latest_prices() -> dict[str, int]:
     return clean_prices
 
 
-def detect_component_fast(text_clean: str, target_keys: list[str]) -> str | None:
-    """Миттєвий пошук за заздалегідь скомпільованими регулярками."""
-    for comp_key in target_keys:
-        patterns = COMPILED_PATTERNS.get(comp_key, [])
-        for pattern in patterns:
-            if pattern.search(text_clean):
-                return comp_key
-    return None
-
-
 def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, component_prices: dict) -> dict:
-    title_clean = title.replace("-", " ")
-    desc_clean = description.replace("-", " ") if description else ""
-    full_text_lower = f"{title_clean} {desc_clean}".lower()
-    full_text_lower = re.split(r"додатков|опці|за доплат|доплати", full_text_lower)[0]
+    """Вираховує собівартість ПК на основі всіх розпізнаних комплектуючих."""
+    full_text = f"{title} {description if description else ''}"
+    full_text_clean = normalize_title(full_text)
+    full_text_clean = re.split(r"додатков|опці|за доплат|доплати", full_text_clean)[0]
 
     # 1. Детекція та оцінка відеокарти
-    gpu = detect_component_fast(full_text_lower, GPUS_KEYS)
-    if gpu:
-        gpu_price = component_prices.get(gpu, 0)
-        gpu_display = gpu
-    else:
-        gpu_display = "Unknown GPU"
-        gpu_price = 0
+    gpu_candidates = [g for c in extract_gpu(full_text_clean) if (g := c) in HARDWARE_TARGETS]
+    gpu = gpu_candidates[0] if gpu_candidates else None
+    gpu_price = component_prices.get(gpu, 0) if gpu else 0
+    gpu_display = gpu if gpu else "Unknown GPU"
 
     # 2. Детекція та оцінка процесора
-    cpu = detect_component_fast(full_text_lower, CPUS_KEYS)
-    if cpu:
-        cpu_price = component_prices.get(cpu, 0)
-        cpu_display = cpu
+    cpu_candidates = [c for c in extract_cpu(full_text_clean) if c in HARDWARE_TARGETS]
+    cpu = cpu_candidates[0] if cpu_candidates else None
+    cpu_price = component_prices.get(cpu, 0) if cpu else 0
+    cpu_display = cpu if cpu else "Unknown CPU"
+
+    # 3. Додаткова детекція решти комплектуючих для точнішої собівартості
+    mb_candidates = [m for m in extract_motherboard(full_text_clean) if m in HARDWARE_TARGETS]
+    mb = mb_candidates[0] if mb_candidates else None
+    mb_price = component_prices.get(mb, 0) if mb else 0
+
+    ram_candidates = [r for r in extract_ram(full_text_clean) if r in HARDWARE_TARGETS]
+    ram = ram_candidates[0] if ram_candidates else None
+    ram_price = component_prices.get(ram, 0) if ram else 0
+
+    st_candidates = [s for s in extract_storage(full_text_clean) if s in HARDWARE_TARGETS]
+    storage = st_candidates[0] if st_candidates else None
+    storage_price = component_prices.get(storage, 0) if storage else 0
+
+    psu_candidates = [p for p in extract_psu(full_text_clean) if p in HARDWARE_TARGETS]
+    psu = psu_candidates[0] if psu_candidates else None
+    psu_price = component_prices.get(psu, 0) if psu else 0
+
+    # Оцінка суми знайдених додаткових комплектуючих
+    known_extra_price = mb_price + ram_price + storage_price + psu_price
+
+    if known_extra_price > 0:
+        base_case_cooler_cost = 1200
+        fair_price = gpu_price + cpu_price + known_extra_price + base_case_cooler_cost
     else:
-        cpu_display = "Unknown CPU"
-        cpu_price = 0
+        # Стандартна резервна вартість б/в платформи (Плата, ОЗП, SSD, Корпус, БЖ)
+        base_pc_cost = 3800
+        fair_price = gpu_price + cpu_price + base_pc_cost
 
     safe_seller_price = seller_price if seller_price > 0 else 1
-
-    # Базова вартість платформи б/в (Плата, ОЗП, SSD, Корпус, БЖ)
-    base_pc_cost = 3800 
-    fair_price = gpu_price + cpu_price + base_pc_cost
-    
     saving = fair_price - safe_seller_price
     saving_percent = (saving / fair_price) * 100 if fair_price > 0 else 0
-    
+
     if saving_percent >= 20 or saving >= 2000:
         deal_status = "🔥 SUPER DEAL"
     elif saving_percent >= 8 or saving >= 800:
@@ -131,7 +122,7 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
     else:
         deal_status = "regular"
 
-    if cpu_display == "Unknown CPU": 
+    if cpu_display == "Unknown CPU":
         deal_status = "regular"
         saving = 0
 
@@ -142,7 +133,7 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
         "gpu_market_price": gpu_price,
         "cpu_detected": cpu_display,
         "cpu_market_price": cpu_price,
-        "estimated_fair_price": fair_price,
+        "estimated_fair_price": int(fair_price),
         "saving_uah": int(round(saving)),
         "saving_percent": int(round(saving_percent, 1)),
         "deal_status": deal_status,
@@ -212,7 +203,7 @@ def main() -> None:
             print(f"   Процесор:   {evaluation['cpu_detected']} ({evaluation['cpu_market_price']} грн)")
             print(f"   🔥 Вигода:  {evaluation['saving_uah']} грн ({evaluation['saving_percent']}%)")
 
-    # 2. Оновлюємо розраховані значення у Supabase одним швидкострільним upsert запитом
+    # 2. Оновлюємо розраховані значення у Supabase
     if updates_pool:
         try:
             for item in updates_pool:

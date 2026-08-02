@@ -3,6 +3,7 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from collections import defaultdict
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -68,7 +69,7 @@ def detect_pc_category(text: str) -> str:
     if any(word in lowered for word in GAMING_WORDS):
         return "gaming"
     if any(word in lowered for word in MAINING_WORDS):
-            return "maining"
+        return "maining"
 
     return "home_office"
 
@@ -126,7 +127,8 @@ def main() -> None:
         "maining": 0
     }
 
-    updates_pool = []
+    # Групуємо ID ПК за їхніми знайденими категоріями
+    ids_by_category = defaultdict(list)
 
     for pc in unfiltered_pcs:
         db_id = pc["id"]
@@ -137,19 +139,26 @@ def main() -> None:
         category = detect_pc_category(full_text)
 
         category_counts[category] += 1
-        updates_pool.append({"id": db_id, "pc_category": category})
+        ids_by_category[category].append(db_id)
 
-    # 2. Оновлюємо категорії пачкою (upsert)
-    if updates_pool:
-        try:
-            for item in updates_pool:
+    # 2. Пакетне оновлення категорій без Not-Null конфліктів
+    try:
+        updated_total = 0
+        for category, ids in ids_by_category.items():
+            if not ids:
+                continue
+            chunk_size = 100
+            for i in range(0, len(ids), chunk_size):
+                batch_ids = ids[i : i + chunk_size]
                 supabase.table("ads") \
-                    .update({"pc_category": item["pc_category"]}) \
-                    .eq("id", item["id"]) \
+                    .update({"pc_category": category}) \
+                    .in_("id", batch_ids) \
                     .execute()
-            print(f"✅ Успішно оновлено категорії для {len(updates_pool)} ПК")
-        except Exception as e:
-            print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КАТЕГОРІЙ В SUPABASE]: {e}")
+                updated_total += len(batch_ids)
+
+        print(f"✅ Успішно оновлено категорії для {updated_total} ПК")
+    except Exception as e:
+        print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КАТЕГОРІЙ В SUPABASE]: {e}")
 
     print("\n✅ [УСПІХ] Розподіл по категоріям завершено:")
     print(f" 🗑️  Застарілі (obsolete):     {category_counts['obsolete']} шт.")

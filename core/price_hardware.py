@@ -18,8 +18,6 @@ SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHAB
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
-hardware_items = {k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")}
-
 
 def calculate_percentile_price(prices: list[int]) -> int:
     if not prices:
@@ -55,9 +53,10 @@ def main() -> None:
     print(f"--- ПОЧАТОК АНАЛІЗУ ЦІН КОМПЛЕКТУЮЧИХ ЗА {today_sql} ---")
 
     try:
+        # Додано "ram" та "bundle" до списку типів для аналізу
         response = supabase.table("ads") \
             .select("component_name, price") \
-            .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage"]) \
+            .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"]) \
             .eq("status", "active") \
             .eq("has_defects", 0) \
             .gt("price", 100) \
@@ -71,8 +70,8 @@ def main() -> None:
 
     prices_by_component: dict[str, list[int]] = {}
     for ad in all_ads:
-        comp_name = ad["component_name"]
-        if comp_name in hardware_items:
+        comp_name = ad.get("component_name")
+        if comp_name:
             prices_by_component.setdefault(comp_name, []).append(ad["price"])
 
     records_to_upsert = []

@@ -5,12 +5,18 @@ import re
 import sys
 import os
 import time
+import json
 from datetime import datetime, timezone
 from pathlib import Path
+from collections import defaultdict
 from urllib.parse import urlparse
 from curl_cffi.requests import AsyncSession
 from supabase import create_client, Client
 from dotenv import load_dotenv
+
+from config import HARDWARE_TARGETS, LEGACY_PRE_SORTED_TARGETS, SOCKETS, CHIPSET_TO_SOCKET
+from hardware_matchers import detect_bundle_components, extract_motherboard, extract_psu, extract_ram, extract_storage, normalize_title, extract_gpu, extract_cpu
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -18,7 +24,7 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import DB_FILE, HARDWARE_TARGETS, SOCKETS, CHIPSET_TO_SOCKET
+from config import HARDWARE_TARGETS, SOCKETS, CHIPSET_TO_SOCKET
 load_dotenv(PROJECT_ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
@@ -26,11 +32,116 @@ SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHAB
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 
+# ------------------------------------------------------------------------------
+# КЛАС АСИНХРОННОГО ДЕБАГЕРА (ЗБЕРІГАЄ У debug/debug_report_parse_hardware.md)
+# ------------------------------------------------------------------------------
+class PipelineDebugger:
+    """Дебаггер для аналізу результатів парсингу комплектуючих OLX."""
+    def __init__(self, filename="debug_report_parse_hardware.md"):
+        self.debug_dir = PROJECT_ROOT / "debug"
+        self.debug_dir.mkdir(parents=True, exist_ok=True)
+        self.filepath = self.debug_dir / filename
+        
+        self.start_time = datetime.now()
+        self.stats = defaultdict(lambda: defaultdict(int))
+        self.samples = defaultdict(list)
+        self.lock = asyncio.Lock()
+
+    async def record_stat(self, category: str, metric: str, count: int = 1):
+        async with self.lock:
+            self.stats[category][metric] += count
+
+    async def add_sample(self, category: str, item: dict, max_samples: int = 100):
+        async with self.lock:
+            if len(self.samples[category]) < max_samples:
+                self.samples[category].append(item)
+
+    def save_report(self):
+        duration = (datetime.now() - self.start_time).total_seconds()
+        
+        report = []
+        report.append("# 🐛 ДЕБАГ-ЗВІТ ПАРСИНГУ КОМПЛЕКТУЮЧИХ OLX (GraphQL)")
+        report.append(f"**Дата та час запуску:** {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        report.append(f"**Тривалість виконання:** {duration:.2f} сек")
+        report.append(f"**Шлях до звіту:** `{self.filepath}`\n")
+        
+        report.append("## 📌 1. Задача та мета коду")
+        report.append(
+            "Основна мета: асинхронний збір свіжих оголошень комплектуючих з OLX (GraphQL API).\n"
+            "1. Отримання оголошень по підкатегоріях (відеокарти, процесори, материнські плати, БЖ, накопичувачі).\n"
+            "2. Фільтрація дублікатів за URL та перевірка приналежності до підкатегорії.\n"
+            "3. Сувора ідентифікація моделі заліза (`match_ad_to_hardware_target`) з очищенням порівняльних фраз.\n"
+            "4. Детекція сокетів, перевірка на дефекти/неробочий стан (`is_broken_ad`) та розпарсинг фото/продавця.\n"
+            "5. Відправка готових записів у Supabase (`ads`) та тригер WebSocket стріму.\n"
+        )
+
+        report.append("## 📊 2. Загальна статистика вхідних даних та відсіювання")
+        for cat, metrics in self.stats.items():
+            report.append(f"### ⚙️ Секція: {cat}")
+            for metric, val in metrics.items():
+                report.append(f"- **{metric}:** {val}")
+            report.append("")
+
+        report.append("## 🔄 3. Детальні приклади даних")
+        
+        category_mapping = [
+            ("gpu", "🎮 Відеокарти (GPU)"),
+            ("cpu", "🧠 Процесори (CPU)"),
+            ("motherboard", "🔌 Материнські плати (Motherboard)"),
+            ("psu", "⚡ Блоки живлення (PSU)"),
+            ("storage", "💾 Накопичувачі (SSD / HDD)"),
+            ("ram", "📟 Оперативна пам'ять (RAM)"),
+            ("bundle", "📦 Комплекти (Bundles)")
+        ]
+
+        # 1. Секція відсіяних оголошень ДЛЯ КОЖНОЇ КАТЕГОРІЇ (по 100 прикладів)
+        report.append("### 🚫 Відсіяні оголошення (по 100 прикладів для кожної категорії):")
+        for type_key, title in category_mapping:
+            filter_key = f"Filtered_{type_key}"
+            filtered_samples = self.samples.get(filter_key, [])
+            report.append(f"#### {title} — Відсіяно (Показано {len(filtered_samples)} з max 100):")
+            if not filtered_samples:
+                report.append("_Жодного відсіяного оголошення в цій категорії._\n")
+                continue
+            
+            for idx, sample in enumerate(filtered_samples, 1):
+                report.append(f"**Семпл #{idx}:**")
+                report.append("```json\n" + json.dumps(sample, indent=2, ensure_ascii=False) + "\n```")
+            report.append("")
+
+        # 2. Секція розпізнаних моделей ДЛЯ КОЖНОЇ КАТЕГОРІЇ (по 40 прикладів)
+        report.append("### 🎯 Успішно розпізнані моделі заліза (по 40 прикладів для кожної категорії):")
+        for type_key, title in category_mapping:
+            recognized_key = f"Recognized_{type_key}"
+            cat_samples = self.samples.get(recognized_key, [])
+            report.append(f"#### {title} — Розпізнано (Показано {len(cat_samples)} з max 40):")
+            if not cat_samples:
+                report.append("_Жодного оголошення з цієї категорії не розпізнано під час запуску._\n")
+                continue
+            
+            for idx, sample in enumerate(cat_samples, 1):
+                report.append(f"**Зразок #{idx}:**")
+                report.append("```json\n" + json.dumps(sample, indent=2, ensure_ascii=False) + "\n```")
+            report.append("")
+
+        report.append("=" * 60 + "\n")
+        
+        with open(self.filepath, "w", encoding="utf-8") as f:
+            f.write("\n".join(report))
+        
+        print(f"📝 [DEBUG] Повний дебаг-звіт збережено у `{self.filepath}`")
+
+
+# Глобальний екземпляр дебаггера
+debugger = PipelineDebugger()
+
+
 BROKEN_PATTERN = re.compile(
-    r"неробоч|не робоч|запчастин|запчасть|дефект|відновлен|восстановлен|"
+    r"неробоч|не робоч|запчастин|запчасть|запчасти|дефект|відновлен|восстановлен|"
     r"артефакт|поломан|неисправн|не справн|на детал|запчасті|прогрів|не стартует|"
     r"не включа|не включається|не включается|не працює|не работает|не робочий|"
-    r"\bремонт\w*",
+    r"на\s+запчаст\w*|под\s+восстановление|під\s+відновлення|под\s+ремонт|під\s+ремонт|"
+    r"непрацю\w*|\bремонт\w*",
     re.IGNORECASE,
 )
 
@@ -47,9 +158,13 @@ CLEAN_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
-# 🎯 Патерн для очищення порівняльних слів ("сильніше за gtx 1650", "аналог rx 580" тощо)
 COMPARISON_PATTERN = re.compile(
-    r"(сильніше\s+за|мощнее\s+чем|быстрее\s+чем|аналог|замість|вмісто|вместо|похожа\s+на)\s+[a-z0-9\s_]+",
+    r"(?:сильніше\s+за|мощнее\s+чем|быстрее\s+чем|аналог|замість|вмісто|вместо|похожа\s+на|як|как|рівень|уровень|мощнее|быстрее|сильнее)\s+[a-z0-9\s_-]+|\(.*?\)",
+    re.IGNORECASE
+)
+
+MULTILOT_PATTERN = re.compile(
+    r"\d+\s*(?:gb|гб)\s*,\s*\d+\s*(?:gb|гб)",
     re.IGNORECASE
 )
 
@@ -74,6 +189,7 @@ SUBCATEGORIES_TO_PARSE = [
     {"item_type": "motherboard", "subcategory": "materinskie-platy", "name": "Материнські плати"},
     {"item_type": "psu", "subcategory": "bloki-pitaniya", "name": "Блоки живлення"},
     {"item_type": "storage", "subcategory": "zhestkie-diski", "name": "Накопичувачі"},
+    {"item_type": "ram", "subcategory": "moduli-pamyati", "name": "Оперативна пам'ять"}
 ]
 
 GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!] = []) {
@@ -97,16 +213,8 @@ GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!
 }"""
 
 
-def validate_title_strict(title: str, required_keywords: list[str]) -> bool:
-    """Сувора перевірка ключових слів з урахуванням меж слів."""
-    title_lower = title.lower()
-    for kw in required_keywords:
-        kw_clean = kw.lower().strip()
-        pattern = r"(?<![a-z0-9])" + re.escape(kw_clean) + r"(?![a-z0-9])"
-        if re.search(pattern, title_lower):
-            return True
-    return False
-
+def validate_title_strict(title_lower: str, compiled_pattern: re.Pattern) -> bool:
+    return bool(compiled_pattern.search(title_lower))
 
 def is_broken_ad(text: str) -> bool:
     if not text:
@@ -114,11 +222,9 @@ def is_broken_ad(text: str) -> bool:
     clean_text = CLEAN_PATTERNS.sub("", text)
     return bool(BROKEN_PATTERN.search(clean_text))
 
-
 def clean_url(url: str) -> str:
     parsed = urlparse(url)
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
-
 
 def detect_socket(title: str, description: str, component_name: str) -> str | None:
     full_text = f"{title} {description}".lower()
@@ -136,54 +242,108 @@ def detect_socket(title: str, description: str, component_name: str) -> str | No
     return None
 
 
-def match_ad_to_hardware_target(title: str, target_items_for_type: dict) -> tuple[str, dict] | None:
-    title_clean = title.lower()
+def match_ad_to_hardware_target(title: str, target_items_for_type: dict = None) -> tuple[str, dict] | None:
+    if not title:
+        return None
 
-    # 🎯 1. Прибираємо порівняльні фрази на кшталт "сильніше за gtx 1650"
+    # 1. Повна нормалізація
+    title_clean = normalize_title(title)
+
+    if MULTILOT_PATTERN.search(title_clean):
+        return None
+
     title_for_match = COMPARISON_PATTERN.sub("", title_clean)
 
-    # 🎯 2. Сортуємо моделі за довжиною назви від найдовших до найкоротших
-    sorted_targets = sorted(
-        target_items_for_type.items(),
-        key=lambda x: len(x[0]),
-        reverse=True
+    # --- ПЕРЕВІРКА НА СУТНІСТЬ BUNDLE (КОМПЛЕКТ) ---
+    bundle_data = detect_bundle_components(title_for_match, HARDWARE_TARGETS)
+    if bundle_data:
+        bundle_key = bundle_data["bundle_key"]
+        bundle_cfg = {
+            "item_type": "bundle",
+            "subcategory": "komplektuyushchie-set",
+            "components": bundle_data["components"]
+        }
+        return bundle_key, bundle_cfg
+
+    # --- СТЕК ПООДИНОКИХ СУТНОСТЕЙ (Окремі товари) ---
+
+    # 1. Спеціальний перевірочний виняток для китайських X99
+    if "x99" in title_for_match and "x99" in HARDWARE_TARGETS:
+        return "x99", HARDWARE_TARGETS["x99"]
+
+    # 2. GPU Matching (O(1))
+    gpu_candidates = extract_gpu(title_for_match)
+    for cand in gpu_candidates:
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
+
+    # 3. CPU Matching (O(1))
+    cpu_candidates = extract_cpu(title_for_match)
+    for cand in cpu_candidates:
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
+
+    # 4. Motherboard Matching (O(1))
+    mb_candidates = extract_motherboard(title_for_match)
+    for cand in mb_candidates:
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
+
+    psu_candidates = extract_psu(title_for_match)
+    for cand in psu_candidates:
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
+
+    # 6. Storage Matching (O(1))
+    storage_candidates = extract_storage(title_for_match)
+    for cand in storage_candidates:
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
+
+    # 7. RAM Matching (O(1))
+    ram_candidates = extract_ram(title_for_match)
+    for cand in ram_candidates:
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
+
+
+    # 5. Fallback / Storage & PSU
+    targets_to_check = LEGACY_PRE_SORTED_TARGETS if target_items_for_type is None else sorted(
+        target_items_for_type.items(), key=lambda x: len(x[0]), reverse=True
     )
 
-    for target_name, cfg in sorted_targets:
-        req_keywords = cfg.get("required_keywords", [])
+    for target_name, cfg in targets_to_check:
+        compiled_patt = cfg.get("compiled_pattern")
 
         if cfg.get("item_type") == "storage":
             parts = target_name.split("_")
-            if len(parts) < 2:
-                continue
-
-            st_type = parts[0]
-            capacity_raw = parts[1]
+            if len(parts) < 2: continue
+            st_type, capacity_raw = parts[0], parts[1]
             cap_num = re.sub(r"\D", "", capacity_raw)
             cap_unit = "tb" if "tb" in capacity_raw else "gb"
 
             has_type = False
             if st_type == "ssd":
-                has_type = "ssd" in title_for_match or "ссд" in title_for_match or "nvme" in title_for_match
+                has_type = any(w in title_for_match for w in ["ssd", "ссд", "nvme", "m.2", "m2"])
             elif st_type == "hdd":
                 has_type = any(w in title_for_match for w in [
-                    "hdd", "хдд", "жорстк", "жестк", "винчестер", "жерстк", "toshiba",
-                    "wd blue", "wd red", "wd black", "wd green", "barracuda", "wd"
+                    "hdd", "хдд", "жорстк", "жестк", "винчестер", "toshiba",
+                    "wd blue", "wd red", "wd black", "wd green", "barracuda", "wd", "hitachi", "seagate", "ironwolf"
                 ])
 
-            if not has_type:
-                continue
+            if not has_type: continue
 
-            if cap_unit == "tb":
-                pattern = r"(?<![a-z0-9])" + cap_num + r"\s*(tb|тб|терабайт|1000\s*gb|1000\s*гб)(?![a-z0-9])"
+            if capacity_raw == "1tb":
+                pattern = r"(?<![a-z0-9])(1\s*(tb|тб|терабайт)|(1000|1024)\s*(gb|гб|гігабайт|гигабайт))(?![a-z0-9])"
+            elif cap_unit == "tb":
+                pattern = r"(?<![a-z0-9])" + cap_num + r"\s*(tb|тб|терабайт)(?![a-z0-9])"
             else:
-                pattern = r"(?<![a-z0-9])" + cap_num + r"\s*(gb|гб|гігабайт|гигабайт)?(?![a-z0-9])"
+                pattern = r"(?<![a-z0-9])" + cap_num + r"\s*(gb|гб|гігабайт|гигабайт)(?![a-z0-9])"
 
             if re.search(pattern, title_for_match):
                 return target_name, cfg
-
         else:
-            if validate_title_strict(title_for_match, req_keywords):
+            if compiled_patt and bool(compiled_patt.search(title_for_match)):
                 return target_name, cfg
 
     return None
@@ -232,11 +392,13 @@ async def fetch_subcategory_page(
             )
 
             if resp.status_code in (401, 403):
+                await debugger.record_stat("Network", f"HTTP 403 (Блокування {subcat_key})")
                 print(f"[WARN 403] Блокування на '{subcat_key}'. Спроба {attempt}/{max_retries}. Чекаємо 10с...")
                 await asyncio.sleep(10)
                 continue
 
             if resp.status_code != 200:
+                await debugger.record_stat("Network", f"HTTP Status {resp.status_code}")
                 print(f"[ERR] HTTP Status {resp.status_code} для '{subcat_key}'")
                 await asyncio.sleep(2)
                 continue
@@ -244,6 +406,7 @@ async def fetch_subcategory_page(
             res_json = resp.json()
             break
         except Exception as e:
+            await debugger.record_stat("Network", "Мережева помилка (Exception)")
             print(f"[EXC] Помилка мережі для '{subcat_key}': {e}")
             await asyncio.sleep(2)
             if attempt == max_retries:
@@ -257,7 +420,10 @@ async def fetch_subcategory_page(
         .get("data", [])
     )
 
+    await debugger.record_stat("OLX_GraphQL", f"Отримано оголошень [{subcat_key}]", len(listings))
+
     if not listings:
+        await debugger.record_stat("OLX_GraphQL", f"Відсіяно if (Порожній список [{subcat_key}])")
         return []
 
     for item in listings:
@@ -270,12 +436,21 @@ async def fetch_subcategory_page(
                     break
 
             if ad_subcat and ad_subcat != subcat_key:
+                await debugger.record_stat("Filtering_Rules", "Відсіяно if (Невідповідність підкатегорії)")
+                # Зберігаємо відсіяні оголошення ОКРЕМО по категорії
+                await debugger.add_sample(f"Filtered_{item_type}", {
+                    "reason": "mismatched_subcategory",
+                    "expected": subcat_key,
+                    "actual": ad_subcat,
+                    "title": item.get("title")
+                }, max_samples=100)
                 continue
 
             title = item.get("title", "Без назви").replace("'", "").strip()
 
             raw_url = item.get("url", "")
             if not raw_url:
+                await debugger.record_stat("Filtering_Rules", "Відсіяно if (Порожній URL)")
                 continue
 
             if not raw_url.startswith("http"):
@@ -284,6 +459,13 @@ async def fetch_subcategory_page(
             advert_url = clean_url(raw_url)
 
             if advert_url in seen_urls:
+                # await debugger.record_stat("Filtering_Rules", "Відсіяно if (Дублікат URL в DB)")
+                # Зберігаємо відсіяні оголошення ОКРЕМО по категорії
+                await debugger.add_sample(f"Filtered_{item_type}", {
+                    "reason": "duplicate_url_already_in_db",
+                    "url": advert_url,
+                    "title": title
+                }, max_samples=100)
                 continue
 
             user_data = item.get("user") or {}
@@ -293,6 +475,13 @@ async def fetch_subcategory_page(
 
             matched = match_ad_to_hardware_target(title, targets_for_this_type)
             if not matched:
+                await debugger.record_stat("Filtering_Rules", "Відсіяно if (Не розпізнано модель заліза)")
+                # Зберігаємо відсіяні оголошення ОКРЕМО по категорії
+                await debugger.add_sample(f"Filtered_{item_type}", {
+                    "reason": "no_hardware_target_matched",
+                    "title": title,
+                    "item_type": item_type
+                }, max_samples=100)
                 continue
 
             raw_ad_id = item.get("id")
@@ -303,6 +492,9 @@ async def fetch_subcategory_page(
 
             full_text = f"{title} {description}"
             has_defects = 1 if is_broken_ad(full_text) else 0
+
+            if has_defects:
+                await debugger.record_stat("Parsing_Metrics", "Виявлено товарів з дефектами")
 
             price = 0
             for param in item.get("params", []):
@@ -339,13 +531,15 @@ async def fetch_subcategory_page(
             if item_type in ("motherboard", "cpu"):
                 detected_socket = detect_socket(title, description, target_name)
 
-            parsed_for_subcat.append({
+            bundle_components = cfg.get("components") if item_type == "bundle" or target_name.startswith("bundle_") else None
+
+            ad_payload = {
                 "ad_id": ad_id,
                 "url": advert_url,
                 "title": title,
                 "description": description,
                 "price": price,
-                "item_type": item_type,
+                "item_type": cfg.get("item_type", item_type),
                 "component_name": target_name,
                 "socket": detected_socket,
                 "has_defects": has_defects,
@@ -360,15 +554,30 @@ async def fetch_subcategory_page(
                 "seller_name": seller_name,
                 "seller_created_at": seller_created_at,
                 "seller_type": seller_type,
-                "seller_price_clean": price
-            })
+                "seller_price_clean": price,
+                "bundle_components": bundle_components
+            }
 
+            parsed_for_subcat.append(ad_payload)
             seen_urls.add(advert_url)
+
+            await debugger.record_stat("Parsing_Metrics", f"Успішно розпізнано [{item_type}]")
+            
+            # Додаємо розпізнані семпли ОКРЕМО по категорії (до 40)
+            await debugger.add_sample(f"Recognized_{item_type}", {
+                "raw_title": title,
+                "matched_target": target_name,
+                "item_type": item_type,
+                "detected_socket": detected_socket,
+                "has_defects": bool(has_defects),
+                "price_uah": price
+            }, max_samples=40)
 
             defect_tag = " [⚠️ ДЕФЕКТ]" if has_defects else ""
             print(f"   🎯 [РОЗПІЗНАНО: {target_name}]{defect_tag}: {title[:40]}... ({price} грн)")
 
         except Exception as ex:
+            await debugger.record_stat("Errors", f"Помилка елемента: {str(ex)[:40]}")
             print(f"   [!] Помилка обробки елемента: {ex}")
             continue
 
@@ -414,8 +623,10 @@ def main(pages_to_parse: int = 1) -> None:
     try:
         response = supabase.table("ads").select("url").limit(50000).execute()
         seen_urls = set(row["url"] for row in (response.data or []))
+        asyncio.run(debugger.record_stat("Supabase_Input", "Завантажено URLs для дедуплікації", len(seen_urls)))
         print(f"[БАЗА SUPABASE] Завантажено {len(seen_urls)} комплектуючих для дедуплікації.")
     except Exception as e:
+        asyncio.run(debugger.record_stat("Supabase_Input", "Помилка читання Supabase URLs"))
         print(f"[ПОМИЛКА ЧИТАННЯ SUPABASE]: {e}")
         seen_urls = set()
 
@@ -423,6 +634,7 @@ def main(pages_to_parse: int = 1) -> None:
         k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")
     }
 
+    asyncio.run(debugger.record_stat("Parser_Config", "Цільових моделей комплектуючих", len(hardware_items)))
     print(f"🚀 Стартуємо збір по підкатегоріях для {len(hardware_items)} моделей (сторінок на категорію: {pages_to_parse})...")
     start_time = time.time()
 
@@ -431,26 +643,35 @@ def main(pages_to_parse: int = 1) -> None:
     )
 
     elapsed = time.time() - start_time
+    asyncio.run(debugger.record_stat("Summary", "Знайдено нових унікальних оголошень", len(new_ads_to_insert)))
     print(f"\n⏱️ Мережевий збір завершено за {elapsed:.2f} сек. (Знайдено нових комплектуючих: {len(new_ads_to_insert)})")
 
     # 2. Збереження у хмарний PostgreSQL Supabase та тригер WebSockets
     if new_ads_to_insert:
         try:
             supabase.table("ads").upsert(new_ads_to_insert, on_conflict="ad_id").execute()
+            asyncio.run(debugger.record_stat("Supabase_Output", "Успішно збережено нових оголошень", len(new_ads_to_insert)))
             print(f"[УСПІХ SUPABASE] Збережено {len(new_ads_to_insert)} нових комплектуючих у хмару!")
 
             # 3. Тригеримо WebSocket на сервері для оновлення живого стріму
             try:
                 import requests
                 requests.post("http://localhost:8000/api/trigger-new-ad", json=new_ads_to_insert, timeout=2)
+                asyncio.run(debugger.record_stat("WebSocket", "Успішно надіслано тригер стріму"))
                 print("📢 [WEBSOCKET] Живий стрим оновлено!")
             except Exception:
+                asyncio.run(debugger.record_stat("WebSocket", "Помилка з'єднання з локальним сервером"))
                 pass
 
         except Exception as ex:
+            asyncio.run(debugger.record_stat("Supabase_Output", f"Помилка Upsert: {str(ex)[:40]}"))
             print(f"❌ [ПОМИЛКА SUPABASE]: {ex}")
     else:
+        asyncio.run(debugger.record_stat("Summary", "Немає нових оголошень для відправки в DB"))
         print("[INFO] Нових оголошень для запису не знайдено.")
+
+    # Зберігаємо підсумковий дебаг-звіт у debug/debug_report_parse_hardware.md
+    debugger.save_report()
 
 
 if __name__ == "__main__":
