@@ -436,7 +436,7 @@ async def main_async(pages_to_parse: int = 1) -> None:
         seen_urls = set()
 
     async with AsyncSession(headers=HEADERS, impersonate="chrome124") as session:
-        print("🔥 Прогріваємо сесію OLX...")
+        print(" Прогріваємо сесію OLX...")
         try:
             await session.get("https://www.olx.ua/", timeout=15)
             await asyncio.sleep(0.5)
@@ -451,7 +451,7 @@ async def main_async(pages_to_parse: int = 1) -> None:
         print(f"\n🎯 [ПАРСИНГ] Починаємо збір (кількість сторінок: {pages_to_parse})...")
         for page in range(pages_to_parse):
             offset = page * 40
-            print(f"   📂 Сторінка {page + 1}/{pages_to_parse} (offset={offset})...")
+            print(f"    Сторінка {page + 1}/{pages_to_parse} (offset={offset})...")
             
             items, dups, net_err, parse_err = await fetch_pcs_page(
                 session, seen_urls, offset=offset, limit=40
@@ -485,10 +485,10 @@ async def main_async(pages_to_parse: int = 1) -> None:
                         timeout=5
                     )
                 await debugger.record_stat("WebSocket", "Успішно тригернуто живий стрім")
-                print("📢 [WEBSOCKET] Трансляцію нових лотів на фронтенд успішно відправлено!")
+                print(" [WEBSOCKET] Трансляцію нових лотів на фронтенд успішно відправлено!")
             except Exception as ws_err:
                 await debugger.record_stat("WebSocket", "Помилка відправки тригеру")
-                print(f"⚠️ [WEBSOCKET WARN] Не вдалося тригернути WebSocket на сервері: {ws_err}")
+                print(f" [WEBSOCKET WARN] Не вдалося тригернути WebSocket на сервері: {ws_err}")
 
         except Exception as e:
             await debugger.record_stat("Supabase_Output", f"Помилка Upsert DB: {str(e)[:40]}")

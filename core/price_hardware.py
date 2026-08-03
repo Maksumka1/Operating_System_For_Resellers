@@ -11,40 +11,48 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import HARDWARE_TARGETS
 load_dotenv(PROJECT_ROOT / ".env")
+
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 
-def calculate_percentile_price(prices: list[int]) -> int:
-    if not prices:
-        return 0
+def calculate_percentile_price(ads_list: list[dict]) -> tuple[int, list[int]]:
+    if not ads_list:
+        return 0, []
 
-    sorted_prices = sorted(prices)
-    n = len(sorted_prices)
+    # Сортуємо оголошення за ціною
+    sorted_ads = sorted(ads_list, key=lambda x: x["price"])
+    n = len(sorted_ads)
 
-    # 1. Якщо менше 3 оголошень — вибірка нерелевантна для ринкової оцінки
+    # 1. Менше 3 оголошень — вибірка нерелевантна
     if n < 3:
-        return 0
+        return 0, []
 
-    # 2. Для малих вибірок (3-5 шт) беремо медіану, щоб не схопити найнижчий аномальний скам
+    # 2. Від 3 до 5 — медіана
     if n < 6:
         mid = n // 2
-        return sorted_prices[mid]
+        selected_price = sorted_ads[mid]["price"]
+        used_ids = [ad["ad_id"] for ad in sorted_ads]
+        return selected_price, used_ids
 
-    # 3. Для великих вибірок (>= 6) відсікаємо 10% аномалій з країв і беремо 33-й перцентиль
+    # 3. 6 і більше — відсікаємо 10% крайніх аномалій
     trim_size = int(n * 0.1)
     if trim_size > 0:
-        sorted_prices = sorted_prices[trim_size : n - trim_size]
-        n = len(sorted_prices)
+        trimmed_ads = sorted_ads[trim_size : n - trim_size]
+    else:
+        trimmed_ads = sorted_ads
 
-    index = int(n * 0.33)
-    index = min(index, n - 1)
+    n_trimmed = len(trimmed_ads)
+    index = int(n_trimmed * 0.33)
+    index = min(index, n_trimmed - 1)
 
-    return sorted_prices[index]
+    selected_price = trimmed_ads[index]["price"]
+    used_ids = [ad["ad_id"] for ad in trimmed_ads]
+
+    return selected_price, used_ids
 
 
 def main() -> None:
@@ -53,42 +61,44 @@ def main() -> None:
     print(f"--- ПОЧАТОК АНАЛІЗУ ЦІН КОМПЛЕКТУЮЧИХ ЗА {today_sql} ---")
 
     try:
-        # Додано "ram" та "bundle" до списку типів для аналізу
-        response = supabase.table("ads") \
-            .select("component_name, price") \
-            .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"]) \
-            .eq("status", "active") \
-            .eq("has_defects", 0) \
-            .gt("price", 100) \
-            .not_.is_("component_name", "null") \
-            .neq("seller_risk_score", "suspicious") \
+        response = (
+            supabase.table("ads")
+            .select("ad_id, component_name, price")
+            .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"])
+            .eq("status", "active")
+            .eq("has_defects", 0)
+            .gt("price", 100)
+            .not_.is_("component_name", "null")
+            .neq("seller_risk_score", "suspicious")
             .execute()
+        )
         all_ads = response.data or []
     except Exception as e:
         print(f"❌ [SUPABASE ERROR]: {e}")
         return
 
-    prices_by_component: dict[str, list[int]] = {}
+    # Групуємо самі об'єкти оголошень ({id, price}) по деталям
+    ads_by_component: dict[str, list[dict]] = {}
     for ad in all_ads:
         comp_name = ad.get("component_name")
         if comp_name:
-            prices_by_component.setdefault(comp_name, []).append(ad["price"])
+            ads_by_component.setdefault(comp_name, []).append(ad)
 
     records_to_upsert = []
 
-    for target_name, prices_list in prices_by_component.items():
-        real_price = calculate_percentile_price(prices_list)
+    for target_name, ads_list in ads_by_component.items():
+        real_price, competitor_ids = calculate_percentile_price(ads_list)
         
-        # Записуємо тільки якщо вибірка була достатньою (> 0)
         if real_price > 0:
             records_to_upsert.append({
                 "component_name": target_name,
                 "price": real_price,
-                "date": today_sql
+                "date": today_sql,
+                "competitor_ids": competitor_ids
             })
-            print(f"  [RESULT] -> {target_name}: {real_price} UAH (вибірка: {len(prices_list)} оголошень)")
+            print(f"  [RESULT] -> {target_name}: {real_price} UAH (вибірка: {len(competitor_ids)} лотів)")
         else:
-            print(f"  [SKIP] -> {target_name}: недостатньо оголошень для оцінки ({len(prices_list)} шт)")
+            print(f"  [SKIP] -> {target_name}: недостатньо оголошень для оцінки ({len(ads_list)} шт)")
 
     if records_to_upsert:
         try:
@@ -96,7 +106,7 @@ def main() -> None:
                 records_to_upsert, 
                 on_conflict="component_name,date"
             ).execute()
-            print(f"\n✅ [УСПІХ] Розраховано та збережено в хмару ринкові ціни для {len(records_to_upsert)} моделей!")
+            print(f"\n✅ [УСПІХ] Оновлено ціни та competitor_ids для {len(records_to_upsert)} моделей!")
         except Exception as e:
             print(f"\n❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ ЦІН В SUPABASE]: {e}")
     else:

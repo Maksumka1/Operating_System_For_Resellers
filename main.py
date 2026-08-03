@@ -10,6 +10,8 @@ import requests
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
+from core import hardware_evaluator
+
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
     PROJECT_ROOT = PROJECT_ROOT.parent
@@ -24,7 +26,6 @@ SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHAB
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 try:
-    import scripts.db_init as db_init
     import parsers.parser_hardware as parser_hardware
     import parsers.parser as parser
     import core.filter_ads as filter_ads
@@ -96,7 +97,7 @@ def broadcast_updated_ads(updated_ids: list[int]):
         response = (
             supabase.table("ads")
             .select("*")
-            .in_("id", updated_ids)
+            .in_("ad_id", updated_ids)
             .eq("status", "active")
             .execute()
         )
@@ -114,7 +115,7 @@ def broadcast_updated_ads(updated_ids: list[int]):
         ads_to_broadcast.append(ad)
 
     if ads_to_broadcast:
-        print(f"🚀 [BROADCAST] Пушимо пачку з {len(ads_to_broadcast)} повних лотів на Live-сайт...")
+        print(f" [BROADCAST] Пушимо пачку з {len(ads_to_broadcast)} повних лотів на Live-сайт...")
         try:
             requests.post("http://localhost:8000/api/trigger-new-ad", json=ads_to_broadcast, timeout=5)
         except Exception as e:
@@ -123,7 +124,7 @@ def broadcast_updated_ads(updated_ids: list[int]):
 
 def run_step(step_name: str, step_function, *args, **kwargs):
     print("\n" + "=" * 60)
-    print(f"🚀 [КРОК] ЗАПУСК ЕТАПУ: {step_name.upper()}")
+    print(f" [КРОК] ЗАПУСК ЕТАПУ: {step_name.upper()}")
     print("=" * 60)
     
     start_time = time.time()
@@ -144,17 +145,21 @@ def run_heavy_analysis_in_background():
 
     is_heavy_analysis_running = True
     try:
-        updated_comp_ids = run_step("Визначення ринкової ціни продажів (конкуренти)", competitor_finder.main)
+        # 1. Перераховуємо ціни конкурентів для готових ПК
+        updated_comp_ids = run_step("Визначення ринкової ціни продажів (конкуренти ПК)", competitor_finder.main)
         if updated_comp_ids and isinstance(updated_comp_ids, list):
-            print(f"🔄 [RE-BROADCAST] Пушимо {len(updated_comp_ids)} оновлених цін конкурентів на сайт...")
+            print(f"🔄 [RE-BROADCAST] Пушимо {len(updated_comp_ids)} оновлених цін конкурентів ПК на сайт...")
             broadcast_updated_ads(updated_comp_ids)
 
-        updated_hw_ids = run_step("Перерахунок прайсів заліза", price_hardware.main)
-        if updated_hw_ids and isinstance(updated_hw_ids, list):
-            print(f"🔄 [RE-BROADCAST] Пушимо {len(updated_hw_ids)} оновлених цін заліза на сайт...")
-            broadcast_updated_ads(updated_hw_ids)
+        run_step("Перерахунок прайсів заліза", price_hardware.main)
+        eval_hw_ids = run_step("Оцінка вигідності комплектуючих після оновлення цін заліза", hardware_evaluator.main)
+        
+        if eval_hw_ids and isinstance(eval_hw_ids, list):
+            print(f"🔄 [RE-BROADCAST] Пушимо {len(eval_hw_ids)} оцінених комплектуючих на сайт...")
+            broadcast_updated_ads(eval_hw_ids)
 
         run_step("Верифікація активності оголошень (архів)", clean_archive.main)
+
     except Exception as e:
         print(f"❌ [ФОНОВИЙ АНАЛІЗ ПОМИЛКА]: {e}")
     finally:
@@ -163,20 +168,20 @@ def run_heavy_analysis_in_background():
 
 def run_pipeline_iteration(is_first_run: bool = False):
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-    print(f"\n⚡ [24/7 LOOP] Перевірка OLX та залізо-ринку ({today_str})...")
+    print(f"\n [24/7 LOOP] Перевірка OLX та залізо-ринку ({today_str})...")
 
     pages_to_parse = 4 if is_first_run else 1
     if is_first_run:
-        print("🚀 [ПЕРШИЙ ЗАПУСК] Парсимо 4 сторінки для глибокого первинного збору...")
+        print(" [ПЕРШИЙ ЗАПУСК] Парсимо 4 сторінки для глибокого первинного збору...")
     else:
-        print("🔄 [РЕГУЛЯРНИЙ ЗАПУСК] Парсимо 1 першу сторінку (40 найновіших)...")
+        print(" [РЕГУЛЯРНИЙ ЗАПУСК] Парсимо 1 першу сторінку (40 найновіших)...")
 
     run_step("Парсинг сирих оголошень ПК", parser.main, pages_to_parse=pages_to_parse)
     run_step("Парсинг комплектуючих", parser_hardware.main, pages_to_parse=pages_to_parse)
     run_step("Фільтрація бан-слів", filter_ads.main)
 
     unprocessed_count = count_unprocessed_ads()
-    print(f"🔎 [АНАЛІЗ] Нових релевантних лотів для оцінки: {unprocessed_count}")
+    print(f" [АНАЛІЗ] Нових релевантних лотів для оцінки: {unprocessed_count}")
 
     if unprocessed_count > 0:
         run_step("Оцінка вигідності ПК", pc_evaluator.main)
@@ -185,22 +190,22 @@ def run_pipeline_iteration(is_first_run: bool = False):
         if updated_ids:
             run_step("Пуш нових лотів на Live-сайт", broadcast_updated_ads, updated_ids)
     else:
-        print("💤 Нових лотів не виявлено. Пропускаємо швидку оцінку.")
+        print(" Нових лотів не виявлено. Пропускаємо швидку оцінку.")
 
     if is_first_run or (not is_heavy_analysis_running):
         threading.Thread(target=run_heavy_analysis_in_background, daemon=True).start()
 
     if pages_to_parse == 4:
-        print("\n⏳ Пауза 25 сек для скидання ліміту DataDome...\n")
+        print("\n Пауза 25 сек для скидання ліміту DataDome...\n")
         time.sleep(25)
     else:
-        print("\n⏳ Пауза 10 сек для скидання ліміту DataDome...\n")
-        time.sleep(10)
+        print("\n Пауза 50 сек для скидання ліміту DataDome...\n")
+        time.sleep(50)
 
 
 def main():
     print("==========================================================")
-    print("🏁     СТАРТ СИСТЕМИ АВТОМАТИЗАЦІЇ 24/7 (ALL-IN-ONE)       ")
+    print("     СТАРТ СИСТЕМИ АВТОМАТИЗАЦІЇ 24/7 (ALL-IN-ONE)       ")
     print("==========================================================")
 
     start_web_servers()
@@ -216,11 +221,16 @@ def main():
             is_first_run = False
 
             elapsed = time.time() - cycle_start
-            print(f"\n⏱️ Ітерацію збору завершено за {elapsed:.2f} сек. Наступна перевірка через {cycle_delay_seconds} сек...")
+            if elapsed < 30:
+                cycle_delay_seconds = 30
+            else:
+                cycle_delay_seconds = 20
+
+            print(f"\n⏱ Ітерацію збору завершено за {elapsed:.2f} сек. Наступна перевірка через {cycle_delay_seconds} сек...")
             time.sleep(cycle_delay_seconds)
 
     except KeyboardInterrupt:
-        print("\n👋 Ручна зупинка програми (Ctrl+C). Очищення ресурсів...")
+        print("\n Ручна зупинка програми (Ctrl+C). Очищення ресурсів...")
 
 
 if __name__ == "__main__":

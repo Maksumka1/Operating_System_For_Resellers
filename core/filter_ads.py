@@ -102,7 +102,7 @@ def main() -> None:
     # 1. Отримуємо з Supabase нові ПК, де pc_category ще не визначено або 'uncategorized'
     try:
         response = supabase.table("ads") \
-            .select("id, title, description") \
+            .select("ad_id, title, description") \
             .eq("item_type", "pc") \
             .eq("status", "active") \
             .or_("pc_category.eq.uncategorized,pc_category.is.null") \
@@ -131,7 +131,7 @@ def main() -> None:
     ids_by_category = defaultdict(list)
 
     for pc in unfiltered_pcs:
-        db_id = pc["id"]
+        db_id = pc["ad_id"]
         title = pc.get("title") or ""
         description = pc.get("description") or ""
         
@@ -152,7 +152,7 @@ def main() -> None:
                 batch_ids = ids[i : i + chunk_size]
                 supabase.table("ads") \
                     .update({"pc_category": category}) \
-                    .in_("id", batch_ids) \
+                    .in_("ad_id", batch_ids) \
                     .execute()
                 updated_total += len(batch_ids)
 
@@ -160,18 +160,18 @@ def main() -> None:
     except Exception as e:
         print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КАТЕГОРІЙ В SUPABASE]: {e}")
 
-    print("\n✅ [УСПІХ] Розподіл по категоріям завершено:")
-    print(f" 🗑️  Застарілі (obsolete):     {category_counts['obsolete']} шт.")
-    print(f" 📦 Оптові (wholesale):      {category_counts['wholesale']} шт.")
-    print(f" 🏢 Брендові (brand_office): {category_counts['brand_office']} шт.")
-    print(f" 🎮 Ігрові (gaming):          {category_counts['gaming']} шт.")
-    print(f" 🖥️  Домашні (home_office):   {category_counts['home_office']} шт.")
-    print(f" ⛏️  Майнінг (maining):       {category_counts['maining']} шт.")
+    print("\n [УСПІХ] Розподіл по категоріям завершено:")
+    print(f"   Застарілі (obsolete):     {category_counts['obsolete']} шт.")
+    print(f"  Оптові (wholesale):      {category_counts['wholesale']} шт.")
+    print(f"  Брендові (brand_office): {category_counts['brand_office']} шт.")
+    print(f"  Ігрові (gaming):          {category_counts['gaming']} шт.")
+    print(f"   Домашні (home_office):   {category_counts['home_office']} шт.")
+    print(f"   Майнінг (maining):       {category_counts['maining']} шт.")
 
     # 3. Рахуємо загальну кількість чистих ПК з Supabase для статистики
     try:
         active_res = supabase.table("ads") \
-            .select("id", count="exact") \
+            .select("ad_id", count="exact") \
             .eq("item_type", "pc") \
             .eq("status", "active") \
             .eq("has_defects", 0) \

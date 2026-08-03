@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List, Union
+from typing import List, Union, Any
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Body, Request, Depends, HTTPException, status
@@ -52,8 +52,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 # --- PYDANTIC МОДЕЛЬ ДАНИХ ---
 class NewAdModel(BaseModel):
-    id: int | None = None
-    ad_id: int | None = None
+    id: Union[int, str, None] = None
+    ad_id: Union[int, str, None] = None
     url: str
     title: str
     description: str | None = None
@@ -83,6 +83,7 @@ class NewAdModel(BaseModel):
     cpu_market_price: float | int | None = None
     estimated_fair_price: float | int | None = None
     competitor_price: float | int | None = None
+    competitors_ids: Any = None  # 👈 Додано масив/JSON ID конкурентів
     saving_uah: float | int | None = None
     saving_percent: float | int | None = None
     deal_status: str | None = "regular"
@@ -154,6 +155,7 @@ def get_ads(current_user = Depends(get_current_user)):
         ad_dict["seller_rating"] = ad_dict.get("seller_rating") or "немає оцінок"
         ad_dict["seller_risk_score"] = ad_dict.get("seller_risk_score") or "neutral"
         ad_dict["deal_status"] = ad_dict.get("deal_status") or "regular"
+        ad_dict["competitors_ids"] = ad_dict.get("competitors_ids") or []
         result.append(ad_dict)
 
     return result
@@ -165,7 +167,6 @@ def get_single_ad(ad_id: str, current_user = Depends(get_current_user)):
     print(f"🔍 [API GET SINGLE] Запит лоту {ad_id} від: {current_user.email}")
 
     try:
-        # Перевіряємо, чи ad_id це число (для bigint колонок)
         try_id = int(ad_id) if ad_id.isdigit() else None
 
         if try_id is not None:
@@ -182,6 +183,7 @@ def get_single_ad(ad_id: str, current_user = Depends(get_current_user)):
         ad_dict["seller_rating"] = ad_dict.get("seller_rating") or "немає оцінок"
         ad_dict["seller_risk_score"] = ad_dict.get("seller_risk_score") or "neutral"
         ad_dict["deal_status"] = ad_dict.get("deal_status") or "regular"
+        ad_dict["competitors_ids"] = ad_dict.get("competitors_ids") or []
 
         return ad_dict
     except HTTPException:

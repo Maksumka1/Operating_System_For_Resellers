@@ -127,7 +127,7 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
         saving = 0
 
     return {
-        "id": ad_id,
+        "ad_id": ad_id,
         "seller_price_clean": seller_price,
         "gpu_detected": gpu_display,
         "gpu_market_price": gpu_price,
@@ -153,7 +153,7 @@ def main() -> None:
     # 1. Беремо з Supabase тільки АКТИВНІ, НЕУШКОДЖЕНІ та ЩЕ НЕ ОЦІНЕНІ ПК
     try:
         response = supabase.table("ads") \
-            .select("id, title, description, price, url") \
+            .select("ad_id, title, description, price, url") \
             .eq("item_type", "pc") \
             .eq("status", "active") \
             .or_("has_defects.eq.0,has_defects.is.null") \
@@ -174,7 +174,7 @@ def main() -> None:
     updates_pool = []
 
     for pc in unrated_pcs:
-        ad_id = pc["id"]
+        ad_id = pc["ad_id"]
         title = pc.get("title") or ""
         description = pc.get("description") or ""
         price = pc.get("price") or 0
@@ -182,7 +182,7 @@ def main() -> None:
         evaluation = evaluate_pc(ad_id, title, description, price, prices)
             
         updates_pool.append({
-            "id": evaluation["id"],
+            "ad_id": evaluation["ad_id"],
             "seller_price_clean": evaluation["seller_price_clean"],
             "gpu_detected": evaluation["gpu_detected"],
             "cpu_detected": evaluation["cpu_detected"],
@@ -197,18 +197,12 @@ def main() -> None:
         
         count_evaluated += 1
 
-        if evaluation["saving_percent"] >= 10:
-            print(f"\n[{evaluation['deal_status']}] {title[:60]}...")
-            print(f"   Відеокарта: {evaluation['gpu_detected']} ({evaluation['gpu_market_price']} грн)")
-            print(f"   Процесор:   {evaluation['cpu_detected']} ({evaluation['cpu_market_price']} грн)")
-            print(f"   🔥 Вигода:  {evaluation['saving_uah']} грн ({evaluation['saving_percent']}%)")
-
     # 2. Оновлюємо розраховані значення у Supabase
     if updates_pool:
         try:
             for item in updates_pool:
-                ad_id = item.pop("id")  # Витягуємо ID для умови .eq()
-                supabase.table("ads").update(item).eq("id", ad_id).execute()
+                ad_id = item.pop("ad_id")  # Витягуємо ID для умови .eq()
+                supabase.table("ads").update(item).eq("ad_id", ad_id).execute()
 
             print(f"\n✅ [УСПІХ] Успішно розпізнано та оцінено у хмарі: {count_evaluated} комп'ютерів.")
         except Exception as e:

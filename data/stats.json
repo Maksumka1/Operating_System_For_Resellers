@@ -359,5 +359,26 @@
       "min_price_today": 0,
       "max_price_today": 0
     }
+  },
+  "03-08-2026": {
+    "parsing": {
+      "parsed_total_new": 0,
+      "duplicates_skipped": 51,
+      "avg_parsing_time_ms": 0,
+      "total_time_seconds": 2.4
+    },
+    "filtering": {
+      "banned_words_triggered": 0,
+      "filtered_total_active": 2595
+    },
+    "market_analysis": {
+      "avg_ad_price_uah": 0,
+      "min_price_today": 0,
+      "max_price_today": 0
+    },
+    "system_health": {
+      "network_errors": 0,
+      "parsing_errors": 0
+    }
   }
 }

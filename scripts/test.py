@@ -173,7 +173,7 @@ def build_best_pc_weighted(market_data: dict, budget: float) -> dict:
     return results
 
 # Запускаємо тест на бюджеті 8000 грн
-my_budget = 6000
+my_budget = 8000
 final_builds = build_best_pc_weighted(pc_market, my_budget)
 
 print(json.dumps(final_builds, indent=4, ensure_ascii=False))

@@ -1,5 +1,6 @@
 import os
 import asyncio
+import random
 import re
 import sys
 import time
@@ -93,6 +94,8 @@ async def process_single_seller_worker(
     db_id, seller_id, seller_uuid, seller_created_at, seller_type_raw = ad_data
 
     async with semaphore:
+        await asyncio.sleep(random.uniform(0.1, 0.2))  # Рандомна пауза для уникнення блокування
+
         async with COUNT_LOCK:
             PROCESSED_COUNT += 1
 
@@ -171,12 +174,12 @@ def run_seller_analysis() -> list[int]:
     PROCESSED_COUNT = 0
 
     print("\n" + "=" * 60)
-    print("🕵️‍♂️ ЗАПУСК АНАЛІЗУ ПРОДАВЦІВ (УГОДИ ТА РЕЙТИНГ)")
+    print(" ЗАПУСК АНАЛІЗУ ПРОДАВЦІВ (УГОДИ ТА РЕЙТИНГ)")
     print("=" * 60)
 
     try:
         response = supabase.table("ads") \
-            .select("id, seller_id, seller_uuid, seller_created_at, seller_type") \
+            .select("ad_id, seller_id, seller_uuid, seller_created_at, seller_type") \
             .not_.is_("seller_id", "null") \
             .neq("seller_id", "failed") \
             .eq("status", "active") \
@@ -194,7 +197,7 @@ def run_seller_analysis() -> list[int]:
 
     ads_to_check = [
         (
-            ad["id"], 
+            ad["ad_id"], 
             ad.get("seller_id"), 
             ad.get("seller_uuid"), 
             ad.get("seller_created_at"), 
@@ -210,7 +213,7 @@ def run_seller_analysis() -> list[int]:
 
     success_ids = []
     
-    # 🔥 ГРУПУВАННЯ ДЛЯ ПАКЕТНОГО ОНОВЛЕННЯ БЕЗ СОКЕТНИХ ПОМИЛОК
+    #  ГРУПУВАННЯ ДЛЯ ПАКЕТНОГО ОНОВЛЕННЯ БЕЗ СОКЕТНИХ ПОМИЛОК
     grouped_updates = defaultdict(list)
 
     for res in results:
@@ -228,7 +231,7 @@ def run_seller_analysis() -> list[int]:
         grouped_updates[key].append(db_id)
         success_ids.append(db_id)
 
-    print("\n💾 Оновлення даних про продавців у хмарі Supabase...")
+    print("\n Оновлення даних про продавців у хмарі Supabase...")
     if grouped_updates:
         try:
             total_updated = 0
@@ -245,7 +248,7 @@ def run_seller_analysis() -> list[int]:
                 chunk_size = 100
                 for i in range(0, len(ids), chunk_size):
                     batch = ids[i : i + chunk_size]
-                    supabase.table("ads").update(payload).in_("id", batch).execute()
+                    supabase.table("ads").update(payload).in_("ad_id", batch).execute()
                     total_updated += len(batch)
 
             print(f"✅ [УСПІХ] Пакетно оновлено та позначено seller_checked=1 для {total_updated} продавців!")

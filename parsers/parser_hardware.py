@@ -31,10 +31,6 @@ SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHAB
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
-
-# ------------------------------------------------------------------------------
-# КЛАС АСИНХРОННОГО ДЕБАГЕРА (ЗБЕРІГАЄ У debug/debug_report_parse_hardware.md)
-# ------------------------------------------------------------------------------
 class PipelineDebugger:
     """Дебаггер для аналізу результатів парсингу комплектуючих OLX."""
     def __init__(self, filename="debug_report_parse_hardware.md"):
@@ -658,7 +654,7 @@ def main(pages_to_parse: int = 1) -> None:
                 import requests
                 requests.post("http://localhost:8000/api/trigger-new-ad", json=new_ads_to_insert, timeout=2)
                 asyncio.run(debugger.record_stat("WebSocket", "Успішно надіслано тригер стріму"))
-                print("📢 [WEBSOCKET] Живий стрим оновлено!")
+                print("[WEBSOCKET] Живий стрим оновлено!")
             except Exception:
                 asyncio.run(debugger.record_stat("WebSocket", "Помилка з'єднання з локальним сервером"))
                 pass

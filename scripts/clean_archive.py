@@ -15,189 +15,155 @@ if not (PROJECT_ROOT / "config.py").exists():
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 load_dotenv(PROJECT_ROOT / ".env")
+
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
-BATCH_SIZE = 50        # OLX приймає по 50 ID в один GraphQL-запит
-CONCURRENT_BATCHES = 5  # 5 паралельних пакунків одночасно
-TIMEOUT = 10
+# 🚀 Налаштування швидкості
+CONCURRENT_REQUESTS = 25  # 25 паралельних асинхронних запитів
+TIMEOUT = 8              # Таймаут 8 сек на одне оголошення
 
 HEADERS = {
-    "accept": "*/*",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "accept-language": "uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7",
-    "content-type": "application/json",
-    "origin": "https://www.olx.ua",
-    "referer": "https://www.olx.ua/",
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 }
 
-# Легкий GraphQL запит
-BATCH_CHECK_QUERY = """query GetListingsByIds($ids: [Int!]!) {
-  clientCompatibleListings(searchParameters: [{key: "id", value: $ids}]) {
-    ... on ListingSuccess {
-      data {
-        id
-        status
-      }
-    }
-  }
-}"""
+# Глобальний лічильник для відображення прогресу
+processed_counter = 0
+counter_lock = asyncio.Lock()
 
 
-async def process_batch(
+async def check_single_url(
     session: AsyncSession,
-    batch: list[tuple[int, int]],  # [(db_id, ad_id), ...]
+    ad_id: int,
+    url: str,
     semaphore: asyncio.Semaphore,
-) -> list[tuple[int, str]]:
-    results = []
-    # Карта: olx_ad_id -> sqlite_db_id
-    id_map = {ad_id: db_id for db_id, ad_id in batch if ad_id is not None}
-    olx_ids = list(id_map.keys())
-
-    if not olx_ids:
-        for db_id, _ in batch:
-            results.append((db_id, "active"))
-        return results
-
-    json_payload = {
-        "query": BATCH_CHECK_QUERY,
-        "variables": {"ids": olx_ids},
-    }
-
+    total_count: int,
+) -> tuple[int, str]:
+    global processed_counter
     async with semaphore:
+        full_url = url if url.startswith("http") else f"https://www.olx.ua{url}"
+        
         try:
-            resp = await session.post(
-                "https://www.olx.ua/apigateway/graphql",
-                json=json_payload,
-                timeout=TIMEOUT,
-            )
+            resp = await session.get(full_url, allow_redirects=True, timeout=TIMEOUT)
+            final_url = str(resp.url).lower()
+            status_code = resp.status_code
 
-            if resp.status_code == 200:
-                data = resp.json()
-                listings = (
-                    data.get("data", {})
-                    .get("clientCompatibleListings", {})
-                    .get("data", [])
-                )
+            status = "active"
 
-                # ЗАХИСТ ВІД СБОЮ API: Якщо відповідь порожня при HTTP 200, не маркуємо як видалені
-                if not listings and len(olx_ids) > 0:
-                    for db_id, _ in batch:
-                        results.append((db_id, "active"))
-                    return results
+            # 1. Перевірка на 404 / 410
+            if status_code in (404, 410):
+                status = "deactivated"
+                print(f"🔴 [ID {ad_id}] Деактивовано (HTTP {status_code}) -> {full_url}")
 
-                found_olx_ids = set()
-                for item in listings:
-                    real_id = int(item.get("id", 0))
-                    status = item.get("status", "active")
+            # 2. Перевірка на редірект в архів чи категорію
+            elif "arkhiv" in final_url or "archive" in final_url:
+                status = "deactivated"
+                print(f"🔴 [ID {ad_id}] Перенаправлено в Архів -> {final_url}")
+            elif "/obyavlenie/" not in final_url:
+                status = "deactivated"
+                print(f"🔴 [ID {ad_id}] Перенаправлено на сторінку категорії -> {final_url}")
 
-                    if real_id in id_map:
-                        found_olx_ids.add(real_id)
-                        target_db_id = id_map[real_id]
-                        
-                        if status != "active":
-                            results.append((target_db_id, "deactivated"))
-                        else:
-                            results.append((target_db_id, "active"))
+        except Exception as e:
+            # При мережевій помилці залишаємо active для безпеки
+            status = "active"
+            print(f"⚠️ [ID {ad_id}] Збій мережі ({e}). Залишено активним.")
 
-                # Усі ID, які OLX ВЗАГАЛІ НЕ ПОВЕРНУВ — видалені з майданчика!
-                for ad_id, db_id in id_map.items():
-                    if ad_id not in found_olx_ids:
-                        results.append((db_id, "deactivated"))
+        # Оновлення та вивід прогресу кожні 50 оголошень
+        async with counter_lock:
+            processed_counter += 1
+            if processed_counter % 50 == 0 or processed_counter == total_count:
+                percent = (processed_counter / total_count) * 100
+                print(f"⏳ Прогрес: {processed_counter}/{total_count} ({percent:.1f}%)")
 
-            else:
-                for db_id, _ in batch:
-                    results.append((db_id, "active"))
-
-        except Exception:
-            for db_id, _ in batch:
-                results.append((db_id, "active"))
-
-    return results
+        return ad_id, status
 
 
-async def run_fast_verifier(active_ads: list[tuple[int, int]]) -> list[tuple[int, str]]:
-    # Розбиваємо список (db_id, ad_id) на батчі по 50 шт
-    batches = [
-        active_ads[i : i + BATCH_SIZE]
-        for i in range(0, len(active_ads), BATCH_SIZE)
-    ]
+async def run_async_verifier(active_ads: list[dict]) -> list[tuple[int, str]]:
+    global processed_counter
+    processed_counter = 0
 
-    semaphore = asyncio.Semaphore(CONCURRENT_BATCHES)
+    semaphore = asyncio.Semaphore(CONCURRENT_REQUESTS)
 
     async with AsyncSession(headers=HEADERS, impersonate="chrome120") as session:
         print("🔥 Прогріваємо сесію...")
         try:
-            await session.get("https://www.olx.ua/", timeout=10)
-            await asyncio.sleep(0.5)
-        except Exception:
-            pass
+            warmup = await session.get("https://www.olx.ua/", timeout=5)
+            print(f"🔥 Прогрів завершено (HTTP {warmup.status_code})")
+        except Exception as e:
+            print(f"⚠️ Прогрів пропущено: {e}")
 
-        tasks = [process_batch(session, b, semaphore) for b in batches]
-        nested_results = await asyncio.gather(*tasks)
+        total = len(active_ads)
+        tasks = [
+            check_single_url(session, ad["ad_id"], ad["url"], semaphore, total)
+            for ad in active_ads
+        ]
+        
+        print(f"⚡ Запускаємо перевірку {total} URL у {CONCURRENT_REQUESTS} паралельних потоків...\n")
+        results = await asyncio.gather(*tasks)
 
-    flat_results = [item for sublist in nested_results for item in sublist]
-    return flat_results
+    return results
 
 
 def main() -> None:
-    print("⚡ СТАРТ УЛЬТРА-ШВИДКОЇ ПАКЕТНОЇ ПЕРЕВІРКИ СТАТУСІВ")
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    print(f"🚀 СТАРТ ПЕРЕВІРКИ СТАТУСІВ HTTP REDIRECT ({today_str})")
 
-    # 1. Завантажуємо активні ad_id та id прямо з Supabase
+    # 1. Отримуємо активні ad_id та url з Supabase
+    print("📥 Отримуємо активні оголошення з Supabase...")
     try:
-        response = supabase.table("ads") \
-            .select("id, ad_id") \
-            .eq("status", "active") \
-            .not_.is_("ad_id", "null") \
+        response = (
+            supabase.table("ads")
+            .select("ad_id, url")
+            .eq("status", "active")
+            .not_.is_("ad_id", "null")
             .execute()
-        raw_ads = response.data or []
+        )
+        active_ads = response.data or []
+        print(f"📡 Знайдено активних оголошень у БД: {len(active_ads)}")
     except Exception as e:
-        print(f"❌ [SUPABASE ERROR]: {e}")
+        print(f"❌ [SUPABASE ERROR]: Помилка читання з БД: {e}")
         return
 
-    if not raw_ads:
-        print("[INFO] Немає активних оголошень з ad_id для перевірки.")
+    if not active_ads:
+        print("ℹ️ [INFO] Немає активних оголошень для перевірки.")
         return
 
-    # Перетворюємо у кортежі (db_id, ad_id), які чекає асинхронний воркер
-    active_ads = [(ad["id"], ad["ad_id"]) for ad in raw_ads]
-
-    print(f"[VERIFIER] Завантажено {len(active_ads)} лотів із Supabase.")
     start_time = time.time()
 
-    # 2. Запускаємо перевірку через GraphQL API OLX
-    results = asyncio.run(run_fast_verifier(active_ads))
+    # 2. Асинхронно перевіряємо всі URL
+    results = asyncio.run(run_async_verifier(active_ads))
 
-    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
-    
-    deactivated_pool = [
-        {
-            "id": db_id,
-            "status": "deactivated",
-            "deactivated_at": now_str
-        }
-        for db_id, status in results
-        if status == "deactivated"
-    ]
-
-    # 3. Маркуємо закриті лоти у хмарі через upsert
-    if deactivated_pool:
-        try:
-            supabase.table("ads").upsert(deactivated_pool, on_conflict="id").execute()
-            print(f"[УСПІХ SUPABASE] Знайдено та деактивовано: {len(deactivated_pool)} шт.")
-        except Exception as e:
-            print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ СТАТУСІВ В SUPABASE]: {e}")
-    else:
-        print("[INFO] Усі оголошення досі активні.")
-
+    deactivated_ids = [ad_id for ad_id, status in results if status == "deactivated"]
     elapsed = time.time() - start_time
-    print(f"--- 🚀 {len(active_ads)} оголошень перевірено за {elapsed:.2f} сек ---")
 
+    print("\n--- 📊 РЕЗУЛЬТАТИ ПЕРЕВІРКИ ---")
+    print(f"🔹 Всього перевірено: {len(results)}")
+    print(f"🟢 Активні: {len(results) - len(deactivated_ids)}")
+    print(f"🔴 Деактивовані / Архів: {len(deactivated_ids)}")
+    print(f"⏱️ Тривалість перевірки: {elapsed:.2f} сек")
 
-if __name__ == "__main__":
-    main()
+    # 3. Маркуємо закриті лоти в Supabase
+    if deactivated_ids:
+        print(f"\n💾 Оновлюємо {len(deactivated_ids)} деактивованих лотів у Supabase...")
+        try:
+            chunk_size = 100
+            for i in range(0, len(deactivated_ids), chunk_size):
+                batch = deactivated_ids[i : i + chunk_size]
+                supabase.table("ads").update({
+                    "status": "deactivated",
+                    "deactivated_at": today_str
+                }).in_("ad_id", batch).execute()
+                print(f"  └─ Оновлено порцію: {len(batch)} шт.")
+
+            print(f"✅ [УСПІХ] Усі закриті лоти успішно замарковано у базі даних!")
+        except Exception as e:
+            print(f"❌ [ПОМИЛКА ОНОВЛЕННЯ SUPABASE]: {e}")
+    else:
+        print("ℹ️ [INFO] Усі оголошення досі активні на OLX.")
 
 
 if __name__ == "__main__":
