@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 from pathlib import Path
 from collections import defaultdict
 from dotenv import load_dotenv
@@ -19,25 +20,29 @@ SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHAB
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 
-def update_pcs_competitor_prices() -> set[int]:
+async def update_pcs_competitor_prices_async(db_lock: asyncio.Lock | None = None) -> set[int]:
     updated_ids = set()
-    try:
-        response = (
-            supabase.table("ads")
-            .select("ad_id, gpu_detected, cpu_detected, price")
-            .eq("item_type", "pc")
-            .eq("status", "active")
-            .eq("has_defects", 0)
-            .not_.is_("gpu_detected", "null")
-            .not_.is_("cpu_detected", "null")
-            .neq("seller_risk_score", "suspicious")
-            .gt("price", 1000)
-            .execute()
-        )
-        all_pcs = response.data or []
-    except Exception as e:
-        print(f"❌ [SUPABASE ERROR]: {e}")
-        return updated_ids
+
+    def _fetch_pcs():
+        try:
+            response = (
+                supabase.table("ads")
+                .select("ad_id, gpu_detected, cpu_detected, price")
+                .eq("item_type", "pc")
+                .eq("status", "active")
+                .eq("has_defects", 0)
+                .not_.is_("gpu_detected", "null")
+                .not_.is_("cpu_detected", "null")
+                .neq("seller_risk_score", "suspicious")
+                .gt("price", 1000)
+                .execute()
+            )
+            return response.data or []
+        except Exception as e:
+            print(f"❌ [SUPABASE ERROR]: {e}")
+            return []
+
+    all_pcs = await asyncio.to_thread(_fetch_pcs)
 
     if not all_pcs:
         print("[COMPETITORS] Активних ПК з розпізнаним залізом немає.")
@@ -73,12 +78,19 @@ def update_pcs_competitor_prices() -> set[int]:
             updated_ids.add(cur_ad_id)
 
     if grouped_updates:
-        try:
+        def _apply_updates():
             for price_val, ids in grouped_updates.items():
                 chunk_size = 100
                 for i in range(0, len(ids), chunk_size):
                     batch = ids[i : i + chunk_size]
                     supabase.table("ads").update({"competitor_price": price_val}).in_("ad_id", batch).execute()
+
+        try:
+            if db_lock:
+                async with db_lock:
+                    await asyncio.to_thread(_apply_updates)
+            else:
+                await asyncio.to_thread(_apply_updates)
 
             print(f"✅ Комп'ютери оновлено! Розраховано ціни конкурентів для {len(updated_ids)} ПК.")
         except Exception as e:
@@ -86,16 +98,23 @@ def update_pcs_competitor_prices() -> set[int]:
 
     return updated_ids
 
-def main() -> list[int]:
+
+async def main_async(db_lock: asyncio.Lock | None = None) -> list[int]:
+    """Головний асинхронний метод для оркестратора."""
     print("\n" + "=" * 50)
     print(" ЗАПУСК АНАЛІЗУ КОНКУРЕНТНОГО СЕРЕДОВИЩА (ТІЛЬКИ ПК)")
     print("=" * 50)
 
-    pc_ids = update_pcs_competitor_prices()
+    pc_ids = await update_pcs_competitor_prices_async(db_lock=db_lock)
     all_updated_ids = list(pc_ids)
 
     print(f"[УСПІХ] Повний аналіз ринку конкурентів завершено! Змінено {len(all_updated_ids)} лотів.")
     return all_updated_ids
+
+
+def main() -> list[int]:
+    """Точка входу для ручного запуску з консолі."""
+    return asyncio.run(main_async())
 
 
 if __name__ == "__main__":

@@ -17,16 +17,16 @@ if not (PROJECT_ROOT / "config.py").exists():
     PROJECT_ROOT = PROJECT_ROOT.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
 load_dotenv(PROJECT_ROOT / ".env")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+OLX_PROXY_URL = os.getenv("OLX_PROXY_URL") or None
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 CONCURRENT_REQUESTS = 5
-PROCESSED_COUNT = 0
-COUNT_LOCK = asyncio.Lock()
 TIMEOUT = 8
 
 HEADERS = {
@@ -34,12 +34,6 @@ HEADERS = {
     "accept-language": "uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7",
     "origin": "https://www.olx.ua",
     "referer": "https://www.olx.ua/",
-    "sec-ch-ua": '"Not;A=Brand";v="8", "Chromium";v="124", "Google Chrome";v="124"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "cross-site",
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "x-client": "DESKTOP",
 }
@@ -73,8 +67,7 @@ async def fetch_seller_rating(session: AsyncSession, seller_uuid: str) -> str:
             data = resp.json()
             clusters = data.get("clusters", [])
             if clusters:
-                cluster = clusters[0]
-                score_details = cluster.get("scoreDetails", {})
+                score_details = clusters[0].get("scoreDetails", {})
                 score = score_details.get("value")
                 total_ratings = score_details.get("ratings", {}).get("totalCount", 0)
 
@@ -90,14 +83,10 @@ async def process_single_seller_worker(
     ad_data: tuple,
     semaphore: asyncio.Semaphore,
 ) -> dict:
-    global PROCESSED_COUNT
     db_id, seller_id, seller_uuid, seller_created_at, seller_type_raw = ad_data
 
     async with semaphore:
-        await asyncio.sleep(random.uniform(0.1, 0.2))  # Рандомна пауза для уникнення блокування
-
-        async with COUNT_LOCK:
-            PROCESSED_COUNT += 1
+        await asyncio.sleep(random.uniform(0.1, 0.2))
 
         successful_deals, rating_str = await asyncio.gather(
             fetch_delivery_deals(session, seller_id),
@@ -156,84 +145,60 @@ async def process_single_seller_worker(
     }
 
 
-async def run_seller_analysis_async(ads_to_check: list[tuple]) -> list[dict]:
-    semaphore = asyncio.Semaphore(CONCURRENT_REQUESTS)
-
-    async with AsyncSession(headers=HEADERS, impersonate="chrome124") as session:
-        tasks = [
-            process_single_seller_worker(session, ad_data, semaphore)
-            for ad_data in ads_to_check
-        ]
-        results = await asyncio.gather(*tasks)
-
-    return results
-
-
-def run_seller_analysis() -> list[int]:
-    global PROCESSED_COUNT
-    PROCESSED_COUNT = 0
-
-    print("\n" + "=" * 60)
+async def main_async(db_lock: asyncio.Lock | None = None) -> list[int]:
+    """Головний асинхронний метод аналізу продавців."""
+    print("\n==========================================================")
     print(" ЗАПУСК АНАЛІЗУ ПРОДАВЦІВ (УГОДИ ТА РЕЙТИНГ)")
-    print("=" * 60)
+    print("==========================================================")
 
-    try:
-        response = supabase.table("ads") \
-            .select("ad_id, seller_id, seller_uuid, seller_created_at, seller_type") \
-            .not_.is_("seller_id", "null") \
-            .neq("seller_id", "failed") \
-            .eq("status", "active") \
-            .eq("seller_checked", 0) \
-            .execute()
-        
-        raw_ads = response.data or []
-    except Exception as e:
-        print(f"❌ [SUPABASE ERROR]: {e}")
-        return []
+    def _fetch_unchecked_sellers():
+        try:
+            response = supabase.table("ads") \
+                .select("ad_id, seller_id, seller_uuid, seller_created_at, seller_type") \
+                .not_.is_("seller_id", "null") \
+                .neq("seller_id", "failed") \
+                .eq("status", "active") \
+                .eq("seller_checked", 0) \
+                .execute()
+            return response.data or []
+        except Exception as e:
+            print(f"❌ [SUPABASE ERROR]: {e}")
+            return []
+
+    raw_ads = await asyncio.to_thread(_fetch_unchecked_sellers)
 
     if not raw_ads:
         print("[ANALYZER] Усі нові продавці вже перевірені (seller_checked = 1).")
         return []
 
     ads_to_check = [
-        (
-            ad["ad_id"], 
-            ad.get("seller_id"), 
-            ad.get("seller_uuid"), 
-            ad.get("seller_created_at"), 
-            ad.get("seller_type")
-        )
+        (ad["ad_id"], ad.get("seller_id"), ad.get("seller_uuid"), ad.get("seller_created_at"), ad.get("seller_type"))
         for ad in raw_ads
     ]
 
     print(f"[ANALYZER] Знайдено {len(ads_to_check)} неперевірених продавців. Аналізуємо...")
     start_time = time.time()
 
-    results = asyncio.run(run_seller_analysis_async(ads_to_check))
+    semaphore = asyncio.Semaphore(CONCURRENT_REQUESTS)
+    proxy_kwargs = {"proxies": {"http": OLX_PROXY_URL, "https": OLX_PROXY_URL}} if OLX_PROXY_URL else {}
+
+    async with AsyncSession(headers=HEADERS, impersonate="chrome124", **proxy_kwargs) as session:
+        tasks = [process_single_seller_worker(session, ad_data, semaphore) for ad_data in ads_to_check]
+        results = await asyncio.gather(*tasks)
 
     success_ids = []
-    
-    #  ГРУПУВАННЯ ДЛЯ ПАКЕТНОГО ОНОВЛЕННЯ БЕЗ СОКЕТНИХ ПОМИЛОК
     grouped_updates = defaultdict(list)
 
     for res in results:
         if not res or res.get("status") != "success":
             continue
-
         db_id = res["db_id"]
-        # Складаємо ключ із характеристик
-        key = (
-            res["seller_successful_deals"],
-            res["seller_rating"],
-            res["seller_type"],
-            res["seller_risk"]
-        )
+        key = (res["seller_successful_deals"], res["seller_rating"], res["seller_type"], res["seller_risk"])
         grouped_updates[key].append(db_id)
         success_ids.append(db_id)
 
-    print("\n Оновлення даних про продавців у хмарі Supabase...")
     if grouped_updates:
-        try:
+        def _update_db():
             total_updated = 0
             for (deals, rating, s_type, risk), ids in grouped_updates.items():
                 payload = {
@@ -243,22 +208,30 @@ def run_seller_analysis() -> list[int]:
                     "seller_risk_score": risk,
                     "seller_checked": 1
                 }
-                
-                # Оновлюємо пачками по 100 елементів за 1 мережевий запит
                 chunk_size = 100
                 for i in range(0, len(ids), chunk_size):
                     batch = ids[i : i + chunk_size]
                     supabase.table("ads").update(payload).in_("ad_id", batch).execute()
                     total_updated += len(batch)
+            print(f"✅ [УСПІХ] Пакетно оновлено seller_checked=1 для {total_updated} продавців!")
 
-            print(f"✅ [УСПІХ] Пакетно оновлено та позначено seller_checked=1 для {total_updated} продавців!")
+        try:
+            if db_lock:
+                async with db_lock:
+                    await asyncio.to_thread(_update_db)
+            else:
+                await asyncio.to_thread(_update_db)
         except Exception as e:
             print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ В SUPABASE]: {e}")
 
     elapsed = time.time() - start_time
     print(f"\n[УСПІХ] Аналіз продавців завершено за {elapsed:.2f} сек!")
-    print(f"Оновлено записів: {len(success_ids)}")
     return success_ids
+
+
+def run_seller_analysis() -> list[int]:
+    """Точка входу для ручного запуску з консолі."""
+    return asyncio.run(main_async())
 
 
 if __name__ == "__main__":

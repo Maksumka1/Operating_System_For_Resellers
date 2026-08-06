@@ -1,8 +1,10 @@
 import os
 import re
 import sys
+import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
+from collections import defaultdict
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -30,31 +32,33 @@ SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHAB
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
 
-def load_latest_prices() -> dict[str, int]:
+def load_latest_prices_sync() -> dict[str, int]:
     """Витягує актуальні середні ціни комплектуючих із Supabase."""
     clean_prices = {}
 
     try:
-        # 1. Спроба завантажити найсвіжіші ціни з component_prices
-        res = supabase.table("component_prices") \
-            .select("component_name, price") \
-            .order("date", desc=True) \
+        res = (
+            supabase.table("component_prices")
+            .select("component_name, price")
+            .order("date", desc=True)
             .execute()
+        )
         if res.data:
             clean_prices = {row["component_name"]: row["price"] for row in res.data}
     except Exception as e:
         print(f"[EVALUATOR WARN] Помилка читання component_prices: {e}")
 
-    # 2. Якщо component_prices порожній — беремо резервні ціни з активних оголошень (включаючи ram та bundle)
     if not clean_prices:
         try:
-            res = supabase.table("ads") \
-                .select("component_name, competitor_price") \
-                .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"]) \
-                .eq("status", "active") \
-                .gt("competitor_price", 0) \
-                .not_.is_("component_name", "null") \
+            res = (
+                supabase.table("ads")
+                .select("component_name, competitor_price")
+                .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"])
+                .eq("status", "active")
+                .gt("competitor_price", 0)
+                .not_.is_("component_name", "null")
                 .execute()
+            )
             if res.data:
                 clean_prices = {row["component_name"]: row["competitor_price"] for row in res.data}
         except Exception as e:
@@ -69,19 +73,16 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
     full_text_clean = normalize_title(full_text)
     full_text_clean = re.split(r"додатков|опці|за доплат|доплати", full_text_clean)[0]
 
-    # 1. Детекція та оцінка відеокарти
     gpu_candidates = [g for c in extract_gpu(full_text_clean) if (g := c) in HARDWARE_TARGETS]
     gpu = gpu_candidates[0] if gpu_candidates else None
     gpu_price = component_prices.get(gpu, 0) if gpu else 0
     gpu_display = gpu if gpu else "Unknown GPU"
 
-    # 2. Детекція та оцінка процесора
     cpu_candidates = [c for c in extract_cpu(full_text_clean) if c in HARDWARE_TARGETS]
     cpu = cpu_candidates[0] if cpu_candidates else None
     cpu_price = component_prices.get(cpu, 0) if cpu else 0
     cpu_display = cpu if cpu else "Unknown CPU"
 
-    # 3. Додаткова детекція решти комплектуючих для точнішої собівартості
     mb_candidates = [m for m in extract_motherboard(full_text_clean) if m in HARDWARE_TARGETS]
     mb = mb_candidates[0] if mb_candidates else None
     mb_price = component_prices.get(mb, 0) if mb else 0
@@ -98,14 +99,12 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
     psu = psu_candidates[0] if psu_candidates else None
     psu_price = component_prices.get(psu, 0) if psu else 0
 
-    # Оцінка суми знайдених додаткових комплектуючих
     known_extra_price = mb_price + ram_price + storage_price + psu_price
 
     if known_extra_price > 0:
         base_case_cooler_cost = 1200
         fair_price = gpu_price + cpu_price + known_extra_price + base_case_cooler_cost
     else:
-        # Стандартна резервна вартість б/в платформи (Плата, ОЗП, SSD, Корпус, БЖ)
         base_pc_cost = 3800
         fair_price = gpu_price + cpu_price + base_pc_cost
 
@@ -141,28 +140,33 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
     }
 
 
-def main() -> None:
+async def main_async(db_lock: asyncio.Lock | None = None) -> None:
+    """Головна асинхронна точка входу для оцінки ПК."""
     today_sql = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     print(f"--- СТАРТ МОДУЛЯ ОЦІНКИ ПК ({today_sql}) ---")
     
-    prices = load_latest_prices()
+    prices = await asyncio.to_thread(load_latest_prices_sync)
     if not prices: 
         print("[WARN] Прайс-лист комплектуючих порожній. Пропускаємо оцінку.")
         return
 
-    # 1. Беремо з Supabase тільки АКТИВНІ, НЕУШКОДЖЕНІ та ЩЕ НЕ ОЦІНЕНІ ПК
-    try:
-        response = supabase.table("ads") \
-            .select("ad_id, title, description, price, url") \
-            .eq("item_type", "pc") \
-            .eq("status", "active") \
-            .or_("has_defects.eq.0,has_defects.is.null") \
-            .is_("estimated_fair_price", "null") \
-            .execute()
-        unrated_pcs = response.data or []
-    except Exception as e:
-        print(f"❌ [SUPABASE ERROR]: {e}")
-        return
+    def _fetch_unrated_pcs():
+        try:
+            response = (
+                supabase.table("ads")
+                .select("ad_id, title, description, price, url")
+                .eq("item_type", "pc")
+                .eq("status", "active")
+                .or_("has_defects.eq.0,has_defects.is.null")
+                .is_("estimated_fair_price", "null")
+                .execute()
+            )
+            return response.data or []
+        except Exception as e:
+            print(f"❌ [SUPABASE ERROR]: {e}")
+            return []
+
+    unrated_pcs = await asyncio.to_thread(_fetch_unrated_pcs)
 
     if not unrated_pcs:
         print("[INFO] Немає нових чистих ПК для оцінки.")
@@ -170,8 +174,8 @@ def main() -> None:
 
     print(f"[EVALUATOR] Знайдено {len(unrated_pcs)} комп'ютерів для розпізнавання та оцінки...")
     
+    updates_grouped = defaultdict(list)
     count_evaluated = 0
-    updates_pool = []
 
     for pc in unrated_pcs:
         ad_id = pc["ad_id"]
@@ -180,33 +184,58 @@ def main() -> None:
         price = pc.get("price") or 0
 
         evaluation = evaluate_pc(ad_id, title, description, price, prices)
-            
-        updates_pool.append({
-            "ad_id": evaluation["ad_id"],
-            "seller_price_clean": evaluation["seller_price_clean"],
-            "gpu_detected": evaluation["gpu_detected"],
-            "cpu_detected": evaluation["cpu_detected"],
-            "gpu_market_price": evaluation["gpu_market_price"],
-            "cpu_market_price": evaluation["cpu_market_price"],
-            "estimated_fair_price": evaluation["estimated_fair_price"],
-            "saving_uah": evaluation["saving_uah"],
-            "saving_percent": evaluation["saving_percent"],
-            "deal_status": evaluation["deal_status"],
-            "evaluated_at": evaluation["evaluated_at"]
-        })
         
+        # Групуємо за характеристиками payload для пакетного оновлення
+        payload_key = (
+            evaluation["seller_price_clean"],
+            evaluation["gpu_detected"],
+            evaluation["cpu_detected"],
+            evaluation["gpu_market_price"],
+            evaluation["cpu_market_price"],
+            evaluation["estimated_fair_price"],
+            evaluation["saving_uah"],
+            evaluation["saving_percent"],
+            evaluation["deal_status"],
+            evaluation["evaluated_at"]
+        )
+        updates_grouped[payload_key].append(ad_id)
         count_evaluated += 1
 
-    # 2. Оновлюємо розраховані значення у Supabase
-    if updates_pool:
-        try:
-            for item in updates_pool:
-                ad_id = item.pop("ad_id")  # Витягуємо ID для умови .eq()
-                supabase.table("ads").update(item).eq("ad_id", ad_id).execute()
+    if updates_grouped:
+        def _apply_grouped_updates():
+            for payload_tuple, ids in updates_grouped.items():
+                payload = {
+                    "seller_price_clean": payload_tuple[0],
+                    "gpu_detected": payload_tuple[1],
+                    "cpu_detected": payload_tuple[2],
+                    "gpu_market_price": payload_tuple[3],
+                    "cpu_market_price": payload_tuple[4],
+                    "estimated_fair_price": payload_tuple[5],
+                    "saving_uah": payload_tuple[6],
+                    "saving_percent": payload_tuple[7],
+                    "deal_status": payload_tuple[8],
+                    "evaluated_at": payload_tuple[9]
+                }
+                chunk_size = 100
+                for i in range(0, len(ids), chunk_size):
+                    batch = ids[i : i + chunk_size]
+                    supabase.table("ads").update(payload).in_("ad_id", batch).execute()
 
-            print(f"\n✅ [УСПІХ] Успішно розпізнано та оцінено у хмарі: {count_evaluated} комп'ютерів.")
+        try:
+            if db_lock:
+                async with db_lock:
+                    await asyncio.to_thread(_apply_grouped_updates)
+            else:
+                await asyncio.to_thread(_apply_grouped_updates)
+
+            print(f"\n✅ [УСПІХ] Пакетно розпізнано та оцінено у хмарі: {count_evaluated} комп'ютерів.")
         except Exception as e:
             print(f"\n❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ ОЦІНКИ В SUPABASE]: {e}")
+
+
+def main() -> None:
+    """Точка входу для ручного запуску з консолі."""
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":

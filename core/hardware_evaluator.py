@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 from pathlib import Path
 from collections import defaultdict
 from dotenv import load_dotenv
@@ -42,64 +43,70 @@ def calculate_deal_metrics(seller_price: int, fair_price: int) -> tuple[int, flo
     return saving, round(saving_percent, 1), deal_status
 
 
-def evaluate_hardware_ads() -> list[int]:
-    """Оцінює вигідність окремих комплектуючих за останніми цінами з component_prices."""
+async def evaluate_hardware_ads_async(db_lock: asyncio.Lock | None = None) -> list[int]:
+    """Асинхронно оцінює вигідність комплектуючих за останніми цінами з component_prices."""
     updated_ad_ids = set()
 
-    # 1. Завантажуємо найсвіжіші орієнтири цін із component_prices
-    component_fair_prices = {}
-    try:
-        res = (
-            supabase.table("component_prices")
-            .select("component_name, price")
-            .order("date", desc=True)
-            .execute()
-        )
-        if res.data:
-            for row in res.data:
-                comp_name = row.get("component_name")
-                if comp_name and comp_name not in component_fair_prices:
-                    component_fair_prices[comp_name] = row["price"]
-    except Exception as e:
-        print(f" [HARDWARE EVALUATOR] Помилка завантаження component_prices: {e}")
-
-    if not component_fair_prices:
-        print(" [HARDWARE EVALUATOR] База component_prices порожня. Спочатку запусти price_hardware.py.")
-        return []
-
-    # 2. Витягуємо ВСІ активні комплектуючі (разом із поточними оцінками для порівняння)
-    all_hardware_ads = []
-    page_size = 1000
-    start = 0
-
-    try:
-        while True:
-            response = (
-                supabase.table("ads")
-                .select("ad_id, component_name, price, estimated_fair_price, deal_status")
-                .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"])
-                .eq("status", "active")
-                .gt("price", 100)
-                .not_.is_("component_name", "null")
-                .range(start, start + page_size - 1)
+    # 1. Отримання ринкових орієнтирів
+    def _fetch_fair_prices():
+        try:
+            res = (
+                supabase.table("component_prices")
+                .select("component_name, price")
+                .order("date", desc=True)
                 .execute()
             )
-            batch = response.data or []
-            all_hardware_ads.extend(batch)
+            fair_prices = {}
+            if res.data:
+                for row in res.data:
+                    comp_name = row.get("component_name")
+                    if comp_name and comp_name not in fair_prices:
+                        fair_prices[comp_name] = row["price"]
+            return fair_prices
+        except Exception as e:
+            print(f"⚠️ [HARDWARE EVALUATOR] Помилка завантаження component_prices: {e}")
+            return {}
 
-            if len(batch) < page_size:
-                break
-            start += page_size
+    component_fair_prices = await asyncio.to_thread(_fetch_fair_prices)
 
-    except Exception as e:
-        print(f" [SUPABASE ERROR]: {e}")
+    if not component_fair_prices:
+        print("⚠️ [HARDWARE EVALUATOR] База component_prices порожня. Спочатку запусти price_hardware.py.")
         return []
+
+    # 2. Пагінаційне завантаження активних комплектуючих
+    def _fetch_all_hardware_ads():
+        all_ads = []
+        page_size = 1000
+        start = 0
+        try:
+            while True:
+                response = (
+                    supabase.table("ads")
+                    .select("ad_id, component_name, price, estimated_fair_price, deal_status")
+                    .in_("item_type", ["gpu", "cpu", "motherboard", "psu", "storage", "ram", "bundle"])
+                    .eq("status", "active")
+                    .gt("price", 100)
+                    .not_.is_("component_name", "null")
+                    .range(start, start + page_size - 1)
+                    .execute()
+                )
+                batch = response.data or []
+                all_ads.extend(batch)
+                if len(batch) < page_size:
+                    break
+                start += page_size
+            return all_ads
+        except Exception as e:
+            print(f"❌ [SUPABASE ERROR]: {e}")
+            return []
+
+    all_hardware_ads = await asyncio.to_thread(_fetch_all_hardware_ads)
 
     if not all_hardware_ads:
         print("[HARDWARE EVALUATOR] Немає активних комплектуючих для оцінки.")
         return []
 
-    print(f" [HARDWARE EVALUATOR] Аналізуємо {len(all_hardware_ads)} лотів заліза...")
+    print(f"📊 [HARDWARE EVALUATOR] Аналізуємо {len(all_hardware_ads)} лотів заліза...")
 
     updates_by_payload = defaultdict(list)
 
@@ -116,11 +123,9 @@ def evaluate_hardware_ads() -> list[int]:
             continue
 
         saving, saving_percent, deal_status = calculate_deal_metrics(seller_price, fair_price)
-        
         curr_fair_p = ad.get("estimated_fair_price")
         curr_status = ad.get("deal_status")
 
-        #  Оптимізація: Оновлюємо ТІЛЬКИ ТІ лоти, де оцінка реально ЗМІНИЛАСЯ або її ще не було
         if curr_fair_p == int(fair_price) and curr_status == deal_status:
             continue
 
@@ -134,10 +139,11 @@ def evaluate_hardware_ads() -> list[int]:
         updates_by_payload[payload_key].append(ad_id)
         updated_ad_ids.add(ad_id)
 
-    # 3. Пакетне оновлення таблиці ads у Supabase по ad_id
+    # 3. Пакетне оновлення Supabase під db_lock
     if updates_by_payload:
-        print(f" [HARDWARE EVALUATOR] Записуємо зміни для {len(updated_ad_ids)} лотів у Supabase...")
-        try:
+        print(f"💾 [HARDWARE EVALUATOR] Записуємо зміни для {len(updated_ad_ids)} лотів у Supabase...")
+
+        def _apply_updates():
             for (fair_p, sav_uah, sav_pct, d_status), ad_ids in updates_by_payload.items():
                 update_data = {
                     "estimated_fair_price": fair_p,
@@ -150,22 +156,34 @@ def evaluate_hardware_ads() -> list[int]:
                     batch = ad_ids[i : i + chunk_size]
                     supabase.table("ads").update(update_data).in_("ad_id", batch).execute()
 
-            print(f" [HARDWARE EVALUATOR] Успішно оцінено та оновлено {len(updated_ad_ids)} лотів комплектуючих!")
+        try:
+            if db_lock:
+                async with db_lock:
+                    await asyncio.to_thread(_apply_updates)
+            else:
+                await asyncio.to_thread(_apply_updates)
+
+            print(f"✅ [HARDWARE EVALUATOR] Оцінено та оновлено {len(updated_ad_ids)} лотів комплектуючих!")
         except Exception as e:
-            print(f" [ПОМИЛКА ЗБЕРЕЖЕННЯ ОЦІНКИ ЗАЛІЗА]: {e}")
+            print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ ОЦІНКИ ЗАЛІЗА]: {e}")
     else:
-        print("ℹ [HARDWARE EVALUATOR] Усі комплектуючі вже мають актуальні ціни та статуси.")
+        print("ℹ️ [HARDWARE EVALUATOR] Усі комплектуючі вже мають актуальні ціни та статуси.")
 
     return list(updated_ad_ids)
 
 
-def main() -> list[int]:
+async def main_async(db_lock: asyncio.Lock | None = None) -> list[int]:
+    """Головний асинхронний метод для виклику з оркестратора."""
     print("\n" + "=" * 50)
     print(" ЗАПУСК ОЦІНКИ ВИГОДИ КОМПЛЕКТУЮЧИХ (HARDWARE EVALUATOR)")
     print("=" * 50)
 
-    updated_ids = evaluate_hardware_ads()
-    return updated_ids
+    return await evaluate_hardware_ads_async(db_lock=db_lock)
+
+
+def main() -> list[int]:
+    """Точка входу для ручного запуску з консолі."""
+    return asyncio.run(main_async())
 
 
 if __name__ == "__main__":

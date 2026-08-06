@@ -1,6 +1,7 @@
 import os
 import json
 import sys
+import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
 from collections import defaultdict
@@ -15,6 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from config import STATS_FILE
 load_dotenv(PROJECT_ROOT / ".env")
+
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
@@ -33,7 +35,7 @@ OBSOLETE_WORDS = [
 # 2. ОПТОВІ СЛОВА
 WHOLESALE_WORDS = [
     "опт", "оптом", "склад", "пачка", "пачкою", "партией", "партія", 
-    "комплектом", "кілька шт", "несколько шт", "розпродаж офісу", "распродажа офиса"
+    "комплектом", "кілька шт", "несколько шт", "розпродаж офісу", "рас распродажа офиса"
 ]
 
 # 3. БРЕНДОВІ СИСТЕМНИКИ / НЕТТОПИ
@@ -74,60 +76,61 @@ def detect_pc_category(text: str) -> str:
     return "home_office"
 
 
-def update_statistics(section: str, metrics: dict) -> None:
-    today_str = datetime.now(timezone.utc).strftime("%d-%m-%Y")
-    stats = {}
+async def update_statistics_async(section: str, metrics: dict) -> None:
+    def _file_io():
+        today_str = datetime.now(timezone.utc).strftime("%d-%m-%Y")
+        stats = {}
 
-    if STATS_FILE.exists():
+        if STATS_FILE.exists():
+            try:
+                stats = json.loads(STATS_FILE.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                stats = {}
+
+        if today_str not in stats:
+            stats[today_str] = {
+                "parsing": {"parsed_total_new": 0, "duplicates_skipped": 0},
+                "filtering": {"defects_found": 0, "filtered_total_active": 0},
+                "categories": {},
+                "market_analysis": {"avg_ad_price_uah": 0, "min_price_today": 0, "max_price_today": 0},
+            }
+
+        if section in stats[today_str]:
+            stats[today_str][section].update(metrics)
+
+        STATS_FILE.write_text(json.dumps(stats, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    await asyncio.to_thread(_file_io)
+
+
+async def main_async(db_lock: asyncio.Lock | None = None) -> None:
+    """Головний асинхронний метод для оркестратора."""
+    def _fetch_unfiltered_pcs():
         try:
-            stats = json.loads(STATS_FILE.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            stats = {}
+            response = supabase.table("ads") \
+                .select("ad_id, title, description") \
+                .eq("item_type", "pc") \
+                .eq("status", "active") \
+                .or_("pc_category.eq.uncategorized,pc_category.is.null") \
+                .execute()
+            return response.data or []
+        except Exception as e:
+            print(f"❌ [SUPABASE ERROR]: {e}")
+            return []
 
-    if today_str not in stats:
-        stats[today_str] = {
-            "parsing": {"parsed_total_new": 0, "duplicates_skipped": 0},
-            "filtering": {"defects_found": 0, "filtered_total_active": 0},
-            "categories": {},
-            "market_analysis": {"avg_ad_price_uah": 0, "min_price_today": 0, "max_price_today": 0},
-        }
-
-    if section in stats[today_str]:
-        stats[today_str][section].update(metrics)
-
-    STATS_FILE.write_text(json.dumps(stats, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def main() -> None:
-    # 1. Отримуємо з Supabase нові ПК, де pc_category ще не визначено або 'uncategorized'
-    try:
-        response = supabase.table("ads") \
-            .select("ad_id, title, description") \
-            .eq("item_type", "pc") \
-            .eq("status", "active") \
-            .or_("pc_category.eq.uncategorized,pc_category.is.null") \
-            .execute()
-        unfiltered_pcs = response.data or []
-    except Exception as e:
-        print(f"❌ [SUPABASE ERROR]: {e}")
-        return
+    unfiltered_pcs = await asyncio.to_thread(_fetch_unfiltered_pcs)
 
     if not unfiltered_pcs:
         print("[INFO] Немає нових ПК для категоризації.")
         return
 
-    print(f"[CATEGORY] Знайдено {len(unfiltered_pcs)} нових ПК для розподілу по категоріям...")
+    print(f"[CATEGORY] Знайдено {len(unfiltered_pcs)} нових ПК для розподілу по категоріях...")
 
     category_counts = {
-        "obsolete": 0,
-        "wholesale": 0,
-        "brand_office": 0,
-        "gaming": 0,
-        "home_office": 0,
-        "maining": 0
+        "obsolete": 0, "wholesale": 0, "brand_office": 0,
+        "gaming": 0, "home_office": 0, "maining": 0
     }
 
-    # Групуємо ID ПК за їхніми знайденими категоріями
     ids_by_category = defaultdict(list)
 
     for pc in unfiltered_pcs:
@@ -141,8 +144,7 @@ def main() -> None:
         category_counts[category] += 1
         ids_by_category[category].append(db_id)
 
-    # 2. Пакетне оновлення категорій без Not-Null конфліктів
-    try:
+    def _update_categories():
         updated_total = 0
         for category, ids in ids_by_category.items():
             if not ids:
@@ -155,8 +157,14 @@ def main() -> None:
                     .in_("ad_id", batch_ids) \
                     .execute()
                 updated_total += len(batch_ids)
-
         print(f"✅ Успішно оновлено категорії для {updated_total} ПК")
+
+    try:
+        if db_lock:
+            async with db_lock:
+                await asyncio.to_thread(_update_categories)
+        else:
+            await asyncio.to_thread(_update_categories)
     except Exception as e:
         print(f"❌ [ПОМИЛКА ЗБЕРЕЖЕННЯ КАТЕГОРІЙ В SUPABASE]: {e}")
 
@@ -168,23 +176,30 @@ def main() -> None:
     print(f"   Домашні (home_office):   {category_counts['home_office']} шт.")
     print(f"   Майнінг (maining):       {category_counts['maining']} шт.")
 
-    # 3. Рахуємо загальну кількість чистих ПК з Supabase для статистики
-    try:
-        active_res = supabase.table("ads") \
-            .select("ad_id", count="exact") \
-            .eq("item_type", "pc") \
-            .eq("status", "active") \
-            .eq("has_defects", 0) \
-            .neq("pc_category", "obsolete") \
-            .execute()
-        active_clean_total = active_res.count or 0
-    except Exception:
-        active_clean_total = 0
+    def _fetch_active_clean_total():
+        try:
+            active_res = supabase.table("ads") \
+                .select("ad_id", count="exact") \
+                .eq("item_type", "pc") \
+                .eq("status", "active") \
+                .eq("has_defects", 0) \
+                .neq("pc_category", "obsolete") \
+                .execute()
+            return active_res.count or 0
+        except Exception:
+            return 0
 
-    update_statistics("filtering", {
+    active_clean_total = await asyncio.to_thread(_fetch_active_clean_total)
+
+    await update_statistics_async("filtering", {
         "filtered_total_active": active_clean_total,
     })
-    update_statistics("categories", category_counts)
+    await update_statistics_async("categories", category_counts)
+
+
+def main() -> None:
+    """Точка входу для ручного запуску з консолі."""
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":

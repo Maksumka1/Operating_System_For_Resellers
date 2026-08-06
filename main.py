@@ -1,16 +1,15 @@
 import os
 import sys
 import time
+import asyncio
 import subprocess
 import atexit
-import threading
 from datetime import datetime, timezone
 from pathlib import Path
+
 import requests
 from dotenv import load_dotenv
 from supabase import create_client, Client
-
-from core import hardware_evaluator
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 if not (PROJECT_ROOT / "config.py").exists():
@@ -22,6 +21,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
+OLX_PROXY_URL = os.getenv("OLX_PROXY_URL") or None
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
 
@@ -34,20 +34,59 @@ try:
     import core.seller_analyzer as seller_analyzer
     import core.competitor_finder as competitor_finder
     import core.price_hardware as price_hardware
+    from core import hardware_evaluator
 except ImportError as e:
     print(f"[ПОМИЛКА ІМПОРТУ] Переконайся в правильності шляхів: {e}")
     sys.exit(1)
 
+# Глобальний замок для усунення гонки даних під час запису в БД
+db_write_lock = asyncio.Lock()
+
+
+class AdaptiveRateLimiter:
+    """Динамічний контроль частоти запитів до OLX (AIMD)."""
+    def __init__(self, min_rate=40, max_rate=80, initial_rate=60):
+        self.min_rate = min_rate
+        self.max_rate = max_rate
+        self.current_rate = initial_rate
+        self.consecutive_403 = 0
+        self.success_streak = 0
+        self._lock = asyncio.Lock()
+        self.is_cooldown = False
+
+    async def acquire(self):
+        async with self._lock:
+            while self.is_cooldown:
+                await asyncio.sleep(1)
+            await asyncio.sleep(60.0 / self.current_rate)
+
+    async def report_result(self, status_code: int):
+        async with self._lock:
+            if status_code == 403:
+                self.consecutive_403 += 1
+                self.success_streak = 0
+                if self.consecutive_403 >= 3:
+                    print("🛑 [DATADOME BLOCK] 3x403! Перерва 60 секунд...")
+                    self.is_cooldown = True
+                    self.current_rate = max(self.min_rate, self.current_rate * 0.85)
+                    await asyncio.sleep(60)
+                    self.consecutive_403 = 0
+                    self.is_cooldown = False
+            elif status_code == 200:
+                self.consecutive_403 = 0
+                self.success_streak += 1
+                if self.success_streak >= 15 and self.current_rate < self.max_rate:
+                    self.current_rate = min(self.max_rate, self.current_rate + 2.0)
+                    self.success_streak = 0
+
+
+primary_limiter = AdaptiveRateLimiter()
 server_process = None
-frontend_process = None
-is_heavy_analysis_running = False
 
 
 def start_web_servers():
     global server_process
-
     server_dir = PROJECT_ROOT / "server"
-
     print("\n🌐 [SERVERS] Запуск FastAPI бекенду (uvicorn)...")
     try:
         server_process = subprocess.Popen(
@@ -56,182 +95,142 @@ def start_web_servers():
             shell=(os.name == "nt")
         )
     except Exception as e:
-        print(f"❌ Не вдалося запустити FastAPI сервер: {e}")
-
-    print("⏳ Очікування 5 секунд для ініціалізації веб-серверів...")
-    time.sleep(5)
+        print(f"❌ Не вдалося запустити сервер: {e}")
+    time.sleep(3)
 
 
 def cleanup_servers():
-    global server_process, frontend_process
-    print("\n🛑 [SERVERS] Зупинка веб-серверів...")
+    global server_process
     if server_process:
         server_process.terminate()
-    if frontend_process:
-        frontend_process.terminate()
 
 
 atexit.register(cleanup_servers)
 
 
-def count_unprocessed_ads() -> int:
-    try:
-        res = (
-            supabase.table("ads")
-            .select("id", count="exact")
-            .eq("status", "active")
-            .or_("seller_risk_score.is.null,estimated_fair_price.is.null")
-            .execute()
-        )
-        return res.count or 0
-    except Exception as e:
-        print(f"⚠️ [ORCHESTRATOR] Помилка підрахунку неоцінених лотів: {e}")
-        return 0
+async def count_unprocessed_ads() -> int:
+    def _db_query():
+        try:
+            res = (
+                supabase.table("ads")
+                .select("id", count="exact")
+                .eq("status", "active")
+                .or_("seller_risk_score.is.null,estimated_fair_price.is.null")
+                .execute()
+            )
+            return res.count or 0
+        except Exception:
+            return 0
+    return await asyncio.to_thread(_db_query)
 
 
-def broadcast_updated_ads(updated_ids: list[int]):
+async def broadcast_updated_ads(updated_ids: list[int]):
     if not updated_ids:
         return
-
-    try:
-        response = (
-            supabase.table("ads")
-            .select("*")
-            .in_("ad_id", updated_ids)
-            .eq("status", "active")
-            .execute()
-        )
-        rows = response.data or []
-    except Exception as e:
-        print(f"⚠️ [ORCHESTRATOR] Помилка отримання оновлених лотів з Supabase: {e}")
-        return
-
-    ads_to_broadcast = []
-    for ad in rows:
-        ad["seller_successful_deals"] = ad.get("seller_successful_deals") or 0
-        ad["seller_rating"] = ad.get("seller_rating") or "немає оцінок"
-        ad["seller_risk_score"] = ad.get("seller_risk_score") or ad.get("seller_risk") or "neutral"
-        ad["deal_status"] = ad.get("deal_status") or "regular"
-        ads_to_broadcast.append(ad)
-
-    if ads_to_broadcast:
-        print(f" [BROADCAST] Пушимо пачку з {len(ads_to_broadcast)} повних лотів на Live-сайт...")
+    def _get_rows():
         try:
-            requests.post("http://localhost:8000/api/trigger-new-ad", json=ads_to_broadcast, timeout=5)
-        except Exception as e:
-            print(f"   ⚠️ Помилка пакетного пушу: {e}")
+            res = supabase.table("ads").select("*").in_("ad_id", updated_ids).eq("status", "active").execute()
+            return res.data or []
+        except Exception:
+            return []
+
+    rows = await asyncio.to_thread(_get_rows)
+    if rows:
+        await asyncio.to_thread(
+            lambda: requests.post("http://localhost:8000/api/trigger-new-ad", json=rows, timeout=5)
+        )
 
 
-def run_step(step_name: str, step_function, *args, **kwargs):
-    print("\n" + "=" * 60)
-    print(f" [КРОК] ЗАПУСК ЕТАПУ: {step_name.upper()}")
-    print("=" * 60)
-    
-    start_time = time.time()
-    try:
-        result = step_function(*args, **kwargs)
-        elapsed = time.time() - start_time
-        print(f"✅ [УСПІХ] {step_name.upper()} завершено за {elapsed:.2f} сек.")
-        return result
-    except Exception as e:
-        print(f"❌ [ПОМИЛКА] Під час виконання {step_name}: {e}")
-        return None
+# =====================================================================
+# ФОНОВІ ДЕМОНИ (АРХІВ ТА ПРАЙСИ ЗАЛІЗА)
+# =====================================================================
+async def background_archive_checker():
+    """Фонова перевірка архівних оголошень кожні 5 хвилин."""
+    while True:
+        await asyncio.sleep(300)
+        print("\n🧹 [BACKGROUND] Перевірка деактивованих лотів (clean_archive)...")
+        await clean_archive.main_async(db_lock=db_write_lock)
 
 
-def run_heavy_analysis_in_background():
-    global is_heavy_analysis_running
-    if is_heavy_analysis_running:
-        return
-
-    is_heavy_analysis_running = True
-    try:
-        # 1. Перераховуємо ціни конкурентів для готових ПК
-        updated_comp_ids = run_step("Визначення ринкової ціни продажів (конкуренти ПК)", competitor_finder.main)
-        if updated_comp_ids and isinstance(updated_comp_ids, list):
-            print(f"🔄 [RE-BROADCAST] Пушимо {len(updated_comp_ids)} оновлених цін конкурентів ПК на сайт...")
-            broadcast_updated_ads(updated_comp_ids)
-
-        run_step("Перерахунок прайсів заліза", price_hardware.main)
-        eval_hw_ids = run_step("Оцінка вигідності комплектуючих після оновлення цін заліза", hardware_evaluator.main)
-        
-        if eval_hw_ids and isinstance(eval_hw_ids, list):
-            print(f"🔄 [RE-BROADCAST] Пушимо {len(eval_hw_ids)} оцінених комплектуючих на сайт...")
-            broadcast_updated_ads(eval_hw_ids)
-
-        run_step("Верифікація активності оголошень (архів)", clean_archive.main)
-
-    except Exception as e:
-        print(f"❌ [ФОНОВИЙ АНАЛІЗ ПОМИЛКА]: {e}")
-    finally:
-        is_heavy_analysis_running = False
+async def background_price_hardware():
+    """Фоновий перерахунок ринкових цін заліза кожні 5 хвилин."""
+    while True:
+        await asyncio.sleep(300)
+        print("\n📊 [BACKGROUND] Оновлення середніх прайсів заліза (price_hardware)...")
+        await price_hardware.main_async(db_lock=db_write_lock)
 
 
-def run_pipeline_iteration(is_first_run: bool = False):
+# =====================================================================
+# ОСНОВНИЙ ЦИКЛ ПАРСИНГУ ТА ОЦІНКИ
+# =====================================================================
+async def run_pipeline_iteration(is_first_run: bool = False):
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-    print(f"\n [24/7 LOOP] Перевірка OLX та залізо-ринку ({today_str})...")
+    print(f"\n🔄 [24/7 ASYNC LOOP] Ітерація ({today_str}) | Ліміт: {primary_limiter.current_rate:.1f} req/min")
 
     pages_to_parse = 4 if is_first_run else 1
-    if is_first_run:
-        print(" [ПЕРШИЙ ЗАПУСК] Парсимо 4 сторінки для глибокого первинного збору...")
-    else:
-        print(" [РЕГУЛЯРНИЙ ЗАПУСК] Парсимо 1 першу сторінку (40 найновіших)...")
 
-    run_step("Парсинг сирих оголошень ПК", parser.main, pages_to_parse=pages_to_parse)
-    run_step("Парсинг комплектуючих", parser_hardware.main, pages_to_parse=pages_to_parse)
-    run_step("Фільтрація бан-слів", filter_ads.main)
+    # 1. Запуск двох парсерів
+    print(f"🚀 [ЕТАП 1] Запуск парсингу ПК та комплектуючих...")
+    await asyncio.gather(
+        parser.main_async(pages_to_parse=pages_to_parse, db_lock=db_write_lock, rate_limiter=primary_limiter),
+        parser_hardware.main_async(pages_to_parse=pages_to_parse, db_lock=db_write_lock, rate_limiter=primary_limiter)
+    )
 
-    unprocessed_count = count_unprocessed_ads()
-    print(f" [АНАЛІЗ] Нових релевантних лотів для оцінки: {unprocessed_count}")
+    # 2. Фільтрація
+    await filter_ads.main_async(db_lock=db_write_lock)
+
+    # 3. Аналіз та оцінка
+    unprocessed_count = await count_unprocessed_ads()
+    print(f"📊 [АНАЛІЗ] Нових релевантних лотів: {unprocessed_count}")
 
     if unprocessed_count > 0:
-        run_step("Оцінка вигідності ПК", pc_evaluator.main)
-        updated_ids = run_step("Оцінка продавців", seller_analyzer.run_seller_analysis)
+        # Паралельна оцінка вигідності ПК та комплектуючих
+        await asyncio.gather(
+            pc_evaluator.main_async(db_lock=db_write_lock),
+            hardware_evaluator.main_async(db_lock=db_write_lock)
+        )
 
-        if updated_ids:
-            run_step("Пуш нових лотів на Live-сайт", broadcast_updated_ads, updated_ids)
-    else:
-        print(" Нових лотів не виявлено. Пропускаємо швидку оцінку.")
-
-    if is_first_run or (not is_heavy_analysis_running):
-        threading.Thread(target=run_heavy_analysis_in_background, daemon=True).start()
-
-    if pages_to_parse == 4:
-        print("\n Пауза 25 сек для скидання ліміту DataDome...\n")
-        time.sleep(25)
-    else:
-        print("\n Пауза 50 сек для скидання ліміту DataDome...\n")
-        time.sleep(50)
+        # 4. Продавці та конкуренти
+        results = await asyncio.gather(
+            seller_analyzer.main_async(db_lock=db_write_lock),
+            competitor_finder.main_async(db_lock=db_write_lock)
+        )
+        
+        updated_seller_ids, updated_comp_ids = results[0], results[1]
+        all_updated = list(set((updated_seller_ids or []) + (updated_comp_ids or [])))
+        
+        if all_updated:
+            await broadcast_updated_ads(all_updated)
 
 
-def main():
+async def main():
     print("==========================================================")
-    print("     СТАРТ СИСТЕМИ АВТОМАТИЗАЦІЇ 24/7 (ALL-IN-ONE)       ")
+    print(" 🚀 СТАРТ АСИНХРОННОГО ОРКЕСТРАТОРА 24/7 ")
     print("==========================================================")
 
     start_web_servers()
+    
+    # Запуск фонових демонів (Архів + Прайси заліза)
+    asyncio.create_task(background_archive_checker())
+    asyncio.create_task(background_price_hardware())
 
-    cycle_delay_seconds = 20
     is_first_run = True
-
-    try:
-        while True:
+    while True:
+        try:
             cycle_start = time.time()
-            
-            run_pipeline_iteration(is_first_run=is_first_run)
+            await run_pipeline_iteration(is_first_run=is_first_run)
             is_first_run = False
 
             elapsed = time.time() - cycle_start
-            if elapsed < 30:
-                cycle_delay_seconds = 30
-            else:
-                cycle_delay_seconds = 20
-
-            print(f"\n⏱ Ітерацію збору завершено за {elapsed:.2f} сек. Наступна перевірка через {cycle_delay_seconds} сек...")
-            time.sleep(cycle_delay_seconds)
-
-    except KeyboardInterrupt:
-        print("\n Ручна зупинка програми (Ctrl+C). Очищення ресурсів...")
+            print(f"\n⏱️ Ітерацію завершено за {elapsed:.2f} сек. Пауза 20 сек...")
+            await asyncio.sleep(20)
+        except Exception as ex:
+            print(f"❌ [КРИТИЧНА ПОМИЛКА ЦИКЛУ]: {ex}")
+            await asyncio.sleep(10)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\n🛑 Зупинка оркестратора.")
