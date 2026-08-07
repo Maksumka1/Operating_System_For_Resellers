@@ -12,7 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 load_dotenv(PROJECT_ROOT / ".env")
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
@@ -151,6 +151,13 @@ def main():
         # Дедуплікація в пам'яті
         deduplicated_records[slug] = record
 
+
+
+    found_5060 = [r for r in deduplicated_records.values() if "5060" in r["raw_name"].lower()]
+    print(f"🔍 Знайдено 5060 у підготовленому списку ({len(found_5060)} шт.):")
+    for f in found_5060:
+        print(" -", f["raw_name"], "---> slug:", f["slug"])
+    
     records_to_upsert = list(deduplicated_records.values())
 
     print(f"🧹 Профільтровано: відсієно {skipped_count} мобільних/неактуальних моделей.")

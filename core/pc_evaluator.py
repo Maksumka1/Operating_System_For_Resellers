@@ -124,6 +124,7 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
     if cpu_display == "Unknown CPU":
         deal_status = "regular"
         saving = 0
+        saving_percent = 0
 
     return {
         "ad_id": ad_id,
@@ -132,6 +133,18 @@ def evaluate_pc(ad_id: int, title: str, description: str, seller_price: int, com
         "gpu_market_price": gpu_price,
         "cpu_detected": cpu_display,
         "cpu_market_price": cpu_price,
+        "mb_detected": mb,
+        "motherboard_detected": mb,
+        "mb_market_price": mb_price,
+        "motherboard_market_price": mb_price,
+        "ram_detected": ram,
+        "ram_market_price": ram_price,
+        "psu_detected": psu,
+        "psu_market_price": psu_price,
+        "storage_detected": storage,
+        "ssd_detected": storage,
+        "storage_market_price": storage_price,
+        "ssd_market_price": storage_price,
         "estimated_fair_price": int(fair_price),
         "saving_uah": int(round(saving)),
         "saving_percent": int(round(saving_percent, 1)),
@@ -185,13 +198,20 @@ async def main_async(db_lock: asyncio.Lock | None = None) -> None:
 
         evaluation = evaluate_pc(ad_id, title, description, price, prices)
         
-        # Групуємо за характеристиками payload для пакетного оновлення
         payload_key = (
             evaluation["seller_price_clean"],
             evaluation["gpu_detected"],
             evaluation["cpu_detected"],
             evaluation["gpu_market_price"],
             evaluation["cpu_market_price"],
+            evaluation["mb_detected"],
+            evaluation["mb_market_price"],
+            evaluation["ram_detected"],
+            evaluation["ram_market_price"],
+            evaluation["psu_detected"],
+            evaluation["psu_market_price"],
+            evaluation["storage_detected"],
+            evaluation["storage_market_price"],
             evaluation["estimated_fair_price"],
             evaluation["saving_uah"],
             evaluation["saving_percent"],
@@ -210,11 +230,23 @@ async def main_async(db_lock: asyncio.Lock | None = None) -> None:
                     "cpu_detected": payload_tuple[2],
                     "gpu_market_price": payload_tuple[3],
                     "cpu_market_price": payload_tuple[4],
-                    "estimated_fair_price": payload_tuple[5],
-                    "saving_uah": payload_tuple[6],
-                    "saving_percent": payload_tuple[7],
-                    "deal_status": payload_tuple[8],
-                    "evaluated_at": payload_tuple[9]
+                    "mb_detected": payload_tuple[5],
+                    "motherboard_detected": payload_tuple[5],
+                    "mb_market_price": payload_tuple[6],
+                    "motherboard_market_price": payload_tuple[6],
+                    "ram_detected": payload_tuple[7],
+                    "ram_market_price": payload_tuple[8],
+                    "psu_detected": payload_tuple[9],
+                    "psu_market_price": payload_tuple[10],
+                    "storage_detected": payload_tuple[11],
+                    "ssd_detected": payload_tuple[11],
+                    "storage_market_price": payload_tuple[12],
+                    "ssd_market_price": payload_tuple[12],
+                    "estimated_fair_price": payload_tuple[13],
+                    "saving_uah": payload_tuple[14],
+                    "saving_percent": payload_tuple[15],
+                    "deal_status": payload_tuple[16],
+                    "evaluated_at": payload_tuple[17]
                 }
                 chunk_size = 100
                 for i in range(0, len(ids), chunk_size):

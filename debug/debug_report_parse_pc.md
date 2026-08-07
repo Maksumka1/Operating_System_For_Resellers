@@ -1,6 +1,6 @@
 # 🐛 ДЕБАГ-ЗВІТ ПАРСИНГУ ГОТОВИХ ПК (OLX Category 78)
-**Дата та час запуску:** 2026-08-07 00:16:05
-**Тривалість виконання:** 489.23 сек
+**Дата та час запуску:** 2026-08-07 22:23:35
+**Тривалість виконання:** 340.17 сек
 **Шлях до звіту:** `C:\Users\marke\OneDrive\Desktop\Operating_System\debug\debug_report_parse_pc.md`
 
 ## 📌 1. Задача та мета коду
@@ -8,28 +8,28 @@
 
 ## 📊 2. Загальна статистика вхідних даних та відсіювання
 ### ⚙️ Секція: Supabase_Input
-- **Завантажено URLs для дедуплікації:** 52197
+- **Завантажено URLs для дедуплікації:** 52621
 
 ### ⚙️ Секція: OLX_GraphQL
-- **Отримано сирих оголошень ПК:** 520
-
-### ⚙️ Секція: Parsing_Metrics
-- **Успішно розпаршено ПК:** 121
+- **Отримано сирих оголошень ПК:** 468
 
 ### ⚙️ Секція: Filtering_Rules
-- **Відсіяно if (Дублікат URL в DB):** 387
-- **Відсіяно if (Спрацював фільтр is_real_pc):** 12
+- **Відсіяно if (Дублікат URL в DB):** 446
+- **Відсіяно if (Спрацював фільтр is_real_pc):** 11
+
+### ⚙️ Секція: Parsing_Metrics
+- **Успішно розпаршено ПК:** 11
 
 ### ⚙️ Секція: Summary
-- **Знайдено нових ПК:** 121
-- **Пропущено дублікатів:** 387
-- **Немає нових лотів для відправки:** 4
+- **Знайдено нових ПК:** 11
+- **Пропущено дублікатів:** 446
+- **Немає нових лотів для відправки:** 2
 
 ### ⚙️ Секція: Supabase_Output
-- **Успішно збережено в DB:** 121
+- **Успішно збережено в DB:** 11
 
 ### ⚙️ Секція: WebSocket
-- **Успішно тригернуто живий стрім:** 3
+- **Успішно тригернуто живий стрім:** 4
 
 ## 🔄 3. Детальні приклади даних
 ### 🔹 Відсіяні оголошення (запчастини, окремі комплектуючі, дублікати) (Показано 100 з max 100):
@@ -37,430 +37,218 @@
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-fx4100-rx5604gb-ID10c1LF.html",
-  "title": "Компютер Fx4100/rx560(4GB)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nayavnst-new-asic-bitmain-antminer-t21-190-th-cv1835-miner-garantya-IDW5PJR.html",
+  "title": "НАЯВНІСТЬ! NEW Asic Bitmain Antminer T21 190 Th CV1835 miner +Гарантія"
 }
 ```
 **Семпл #2:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/l7-9050-gh-s-asic-bitmain-doge-ltc-antminer-ID10gSTJ.html",
-  "title": "L7- 9050 gh/s Asic, Bitmain, DOGE, LTC, Antminer"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-pk-server-dell-optiplex-3060-i5-8500t-16gb-ID10ZbRV.html",
+  "title": "Компʼютер ПК Сервер Dell OptiPlex 3060 i5-8500T/16GB"
 }
 ```
 **Семпл #3:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-korpus-ta-komplektuyuch-vdeokarti-tsp-bloki-zhivlennya-ssd-ddr2-ddr3-ID10AQEP.html",
-  "title": "ПК корпус та комплектуючі, відеокарти, цп, блоки живлення, ssd, ddr2 ddr3"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/srochno-suchasniy-mn-groviy-pk-ID10IVEr.html",
+  "title": "!СРОЧНО! Сучасний Міні Ігровий ПК |"
 }
 ```
 **Семпл #4:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuteri-fujitsu-sff-s1151-55-sistemn-bloki-i3-i5-i7-pk-ssd120-250-IDRHxnN.html",
-  "title": "Комп'ютери Fujitsu SFF s1151/55 Системні блоки i3/i5/i7 ПК SSD120/250"
+  "reason": "banned_word_without_pc_indicator: видеокарта",
+  "title": "Сборка ASUS M4A77TD, AMD Phenom II, Crucial DDR3 4GB, видеокарта asus"
 }
 ```
 **Семпл #5:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/mayner-s19-bitmain-asik-antminer-s19j-pro-120t-garantya-b-v-430-ID10kCRS.html",
-  "title": "Майнер S19! Bitmain asik antminer S19j pro+ 120T + Гарантія (Б/В 430$)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/serverniy-pk-dual-xeon-e5-2697-v4-rtx-3060-128gb-ecc-ID10V4SX.html",
+  "title": "Серверний ПК Dual Xeon E5-2697 v4 | RTX 3060 | 128GB ECC"
 }
 ```
 **Семпл #6:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/new-asic-antminer-s21-hydro-335-th-miner-mayner-bitmain-servs-IDXp9RC.html",
-  "title": "NEW Asic Antminer S21 Hydro 335 Th miner Майнер Bitmain + Сервіс"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-pk-ryzen-5-1600-16gb-gtx-1050-ti-b450m-IDZZZtA.html",
+  "title": "Продам ПК Ryzen 5 1600 / 16GB / GTX 1050 Ti / B450M"
 }
 ```
 **Семпл #7:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/mini-kompyutery-dell-kompyuter-nettop-sistemnye-bloki-optom-skladpk-IDWcMnM.html",
-  "title": "Мини Компьютеры Dell компьютер неттоп системные блоки оптом складпк"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/byudzhetniy-groviy-pk-ID10Ogj9.html",
+  "title": "Бюджетний ігровий пк"
 }
 ```
 **Семпл #8:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-kompyuter-pk-gtx-1070-8-gb-ID10eHjc.html",
-  "title": "Игровой компьютер, ПК, GTX 1070 8 ГБ"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-pk-na-baze-protsessora-intel-i5-2300-ID1111Kh.html",
+  "title": "Продам ПК на базе процессора Intel i5-2300"
 }
 ```
 **Семпл #9:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/moshnyy-igrovoy-pk-pc-i5-10400f-16ram-ssd-hdd-ID10I5ne.html",
-  "title": "Мошный игровой пк/PC/i5 10400f /16RAM/SSD+HDD!"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-personalniy-kompyuter-IDWZ9fW.html",
+  "title": "Продам персональний комп'ютер"
 }
 ```
 **Семпл #10:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-kompyuter-rx470-videokarta-garantiya-ID10xZ1r.html",
-  "title": "Игровой ПК, компьютер,  RX470 видеокарта Гарантия"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/odnoplatnyy-kompyuter-raspberry-pi-4-model-b-komplekt-s-kabelyami-ID10PqCB.html",
+  "title": "Одноплатный компьютер Raspberry Pi 4 Model B. Комплект с кабелями"
 }
 ```
 **Семпл #11:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-pk-komplekti-sistemniy-blok-protsesori-opt-beznal-usdt-IDYFdNB.html",
-  "title": "Компʼютер ПК Комплекти, Системний блок, Процесори  Опт, БЕЗНАЛ, USDT"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyutery-pk-acer-veriton-x2611-2610-g-s1150-optom-s-garantiey-deshevo-IDCiscD.html",
+  "title": "Компьютеры ПК Acer veriton X2611 2610 G s1150 оптом с гарантией дешево"
 }
 ```
 **Семпл #12:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-dell-7050-micro-i5-75003-9ghz-4yadra-8gb-ssd256gb-nvme-wi-fi-IDPHXbA.html",
-  "title": "Комп’ютер Dell  7050 micro i5-7500(3.9GHz) (4ядра),8гб, SSD256GB nvme, WI-FI"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-sistemn-bloki-fujitsu-esprimo-q920-mini-i5-4570t-8gb-128ssd-gurt-IDXQhBu.html",
+  "title": "ПК системні блоки Fujitsu Esprimo Q920 Mini i5-4570t/8GB/128SSD Гурт"
 }
 ```
 **Семпл #13:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-pk-rx-5700-xt-kompyuter-ram-16gb-sistemnik-i5-7500-ssd-hdd-1tb-ID101RtK.html",
-  "title": "Ігровий ПК RX 5700 XT Комп'ютер RAM 16GB Системник i5-7500 ssd+hdd 1TB"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/antminer-asic-s19-82-th-novb-garantya-ask-mayner-na-btc-xilinx-ID103DjF.html",
+  "title": "ANTMINER Asic S19 82 Th, новіб, Гарантія, асік, майнер, на BTC, Xilinx"
 }
 ```
 **Семпл #14:**
 ```json
 {
-  "reason": "banned_word_without_pc_indicator: ram",
-  "title": "LLMки в шоці! RTX 3090 24GB+24 ядра+128GB RAM+M.2 SSD 1TB –"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-amd-ryzen-5-3600-gtx-1050-ti-32gb-ID10VtTH.html",
+  "title": "Компьютер AMD Ryzen 5 3600 / GTX 1050 Ti / 32GB"
 }
 ```
 **Семпл #15:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-ryzen-3600-16gb-1070-ID10Z1PG.html",
-  "title": "Комп'ютер Ryzen 3600/16gb/1070"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-radeon-x470-ID10ZwpC.html",
+  "title": "Системний блок Radeon X470"
 }
 ```
 **Семпл #16:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuteri-dell-optiplex-7010-sff-pk-i5-8gb-ssd128gb-opt-IDSQAaP.html",
-  "title": "Комп’ютери Dell Optiplex 7010 SFF ПК i5, 8GB SSD128GB ОПТ"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sterodniy-malyuk-ryzen-9-9950x3d-rtx-5080-16gb-ddr5-64gb-m-2-ssd-2tb-robocha-stantsya-groviy-kompyuter-igrovoy-pk-rabochaya-stantsiya-ID10DhHt.html",
+  "title": "Стероїдний Малюк! Ryzen 9 9950X3D+RTX 5080 16GB+DDR5 64GB+M.2 SSD 2TB –  Робоча станція ігровий комп'ютер игровой ПК рабочая станция"
 }
 ```
 **Семпл #17:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-kompyuter-z-grovim-montorom-ID10p93t.html",
-  "title": "Ігровий компютер з ігровим монітором"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/hp-pavilion-wave-desktop-pc-IDJ0NnL.html",
+  "title": "hp pavilion Wave Desktop PC"
 }
 ```
 **Семпл #18:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-kompyuter-ID110GEJ.html",
-  "title": "ігровий компютер"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyutery-pk-lenovo-thinkcentre-m71-m72e-sff-i5-8gb-120ssd-opt-b-n-IDSFIP7.html",
+  "title": "Компьютеры ПК Lenovo ThinkCentre M71 M72е SFF i5/8ГБ/120SSD ОПТ!Б/Н"
 }
 ```
 **Семпл #19:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-pk-12-yaderxeon-2640v3-16gb-rx-570-4gb-ssd-m2-128-hdd-500-IDYUSSJ.html",
-  "title": "Ігровий ПК 12 ядер:Xeon 2640v3/16Gb/RX 570 4gb/SSD M2 128+HDD 500"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuteri-pk-hp-prodesk-600-g3-sff-i3-7100-8-120-ssd-s1151-gurt-b-g-IDTCTCm.html",
+  "title": "Комп'ютери ПК HP ProDesk 600 G3 SFF i3 7100/8/120 SSD s1151 ГУРТ!Б/Г‼️"
 }
 ```
 **Семпл #20:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-po-komplektuyuchim-r5-7500f-3060-ti-ddr5-ID110GCt.html",
-  "title": "Пк по комплектуючим R5 7500F 3060 ti ддр5"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-kompyuter-ID1111E6.html",
+  "title": "Продам комп'ютер"
 }
 ```
 **Семпл #21:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/fantastiks-24-yadra-gtx-1070-16gb-ram-ssd-120gb-robocha-stantsya-groviy-kompyuter-igrovoy-pk-rabochaya-stantsiya-ID10E10W.html",
-  "title": "ФАНТАСТИКС! 24 ядра+GTX 1070+16GB RAM+SSD 120GB –  Робоча станція ігровий комп'ютер игровой ПК рабочая станция"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/potuzhniy-groviy-pk-dlya-navchannya-ta-rozvag-ID10gQLO.html",
+  "title": "Потужний ігровий ПК для навчання та розваг"
 }
 ```
 **Семпл #22:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/imac-g3-aplle-retro-ID10Paeu.html",
-  "title": "Imac G3 Aplle ретро"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/suchasniy-komp-yuter-sistemniy-blok-ID10ssO3.html",
+  "title": "Сучасний комп\"ютер/системний блок."
 }
 ```
 **Семпл #23:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/personalniy-kompyuter-IDUJ87O.html",
-  "title": "Персональний комп'ютер"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/personalnyy-kompyuter-pk-pc-ID10C4uj.html",
+  "title": "Персональный компьютер. ПК. PC"
 }
 ```
 **Семпл #24:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/monoblok-apple-imac-a2438-24-retina-4-5k-256-8-apple-m1-dealniy-ID1032pV.html",
-  "title": "Моноблок Apple iMac A2438/24\"/Retina/4.5K/256/8/Apple M1/ІДЕАЛЬНИЙ"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/robocha-stantsya-hp-z800-IDZ70VQ.html",
+  "title": "Робоча станція HP Z800"
 }
 ```
 **Семпл #25:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-sistemniy-blok-komplekt-pk-kompyuter-beznal-usdt-IDXRraY.html",
-  "title": "Компʼютер. Системний блок, Комплект ПК  Компютер БЕЗНАЛ/ USDT"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-robochiy-pk-xeon-e5-2660-gtx-1660-6gb-16gb-ram-x79-ID1111w3.html",
+  "title": "Ігровий / робочий ПК Xeon E5-2660 / GTX 1660 6GB / 16GB RAM / X79"
 }
 ```
 **Семпл #26:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-ultra-5-245kf-rtx-5070-ti-16gb-ssd-nvme-1tb-32gb-ddr5-6400mhz-garantya-12ms-ID10BD6D.html",
-  "title": "Системний блок / Ultra 5 245KF / RTX 5070 Ti 16gb / SSD NVMe 1tb / 32gb - DDR5 6400Mhz / ГАРАНТІЯ 12міс"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/mayneri-new-asic-antminer-l9-16-gh-v-nayavnost-xilinx-garantya-IDZyMdZ.html",
+  "title": "Майнери NEW Asic Antminer L9 16 Gh в наявності, Xilinx, Гарантія"
 }
 ```
 **Семпл #27:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-monoblok-archos-vision-215-ID110Gpn.html",
-  "title": "Продам моноблок ARCHOS Vision 215"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/monoblok-asus-all-in-one-a6421-fullhd-ips-21-5-intel-4gb-ddr4-500gb-hdd-ID10qjGP.html",
+  "title": "Моноблок Asus All in one A6421 (FullHD, IPS, 21,5\") Intel / 4gb DDR4 / 500gb HDD"
 }
 ```
 **Семпл #28:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-povniy-komplekt-pk-montor-klavatura-mishka-ID10g4LF.html",
-  "title": "Комп’ютер повний комплект: ПК + монітор + клавіатура + мишка"
-}
-```
-**Семпл #29:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-kompyuter-ID10rbej.html",
-  "title": "Комплект, компьютер"
-}
-```
-**Семпл #30:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-hp-600b-series-sistemniy-blok-ID10gw0N.html",
-  "title": "Комп'ютер HP 600B Series системний блок"
-}
-```
-**Семпл #31:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-ryzen-3600-16gb-1070-ID10Z1PG.html",
-  "title": "Комп'ютер Ryzen 3600/16gb/1070"
-}
-```
-**Семпл #32:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-intel-core-2-duo-IDLXwvC.html",
-  "title": "Системний блок Intel core 2 duo."
-}
-```
-**Семпл #33:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-ryzen-7-7800x3d-rtx-3080-10gb-32gb-ddr5-6000-ID110Glw.html",
-  "title": "Игровой ПК Ryzen 7 7800X3D, RTX 3080 10gb , 32gb DDR5 6000"
-}
-```
-**Семпл #34:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-igrovoy-pk-ID10OlYg.html",
-  "title": "Продам игровой ПК"
-}
-```
-**Семпл #35:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-ryzen-5-7500f-rx-6700-xt-12gb-32gb-ddr5-am5-otlichnoe-sostoyanie-ID10Yrzm.html",
-  "title": "Игровой ПК Ryzen 5 7500F / RX 6700 XT 12GB / 32GB DDR5 / AM5 — Отличное состояние"
-}
-```
-**Семпл #36:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/anomalya-rtx-4060-i3-12100f-ddr4-16gb-ssd-240gb-groviy-kompyuter-pk-dlya-gor-geymerskiy-igrovoy-kompyuter-ID10CVEz.html",
-  "title": "АНОМАЛІЯ! RTX 4060+i3-12100f+DDR4 16GB+SSD 240GB –  Ігровий комп'ютер ПК для ігор геймерський игровой компьютер"
-}
-```
-**Семпл #37:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-pk-gtx-1060-kompyuter-4-yadra-16gb-ram-sistemniy-blok-500gb-ID10odpw.html",
-  "title": "Ігровий ПК GTX 1060 Комп'ютер 4 ядра / 16GB RAM Системний блок 500GB"
-}
-```
-**Семпл #38:**
-```json
-{
-  "reason": "banned_word_without_pc_indicator: ssd",
-  "title": "Продам сервер / робочу станцію  Xeon E5-2680 v4 / 32GB ECC / SSD / 650W Gold"
-}
-```
-**Семпл #39:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/potuzhniy-groviy-pk-rx-7900-xt-20gb-i5-12400-32gb-ssd-1tb-ID10ZWPa.html",
-  "title": "Потужний ігровий ПК — RX 7900 XT 20GB / i5-12400 / 32GB / SSD 1TB"
-}
-```
-**Семпл #40:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-sistemniy-blok-u-novomu-korpus-ID110Gea.html",
-  "title": "Ігровий системний блок у новому корпусі"
-}
-```
-**Семпл #41:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-i-komplektuyuschie-b-u-ID10s8wQ.html",
-  "title": "ПК и комплектующие б/у"
-}
-```
-**Семпл #42:**
-```json
-{
-  "reason": "banned_word_without_pc_indicator: озу",
-  "title": "‼️ТОП Игровой (Ryzen 7 7700, RX 6900Xt 16gb, 32 ОЗУ, 1tb SSD,am5  b850)"
-}
-```
-**Семпл #43:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-apple-imac-24-b-IDX9UAp.html",
-  "title": "Продам Apple Imac 24\" b"
-}
-```
-**Семпл #44:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-sistemn-bloki-IDUMOxF.html",
-  "title": "Продам системні блоки"
-}
-```
-**Семпл #45:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/fujitsu-esprimo-d556-e85-ID10guJu.html",
-  "title": "Fujitsu esprimo d556/e85+"
-}
-```
-**Семпл #46:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-amd-kompyuter-pc-IDY44ZK.html",
-  "title": "системний блок amd компютер pc"
-}
-```
-**Семпл #47:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/lot-kompyuterna-mishka-klavatura-150-grn-mozhna-okremo-100-grn-sven-a4tech-hp-acme-fujitsu-ID10P6bM.html",
-  "title": "(Лот - комп'ютерна мишка + клавіатура - 150 грн (можна окремо - 100 грн)  SVEN / A4Tech / HP / Acme / Fujitsu"
-}
-```
-**Семпл #48:**
-```json
-{
-  "reason": "banned_word_without_pc_indicator: відеокарта",
-  "title": "Dell optiplex 755 ноутбук Леново  і відеокарта gt730"
-}
-```
-**Семпл #49:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/nayavnst-antminer-l7-9050-mh-3450-vt-asic-garantya-IDXBbd4.html",
-  "title": "НАЯВНІСТЬ! Antminer L7 9050 Mh 3450 Вт ASIC + Гарантія"
-}
-```
-**Семпл #50:**
-```json
-{
-  "reason": "banned_word_without_pc_indicator: озу",
-  "title": "‼️ІГРОВА МАШИНА‼️+ Клавіатура + Мишка • Nvidia GTX 1650 • ОЗУ: 24GB • Процесор: intel Core"
-}
-```
-**Семпл #51:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-kompyuter-groviy-setap-ID10Xm8c.html",
-  "title": "Продам Компютер ігровий сетап"
-}
-```
-**Семпл #52:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-kompyuter-groviy-xeon-2680-580-8gb-32ozu-ddr4-dealniy-dlya-svogo-byudzhetu-ID110G7B.html",
-  "title": "Пк Компютер Ігровий Xeon 2680, 580 8gb 32озу ддр4 ідеальний для свого бюджету"
-}
-```
-**Семпл #53:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-1050ti-ID10OASC.html",
-  "title": "Компьютер 1050ti"
-}
-```
-**Семпл #54:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-eee-top-monoblok-et1602c-IDZjB13.html",
-  "title": "Asus Eее Top моноблок ET1602C"
-}
-```
-**Семпл #55:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -468,286 +256,223 @@
   "title": "Продам игровой компьютер"
 }
 ```
+**Семпл #29:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/gtx1660s-kompyuter-IDZ1GzT.html",
+  "title": "gtx1660s компʼютер"
+}
+```
+**Семпл #30:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/horosho-yakost-noutbuk-acer-aspire-5349-ekran-15-6-dyuymv-protsesori-dvoyadern-intel-celeron-1-5ghz-operativna-pamyat-ddr3-ma-obm-8gb-wi-fi-hdmi-ID1111uq.html",
+  "title": "Хорошої якості ноутбук Acer Aspire 5349/Екран 15.6 дюймів /Процесори двоядерні Intel Celeron  1.5GHz/Оперативна пам'ять DDR3 має об'єм 8GB/Wi-Fi,HDMI"
+}
+```
+**Семпл #31:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-sistemniy-blok-pentium-dyal-core-e6500-3666-mhz-IDVWS1w.html",
+  "title": "Продам системний блок. Pentium Dyal Core E6500 3666 MHz."
+}
+```
+**Семпл #32:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/rx-570-xeon-e3-1270-v3-core-i7-4770-monitor-v-podarok-ID1111tn.html",
+  "title": "RX 570 + Xeon E3-1270 v3 (Core i7-4770) монитор в подарок"
+}
+```
+**Семпл #33:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/buntar-i7-14700kf-rtx-4080-super-16gb-ddr5-32gb-m-2-ssd-1tb-robocha-stantsya-groviy-kompyuter-igrovoy-pk-rabochaya-stantsiya-ID10EqBr.html",
+  "title": "БУНТАР! i7-14700KF+RTX 4080 Super 16GB+DDR5 32GB+M.2 SSD 1TB –  Робоча станція ігровий комп'ютер игровой ПК рабочая станция"
+}
+```
+**Семпл #34:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/mnpk-acer-veriton-n4660g-core-i3-i5-i7-8-9-pokolnnya-wi-fi-gurt-fop-IDZlh4y.html",
+  "title": "МініПК Acer Veriton N4660G Core i3 i5 i7 8-9 покоління Wi-Fi Гурт ФОП"
+}
+```
+**Семпл #35:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-nvidia-gtx-770-intel-core-i5-IDX9II5.html",
+  "title": "Компьютер Nvidia gtx 770, Intel core i5"
+}
+```
+**Семпл #36:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-apple-macpro-5-1-6-core-intel-xeon-os-high-sierra-IDSoOJz.html",
+  "title": "Компьютер Apple MacPro 5.1 (6-Core Intel Xeon ) OS High Sierra"
+}
+```
+**Семпл #37:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/mnpk-fujitsu-esprimo-q958-mini-i3-i5-9500t-8-16gb-ssd128-256-512gb-ID10i6ty.html",
+  "title": "МініПК Fujitsu Esprimo Q958 Mini i3 i5-9500T 8-16GB SSD128-256-512GB"
+}
+```
+**Семпл #38:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/macmini-m4-garantya-stantsya-ID1111ri.html",
+  "title": "MacMini M4 + Гарантія + Станція"
+}
+```
+**Семпл #39:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-pk-v-sbore-deepcool-8-16-32ram-ssd-rx480-8gb-ID10ZAgw.html",
+  "title": "Продам ПК в сборе Deepcool 8/16-32ram-ssd-rx480 8gb"
+}
+```
+**Семпл #40:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/1230-mayner-bitmain-antminer-s19xp-279t-hydro-supertsna-garantya-IDXXwas.html",
+  "title": "1230$! Майнер BITMAIN ANTMINER S19XP+ 279T HYDRO (Суперціна+Гарантія"
+}
+```
+**Семпл #41:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-pk-lenovo-v520s-sff-s1151-i3-7100-8gb-ssd128-gb-gurt-IDYf8t8.html",
+  "title": "Системний блок ПК Lenovo V520S SFF s1151 i3-7100/8GB/SSD128 GB Гурт"
+}
+```
+**Семпл #42:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/hp-640-intel-xeon-e5-2670-v3-turbo-boost-ddr-4-16-gb-quadro-k2200-IDNyVfq.html",
+  "title": "HP 640 Intel Xeon E5 -2670  V3 Turbo Boost  DDR 4 16 gb Quadro K2200"
+}
+```
+**Семпл #43:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-hp-i3-6100-8-ram-120-ssd-IDZFFtv.html",
+  "title": "Системний блок Hp i3-6100/8 ram/120 ssd"
+}
+```
+**Семпл #44:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemn-bloki-pk-mat-plata-gigabyte-asus-protsesora-cpu-ryzen-ID1036b9.html",
+  "title": "Системні блоки - ПК - Мат. плата Gigabyte Asus - Процесора CPU Ryzen"
+}
+```
+**Семпл #45:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vazhlivo-shanovn-ID1111lY.html",
+  "title": "Важливо шановні!"
+}
+```
+**Семпл #46:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-evolve-pk-rtx-4070-12gb-i5-13500-32gb-ddr5-1tb-ssd-ID1111lR.html",
+  "title": "Комп'ютер EVOLVE ПК \\ RTX 4070 12GB \\ i5-13500 \\ 32GB DDR5 \\ 1TB SSD"
+}
+```
+**Семпл #47:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodayu-komplekt-do-pk-IDZQBfX.html",
+  "title": "Продаю комплект до пк"
+}
+```
+**Семпл #48:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/monobloki-dell-v-ofs-doma-kompyuter-i3-i5-i7-ssd-256-480-m2-optom-IDUkHBM.html",
+  "title": "Моноблоки Dell в Офіс дома Комп'ютер i3, i5, i7, SSD 256, 480 M2 ОПТОМ"
+}
+```
+**Семпл #49:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-pk-IDTHOCA.html",
+  "title": "Продам пк"
+}
+```
+**Семпл #50:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-kopyuter-ID10gQli.html",
+  "title": "Ігровий Коп'ютер"
+}
+```
+**Семпл #51:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/titan-ryzen-9-7950x-rtx-3090-24gb-ddr5-64gb-m-2-ssd-1tb-robocha-stantsya-groviy-kompyuter-igrovoy-pk-rabochaya-stantsiya-ID10Eqg8.html",
+  "title": "ТИТАН! Ryzen 9 7950X+RTX 3090 24GB+DDR5 64GB+M.2 SSD 1TB –  Робоча станція ігровий комп'ютер игровой ПК рабочая станция"
+}
+```
+**Семпл #52:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-pk-lenovo-v520s-sff-s1151-i3-7100-8gb-ssd128-gb-gurt-IDYf8t8.html",
+  "title": "Системний блок ПК Lenovo V520S SFF s1151 i3-7100/8GB/SSD128 GB Гурт"
+}
+```
+**Семпл #53:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/raspberry-pi-touch-display-2-IDYor3j.html",
+  "title": "Raspberry Pi Touch Display 2"
+}
+```
+**Семпл #54:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-pk-dlya-shkoli-ta-domu-v-povnomu-nabor-IDZ6MbQ.html",
+  "title": "Продам ПК для школи та дому в повному наборі"
+}
+```
+**Семпл #55:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-intel-core-i3-8100-8gb-ssd-240gb-hdd-1tb-montor-lg-ID10PQFX.html",
+  "title": "Комп'ютер Intel Core i3-8100 / 8GB / SSD 240GB + HDD 1TB / Монітор LG"
+}
+```
 **Семпл #56:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-pk-i7-4790-gtx1080-8gb-ID10TtOX.html",
-  "title": "Ігровий ПК i7-4790, GTX1080 8Gb"
-}
-```
-**Семпл #57:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-dlya-gor-ryzen-5-5500-gtx-1080-ti-11gb-16gb-ddr4-win-10-win-11-ID10P9Ei.html",
-  "title": "Пк для ігор Ryzen 5 5500 | GTX 1080 ti 11GB | 16GB DDR4 | Win 10 / Win 11"
-}
-```
-**Семпл #58:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-komplektuyuchihnih-dlya-kompyutera-IDRAMBX.html",
-  "title": "Комплект комплектуючихних для комп'ютера"
-}
-```
-**Семпл #59:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/korpus-pk-sistemnyy-blok-kompyuter-IDYSzrB.html",
-  "title": "Корпус пк системный блок компьютер"
-}
-```
-**Семпл #60:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/byudzhetniy-groviy-pk-i5-4460-nvidia-gtx-960-ssd-240-ID110G0Q.html",
-  "title": "Бюджетний ігровий ПК | i5-4460 • Nvidia GTX 960 • SSD 240"
-}
-```
-**Семпл #61:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-kompyuter-sff-core-i5-13500-b760m-32gb-512gb-nvme-1tb-hdd-ID10SqDU.html",
-  "title": "ПК компютер SFF (core i5-13500/B760M/32gb/512gb nvme+1tb hdd)"
-}
-```
-**Семпл #62:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/hp-prodesk-405-g8-ryzen-5-pro-5650ge-8-256-gb-displayport-hdmi-wifi-bt-1312-IDXq3rQ.html",
-  "title": "HP ProDesk 405 G8 RYZEN 5 PRO 5650GE 8/256 GB DisplayPort HDMI WiFi+BT #1312"
-}
-```
-**Семпл #63:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-monitor-v-polnom-komplekte-IDV90YU.html",
-  "title": "ПК+Монитор в полном комплекте"
-}
-```
-**Семпл #64:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/onyx-rtx-5060-ti-8gb-ryzen-7-7700-ddr5-32gb-m-2-ssd-500gb-groviy-kompyuter-pk-dlya-gor-geymerskiy-igrovoy-kompyuter-ID10E0gz.html",
-  "title": "ONYX! RTX 5060 Ti 8GB+Ryzen 7 7700+DDR5 32GB+M.2 SSD 500GB –  Ігровий комп'ютер ПК для ігор геймерський игровой компьютер"
-}
-```
-**Семпл #65:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-v-rabochem-sostoyanii-IDYEyuw.html",
-  "title": "Компьютер в рабочем состоянии"
-}
-```
-**Семпл #66:**
-```json
-{
-  "reason": "banned_word_without_pc_indicator: hdd",
-  "title": "Intel core I7, DDR4 32 гб, 512 SDD, 512 HDD"
-}
-```
-**Семпл #67:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/byudzhetniy-groviy-pk-sistemniy-blok-i5-12gb-gtx-1060-6gb-analog-ID10xQnp.html",
-  "title": "Бюджетний ігровий ПК / Системний блок (i5 / 12GB / GTX 1060 6GB аналог)"
-}
-```
-**Семпл #68:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-kompyuter-r5-5500-16gb-ddr4-rx-5700-xt-8gb-ssd-ID10YqRa.html",
-  "title": "Ігровий комп'ютер R5 5500 / 16GB DDR4 / RX 5700 XT 8gb / ssd"
-}
-```
-**Семпл #69:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/lenovo-loq-15iax9i-ID10DAWg.html",
-  "title": "Lenovo LOQ 15IAX9I"
-}
-```
-**Семпл #70:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-kompyuter-r5-3600-16gb-ddr4-rx-5700-xt-8gb-ssd-ID10YqLw.html",
-  "title": "Ігровий комп'ютер R5 3600 / 16GB DDR4 / RX 5700 XT 8gb / ssd"
-}
-```
-**Семпл #71:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-pc-rayzen-5-rtx-3060ti-32ram-ssd-hdd-rog-strix-tuf-gaming-ID10YqHD.html",
-  "title": "Игровой пк/PC/Rayzen 5/RTX 3060ti/32RAM/SSD+HDD/ROG STRIX/TUF GAMING !"
-}
-```
-**Семпл #72:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/bliy-lev-rtx-5060-ti-8gb-ryzen-5-9600-ddr5-16gb-m-2-ssd-500gb-groviy-kompyuter-pk-dlya-gor-geymerskiy-igrovoy-kompyuter-ID10CWP2.html",
-  "title": "Білий Лев! RTX 5060 Ti 8GB+Ryzen 5 9600+DDR5 16GB+M.2 SSD 500GB –  Ігровий комп'ютер ПК для ігор геймерський игровой компьютер"
-}
-```
-**Семпл #73:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/potuzhniy-groviy-kompyuter-5060ti-16gb-ryzen-5500x3d-ID10QydY.html",
-  "title": "Потужний ігровий комп'ютер (5060ti 16GB, ryzen 5500x3d)"
-}
-```
-**Семпл #74:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/mn-pk-nettopi-sistemn-bloki-dell-i3-i5-i7-s1151-v2-1150-11-IDY5o6y.html",
-  "title": "Міні-ПК / Неттопи / Системні блоки Dell i3 i5 i7 (s1151-V2 / 1150 / 11"
-}
-```
-**Семпл #75:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-kompyuter-r3-1300x-12gb-ddr4-gtx-1050-ti-4gb-ssd-ID10Yqzb.html",
-  "title": "Ігровий комп'ютер R3 1300x / 12GB DDR4 / GTX 1050 Ti 4gb / ssd"
-}
-```
-**Семпл #76:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-dell-optiplex-7010-sff-intel-core-i3-3220-4gb-hdd500gb-kompyuter-IDWKrdU.html",
-  "title": "Системний блок Dell OptiPlex 7010 SFF Intel Core i3-3220,4гб,hdd500гб комп'ютер"
-}
-```
-**Семпл #77:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-prodesk-400g5-mini-i5-9500t6yader-8gb-ssd256-IDX0XM6.html",
-  "title": "Системний блок ProDesk 400G5 mini i5-9500T(6ядер)/8gb/ssd256"
-}
-```
-**Семпл #78:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-kompyuter-s-monitorom-ID10YoGn.html",
-  "title": "Продам компьютер с монитором!"
-}
-```
-**Семпл #79:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-ryzen-7-5700x-rtx-3060-12gb-32gb-ram-ssd-2tb-periferya-ID10UPk8.html",
-  "title": "ПК Ryzen 7 5700X, RTX 3060 12GB, 32GB RAM, SSD 2TB + периферія"
-}
-```
-**Семпл #80:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/v-nayavnost-asic-bitmain-antminer-l7-9050-mh-3400-vt-IDXBbfW.html",
-  "title": "В наявності Asic Bitmain Antminer L7 9050 Mh 3400 Вт"
-}
-```
-**Семпл #81:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/topoviy-pk-ryzen-9-9950x3d-asus-rog-astral-rtx-5090-oc-64gb128gb-4tb-m2-ID10Rtnn.html",
-  "title": "Топовий ПК Ryzen 9 9950X3D / ASUS ROG Astral RTX 5090 OC / 64GB(128GB) / 4TB M2"
-}
-```
-**Семпл #82:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-ryzen-5-7500f-rx-6700-xt-12gb-32gb-ddr5-am5-otlichnoe-sostoyanie-ID10Yrzm.html",
-  "title": "Игровой ПК Ryzen 5 7500F / RX 6700 XT 12GB / 32GB DDR5 / AM5 — Отличное состояние"
-}
-```
-**Семпл #83:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/byudzhetniy-groviy-setap-i5-6400-rx-570-16gb-ddr4-z-montorom-24-ta-pereferyu-ID10LNyN.html",
-  "title": "Бюджетний ігровий сетап i5-6400/RX 570/16GB DDR4 з монітором 24\" та переферією"
-}
-```
-**Семпл #84:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ho-ultra-9-285k-rtx-5080-16gb-ddr5-32gb-m-2-ssd-2tb-robocha-stantsya-groviy-kompyuter-igrovoy-pk-rabochaya-stantsiya-ID10CWqW.html",
-  "title": "H²O! Ultra 9 285K+RTX 5080 16GB+DDR5 32GB+M.2 SSD 2TB –  Робоча станція ігровий комп'ютер игровой ПК рабочая станция"
-}
-```
-**Семпл #85:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/fenks-rtx-2060-ryzen-5-3600-ddr4-16gb-m-2-ssd-240gb-groviy-pk-kompyuter-dlya-gor-IDFBQNd.html",
-  "title": "ФЕНІКС! RTX 2060+Ryzen 5 3600+DDR4 16GB+M.2 SSD 240GB – ігровий ПК комп'ютер для ігор"
-}
-```
-**Семпл #86:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/300hz-monstr-gtx-1080-ti-i5-12400f-ddr4-16gb-ssd-480gb-groviy-pk-kompyuter-dlya-gor-IDIGaqT.html",
-  "title": "300Hz МОНСТР! GTX 1080 Ti+i5-12400f+DDR4 16GB+SSD 480GB – ігровий ПК комп'ютер для ігор"
-}
-```
-**Семпл #87:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-v-zbor-sistemniy-blok-montor-ID10T0eO.html",
-  "title": "Комп'ютер в зборі (Системний блок+Монітор)"
-}
-```
-**Семпл #88:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/garantiya-na-vse-komplektuyuschie-5070-12gb-amd-7-5700x-32gb-ddr4-1tb-ssd-ID10eHf1.html",
-  "title": "Гарантия на все комплектующие!5070 12GB/AMD 7 5700X/32GB ddr4/1TB SSD"
-}
-```
-**Семпл #89:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/potuzhniy-groviy-pk-rtx-3070-8gb-i5-10600kf-16gb-rgb-ssd-m-2-512gb-ID10KAD1.html",
-  "title": "Потужний Ігровий ПК / RTX 3070 8GB / i5-10600KF / 16GB RGB / SSD M.2 512GB"
-}
-```
-**Семпл #90:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-z-vropi-pk-hp-600-g4-sff-s1151-sistemniy-blok-i3-i5-i7-IDVjyEY.html",
-  "title": "Комп'ютер із Європи ПК HP 600 G4 SFF s1151 системний блок i3/i5/i7"
-}
-```
-**Семпл #91:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -755,877 +480,444 @@
   "title": "Apple Mac Studio M2 Max 12/30 ядер · 32 ГБ · 512 SSD · повний комплект"
 }
 ```
+**Семпл #57:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/mn-pk-wintel-box-w8-pro-4-64-gb-windows-10-ID1111al.html",
+  "title": "Міні-ПК Wintel Box W8 Pro 4/64 ГБ (Windows 10)"
+}
+```
+**Семпл #58:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-sistemnyy-blok-na-s-am3-s-novym-ssd-diskom-IDZXFVH.html",
+  "title": "Продам системный блок на S AM3, с новым ссд диском."
+}
+```
+**Семпл #59:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-kompyuter-IDWDjh2.html",
+  "title": "Игровой компьютер"
+}
+```
+**Семпл #60:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-i7-10700f-rx5700xt-ID10U428.html",
+  "title": "Игровой Пк  I7-10700f/Rx5700Xt"
+}
+```
+**Семпл #61:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/mac-mini-2018-i7-64gb-1tb-ID10r4ao.html",
+  "title": "Mac Mini 2018 i7 / 64GB / 1TB"
+}
+```
+**Семпл #62:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-kompyuter-ID11117J.html",
+  "title": "Продам комп'ютер"
+}
+```
+**Семпл #63:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/dzherelo-bezperebynogo-zhivlennya-luxeon-1500zd-ID10OhUG.html",
+  "title": "Джерело безперебійного живлення Luxeon 1500zd"
+}
+```
+**Семпл #64:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-komp-yutern-aktivn-kolonki-ID10qjuY.html",
+  "title": "Продам комп\"ютерні активні колонки"
+}
+```
+**Семпл #65:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-dlya-ks-rast-doty-maynkrafta-ID10ZRaM.html",
+  "title": "Игровой пк для кс/раст/доты/майнкрафта"
+}
+```
+**Семпл #66:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-pk-ryzen-5-7500f-rtx-5070-12gb-ddr5-am5-ID110ZTv.html",
+  "title": "Ігровий ПК Ryzen 5 7500F RTX 5070 12GB DDR5 AM5"
+}
+```
+**Семпл #67:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodayu-pk-garniy-setap-ID1106Jm.html",
+  "title": "Продаю ПК , гарний сетап"
+}
+```
+**Семпл #68:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-sistemniy-blok-montor-22-i5-4670k-gtx-1050-ti-4gb-ID10O9xa.html",
+  "title": "Продам системний блок + Монітор 22\" (i5-4670K / GTX 1050 Ti 4GB)"
+}
+```
+**Семпл #69:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/bliskavka-rx-5700-12-yader-32gb-ram-ssd-120gb-groviy-kompyuter-pk-dlya-gor-geymerskiy-igrovoy-kompyuter-ID10DgYE.html",
+  "title": "Блискавка! RX 5700+12 ядер+32GB RAM+SSD 120GB –  Ігровий комп'ютер ПК для ігор геймерський игровой компьютер"
+}
+```
+**Семпл #70:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-pk-rtx-4070-12gb-i5-11400f-32gb-ram-1-5tb-ssd-ID10DfsU.html",
+  "title": "Ігровий ПК RTX 4070 12GB / i5-11400F / 32GB RAM / 1.5TB SSD"
+}
+```
+**Семпл #71:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/robochiy-sistemniy-blok-pk-na-intel-core-duo-e8400-4gb-ram-250gb-IDZCuNb.html",
+  "title": "Робочий системний блок ПК на Intel Core Duo E8400, 4Gb Ram, 250Gb"
+}
+```
+**Семпл #72:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/moschnyy-mini-pk-na-i7-8700-IDZhUzD.html",
+  "title": "Мощный мини ПК на i7 8700"
+}
+```
+**Семпл #73:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-komplekt-IDWZ8ms.html",
+  "title": "Компютер комплект"
+}
+```
+**Семпл #74:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-kompyuter-monitor-ID10Zvec.html",
+  "title": "Продам компьютер + монитор"
+}
+```
+**Семпл #75:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-lenovo-think-centre-m92p-ta-m82opt-ID10jPv7.html",
+  "title": "ПК Lenovo Think Centre M92p та М82(опт)"
+}
+```
+**Семпл #76:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-pk-hp-elitedesk-705-g4-sff-ryzen-3-2200g-8gb-ddr4-ssd-256gb-IDZ4a2M.html",
+  "title": "Комп'ютер ПК HP EliteDesk 705 G4 SFF Ryzen 3 2200G 8Gb DDR4 SSD 256Gb"
+}
+```
+**Семпл #77:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-dell-optiplex-3020-sff-i3-4130-8gb-ddr3-128gb-ssd-garantya-IDYVhyz.html",
+  "title": "Комп'ютер Dell Optiplex 3020 SFF i3-4130 8Gb DDR3 128Gb SSD Гарантія"
+}
+```
+**Семпл #78:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/noviy-suchasniy-groviy-pk-sistemnyy-blok-igrovoy-kompyuter-IDZyNWE.html",
+  "title": "• Новий! Сучасний! Ігровий ПК! Системный блок ! Игровой компьютер!"
+}
+```
+**Семпл #79:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuteri-dell-3050-3090-7050-mini-sistemn-bloki-optom-sklad-IDYS9kv.html",
+  "title": "‼️Комп’ютери Dell 3050|3090|7050 Mini | системні блоки оптом |СКЛАД"
+}
+```
+**Семпл #80:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/potuzhniy-groviy-pk-i7-13700k-rtx-3070-ti-ddr5-32-gb-ID10UQfZ.html",
+  "title": "Потужний ігровий ПК i7-13700K / RTX 3070 Ti / DDR5 32 ГБ"
+}
+```
+**Семпл #81:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-pk-kompyuter-i5-12400f-rtx-3070-32gb-ddr4-512gb-nvme-IDYS67J.html",
+  "title": "Ігровий ПК комп'ютер i5-12400f RTX 3070 32Gb DDR4 512Gb NVMe"
+}
+```
+**Семпл #82:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-dell-optiplex-3040-sff-i5-6400-8gb-ssd-120gb-garantya-12-ms-IDVyVUK.html",
+  "title": "Комп'ютер Dell Optiplex 3040 SFF i5-6400 8Gb SSD 120Gb Гарантія 12 міс"
+}
+```
+**Семпл #83:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-z-rx-580-8-gb-ID1110VO.html",
+  "title": "Пк з  Rx 580 8 gb"
+}
+```
+**Семпл #84:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-personalniy-kompyuter-ID10EpSI.html",
+  "title": "Ігровий персональний комп'ютер"
+}
+```
+**Семпл #85:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-acer-aspire-tc-100-z-montorom-samsung-ID10EpPQ.html",
+  "title": "Комп'ютер Acer Aspire TC-100 з монітором SAMSUNG"
+}
+```
+**Семпл #86:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/mn-pk-nuc7i3bhn-i3-7100u-mn-kompyuter-intel-nuc-IDYfzTx.html",
+  "title": "Міні ПК NUC7i3BHN, i3-7100U Міні-комп'ютер Intel NUC"
+}
+```
+**Семпл #87:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-ryzen-5-5500-rtx-4060-ID1110RW.html",
+  "title": "ПК Ryzen 5 5500 / RTX 4060"
+}
+```
+**Семпл #88:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-ryzen-5-7500f-rtx-4060-32gb-1tb-ID10Pvm3.html",
+  "title": "ПК  Ryzen 5 7500F / RTX 4060 / 32GB / 1TB"
+}
+```
+**Семпл #89:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodayu-potuzhniy-pk-z-garantyu-ID10cA6F.html",
+  "title": "Продаю потужний ПК з гарантією"
+}
+```
+**Семпл #90:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-sistemniy-blok-bez-vdeokarti-IDWleal.html",
+  "title": "Продам системний блок без відеокарти"
+}
+```
+**Семпл #91:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nayavnst-b-v-mayneri-asic-bitmain-antminer-s19-90-th-3150vt-garantya-IDX1f3s.html",
+  "title": "Наявність!Б/в Майнери Asic Bitmain Antminer S19 90 Th 3150Вт +Гарантія"
+}
+```
 **Семпл #92:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-byudzhetniy-groviy-ryzen-5600-32-ddr-1-5tb-m2-rtx-3060-12gb-IDSvaOS.html",
-  "title": "Компьютер Бюджетний Ігровий Ryzen 5600+32 ddr+1.5тб м2+RTX 3060 12gb"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/2025r-monoblok-lenovo-ideacentre-3-27irh9-i5-13420h-16gb-512gb-fhd-27-ID10mhvZ.html",
+  "title": "2025р. Моноблок Lenovo IdeaCentre 3 27IRH9/i5-13420H/16GB/512GB/FHD/27"
 }
 ```
 **Семпл #93:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-fx4100-rx5604gb-ID10c1LF.html",
-  "title": "Компютер Fx4100/rx560(4GB)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-rtx5060-ozu-32gb-ryzen-5-5600x-1tb-ssdna-garantii-novyy-ID10Z8Ww.html",
+  "title": "Игровой ПК RTX5060 ОЗУ 32гб Ryzen 5 5600x 1TB SSDна гарантии новый"
 }
 ```
 **Семпл #94:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/mayner-s19-bitmain-asik-antminer-s19j-pro-120t-garantya-b-v-430-ID10kCRS.html",
-  "title": "Майнер S19! Bitmain asik antminer S19j pro+ 120T + Гарантія (Б/В 430$)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemnyy-blok-kompyuter-IDR88ZW.html",
+  "title": "Системный блок компьютер"
 }
 ```
 **Семпл #95:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-pk-core-i5-6600-gtx-1060-6gb-16gb-ram-ssd-hdd-lyubye-testy-ID110Hd2.html",
-  "title": "Игровой ПК Core i5 6600 / GTX 1060 6GB / 16GB RAM / SSD + HDD (Любые тесты)"
+  "reason": "starts_with_banned_word: відеокарта",
+  "title": "Відеокарта Apple iMac 27\" ATI Radeon HD 6970M 2GB MXM 109-C29657-10"
 }
 ```
 **Семпл #96:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-sistemniy-blok-ID10E1yQ.html",
-  "title": "Продам системний блок"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-pk-montor-klavatura-mishka-IDY4xHi.html",
+  "title": "Продам (ПК, Монітор, клавіатура, мишка)"
 }
 ```
 **Семпл #97:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/l7-9050-gh-s-asic-bitmain-doge-ltc-antminer-ID10gSTJ.html",
-  "title": "L7- 9050 gh/s Asic, Bitmain, DOGE, LTC, Antminer"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-i5-9400f-rtx-2060rtx-2060-ventus-xs-6g-oc16gb-ddr4-2666mhz-ID10gPLe.html",
+  "title": "Пк i5-9400F rtx 2060\nRtx 2060 Ventus xs 6g oc\n16gb ddr4 2666mhz"
 }
 ```
 **Семпл #98:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-korpus-ta-komplektuyuch-vdeokarti-tsp-bloki-zhivlennya-ssd-ddr2-ddr3-ID10AQEP.html",
-  "title": "ПК корпус та комплектуючі, відеокарти, цп, блоки живлення, ssd, ddr2 ddr3"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/pk-gtx-1660-super-intel-i5-11400f-ID1110Jz.html",
+  "title": "ПК GTX 1660 Super,intel-i5 11400F"
 }
 ```
 **Семпл #99:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuteri-fujitsu-sff-s1151-55-sistemn-bloki-i3-i5-i7-pk-ssd120-250-IDRHxnN.html",
-  "title": "Комп'ютери Fujitsu SFF s1151/55 Системні блоки i3/i5/i7 ПК SSD120/250"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/stil-rtx-4080-super-16gb-ryzen-7-7800x3d-ddr5-32gb-m-2-ssd-1tb-groviy-kompyuter-pk-dlya-gor-geymerskiy-igrovoy-kompyuter-ID10DgAc.html",
+  "title": "СТИЛЬ! RTX 4080 Super 16GB+Ryzen 7 7800X3D+DDR5 32GB+M.2 SSD 1TB –  Ігровий комп'ютер ПК для ігор геймерський игровой компьютер"
 }
 ```
 **Семпл #100:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-fx6300-rx560-ID102DYH.html",
-  "title": "Комп'ютер FX6300 + RX560"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-asus-artline-gaming-IDZfvxQ.html",
+  "title": "Системний блок Asus ARTLINE Gaming"
 }
 ```
 
-### 🔹 Валідовані оголошення ПК (пройшли перевірку is_real_pc) (Показано 100 з max 100):
+### 🔹 Валідовані оголошення ПК (пройшли перевірку is_real_pc) (Показано 11 з max 100):
 **Семпл #1:**
 ```json
 {
-  "ad_id": 805590234,
-  "title": "Компьютер Бюджетний Ігровий Ryzen 5600+32 ddr+1.5тб м2+RTX 3060 12gb",
+  "ad_id": 925770117,
+  "title": "Игровой ПК новый",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #2:**
 ```json
 {
-  "ad_id": 931066333,
-  "title": "Игровой ПК 1660 ti oc",
+  "ad_id": 931007469,
+  "title": "iMac 21.5 4K Retina (ТОП: i5 3.4GHz / 16GB / Radeon 560 4GB)",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #3:**
 ```json
 {
-  "ad_id": 931075268,
-  "title": "Игровой ПК Core i5 6600 / GTX 1060 6GB / 16GB RAM / SSD + HDD (Любые тесты)",
+  "ad_id": 929735907,
+  "title": "ігровий ПК Steam Deck від компанії Valve512 гб",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #4:**
 ```json
 {
-  "ad_id": 925671956,
-  "title": "Продам системний блок",
+  "ad_id": 924740873,
+  "title": "ІГРОВИЙ ПК ElitePC Sensei! Ryzen 9800X3D / RTX 5080 16Gb / DDR5 64Gb 6000 CL30 / 11000MB/s Pcie 5.0 1Tb / MSI PRO X870E WIFI7",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #5:**
 ```json
 {
-  "ad_id": 916763167,
-  "title": "Компютер FX6300 + RX560",
+  "ad_id": 909300866,
+  "title": "Продам компютер / системний блок / монітор ПК / ASUS / Phillips / intel/ Windows",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #6:**
 ```json
 {
-  "ad_id": 931074830,
-  "title": "Продам комьютер, в хорошем состоянии",
+  "ad_id": 920172180,
+  "title": "Акція! Fujitsu Esprimo P957 E94+ Intel i5-6500 8GB/  ( DDR4 m2 NVME)— Компактний і швидкий",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #7:**
 ```json
 {
-  "ad_id": 920068205,
-  "title": "Системный блок Atlon FM-1 AMD A8-3870K /ASRock A75 Pro4/MVP/ DDR3-16Gb (1866) / HDD-500Gb / 400 Watt",
+  "ad_id": 930912965,
+  "title": "Ігровий ПК GTX 1660 Super i3-8100 cmp30hx",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #8:**
 ```json
 {
-  "ad_id": 925417853,
-  "title": "Медуза! 44 ядра+RTX 3080 Ti 12GB+DDR4 64GB+M.2 SSD 500GB –  Робоча станція ігровий компютер игровой ПК рабочая станция",
+  "ad_id": 927243221,
+  "title": "Компьютер ASGARD Ryzen 5 9600X, 32ГБ DDR5, GeForce RTX 5060, 1TB SSD на водянке",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #9:**
 ```json
 {
-  "ad_id": 929699822,
-  "title": "Ігровий Компьютер",
+  "ad_id": 839258249,
+  "title": "Персональний компютер",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #10:**
 ```json
 {
-  "ad_id": 930882252,
-  "title": "Ігровий ПК GTX 1060 (P106-100) i5-7400 (МОЖЛИВИЙ ОПТ)",
+  "ad_id": 780620407,
+  "title": "Компьютер Системный блок",
   "status": "passed_is_real_pc"
 }
 ```
 **Семпл #11:**
 ```json
 {
-  "ad_id": 907314417,
-  "title": "Ігровий ПК. INTEL CORE I7, 16Gb ОЗУ, RX 560 , SSD 120 GB, HDD 1000GB",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #12:**
-```json
-{
-  "ad_id": 890567286,
-  "title": "Потужний ігровий ПК RTX 3080 / i7 / 32GB / NVMe — готовий до будь-яких задач",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #13:**
-```json
-{
-  "ad_id": 931074531,
-  "title": "Компютер на 1060",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #14:**
-```json
-{
-  "ad_id": 867656469,
-  "title": "HP EliteDesk 800 G2 SFF Business PC(ssd 256gb,intel core i5,ddr4 8gb)",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #15:**
-```json
-{
-  "ad_id": 874014591,
-  "title": "продам компьютер",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #16:**
-```json
-{
-  "ad_id": 915737786,
-  "title": "Продам ПК ryzen7 3700x/3070ti/32gb/512gb ssd + 2TBssd",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #17:**
-```json
-{
-  "ad_id": 931074250,
-  "title": "Продам свій ігровий компютер",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #18:**
-```json
-{
-  "ad_id": 930803930,
-  "title": "Продажа среднего пк(описание)",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #19:**
-```json
-{
-  "ad_id": 931074180,
-  "title": "ПК для геймерів (новий)",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #20:**
-```json
-{
-  "ad_id": 929594144,
-  "title": "Пк, системний блок",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #21:**
-```json
-{
-  "ad_id": 925417202,
-  "title": "МОНОЛІТ! RX 570 4GB+Ryzen 5 1600+DDR4 16GB+SSD 120GB –  Ігровий компютер ПК для ігор геймерський игровой компьютер",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #22:**
-```json
-{
-  "ad_id": 911287952,
-  "title": "Матплата HP EliteDesk 800 G6 DM USFF L79218-002 L86387-601 L86387-001",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #23:**
-```json
-{
-  "ad_id": 928233730,
-  "title": "Ігровий ПК! RTX5060 | Ryzen 7 5700x | 32gb DDR4 | 1tb SSD | 850w | B550",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #24:**
-```json
-{
-  "ad_id": 920336648,
-  "title": "Компютер Dell 3070mff i3-9100t 16gb 256gb ssd+adapter+cable в наявності",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #25:**
-```json
-{
-  "ad_id": 931073954,
-  "title": "пк, игровой,на 11 винде",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #26:**
-```json
-{
-  "ad_id": 927443310,
-  "title": "Міні ПК 10ген Dell 3090mff i5-10400t 6x3,6GHz 16gb 512gb ssd+adapter+cable в наявності",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #27:**
-```json
-{
-  "ad_id": 907882351,
-  "title": "Продам ПК на FM2+",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #28:**
-```json
-{
-  "ad_id": 359518014,
-  "title": "Компютер системний блок Dell packard bell",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #29:**
-```json
-{
-  "ad_id": 930703789,
-  "title": "Бюджетний ПК для навчання та роботи / ПК для работы и учебы",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #30:**
-```json
-{
-  "ad_id": 839114415,
-  "title": "Anritsu MP1590B аналізатор сигналів",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #31:**
-```json
-{
-  "ad_id": 924742733,
-  "title": "HP Compaq 8000 Elite CMT PC",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #32:**
-```json
-{
-  "ad_id": 916761096,
-  "title": "Apple Imac 21.5\" ssd 256 Стан нового.",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #33:**
-```json
-{
-  "ad_id": 931073525,
-  "title": "Продам компьютер",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #34:**
-```json
-{
-  "ad_id": 789684322,
-  "title": "Системний блок в гарному стані",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #35:**
-```json
-{
-  "ad_id": 843432820,
-  "title": "Моноблок (блок)",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #36:**
-```json
-{
-  "ad_id": 924638452,
-  "title": "Продам компютер + монітор",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #37:**
-```json
-{
-  "ad_id": 910751548,
-  "title": "Джистік havic для ПК",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #38:**
-```json
-{
-  "ad_id": 931073345,
-  "title": "Стаціонарний ПК Acer AX5950 core i5, Radeon HD 5570, озу 4Gb",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #39:**
-```json
-{
-  "ad_id": 928327427,
-  "title": "Продам игровий пк без видиокарти",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #40:**
-```json
-{
-  "ad_id": 931073027,
-  "title": "Игровой комп на 1070 ti | ryzen 7-1700 | 32 ggb",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #41:**
-```json
-{
-  "ad_id": 930894358,
-  "title": "Ігровий ПК/Ryzen 5/ASUS ROG Strix RX5700xt/16OZU",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #42:**
-```json
-{
-  "ad_id": 931072950,
-  "title": "Продаю компьютер.",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #43:**
-```json
-{
-  "ad_id": 925707864,
-  "title": "Игровой ПК i3-10100F / 32GB DDR4 / GTX 1660 Super 6GB / SSD+HDD",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #44:**
-```json
-{
-  "ad_id": 930596933,
-  "title": "Игровой ПК i5-9500F / RX 590 8GB / 16GB RAM / SSD",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #45:**
-```json
-{
-  "ad_id": 929793789,
-  "title": "Продам свой игровой компьютер + монитор 27 дюймов Samsung",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #46:**
-```json
-{
-  "ad_id": 920063117,
-  "title": "ПК і Вайфай модуль",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #47:**
-```json
-{
-  "ad_id": 906026170,
-  "title": "Ідеальний компютер для ігор",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #48:**
-```json
-{
-  "ad_id": 922824527,
-  "title": "PC | Компактний системний блок (i5-9600K\\8GB DDR4\\256GB NVMe\\1TB HDD)",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #49:**
-```json
-{
-  "ad_id": 761092972,
-  "title": "Продам компютер",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #50:**
-```json
-{
-  "ad_id": 679654226,
-  "title": "Компютер Dell Inspiron 3650",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #51:**
-```json
-{
-  "ad_id": 929242046,
-  "title": "Мікрокомпютер Raspberry Pi 5  2GB",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #52:**
-```json
-{
-  "ad_id": 930700722,
-  "title": "Компютер 13700k / MSI B660M Mortar DDR4 / 32Gb / Gigabyte 1000W",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #53:**
-```json
-{
-  "ad_id": 930864519,
-  "title": "Продам ігровий пк.Компютер.x3d",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #54:**
-```json
-{
-  "ad_id": 899585112,
-  "title": "Apple Mac Mini M1 A2348 3.2\\16\\512 iСloud lock неттоп міні пк",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #55:**
-```json
-{
-  "ad_id": 819132425,
-  "title": "Компактный системный блок ZOTAC ZBOX - ID41 - E, FCBGA559",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #56:**
-```json
-{
-  "ad_id": 931069915,
-  "title": "Потужна база для ПК без відеокарти | Ryzen 5 3600 / 32GB RAM / 1.5TB SSD / 700W",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #57:**
-```json
-{
-  "ad_id": 930699972,
-  "title": "Игровой Компьютер,ПК/Ryzen 5 5600X,DDR4 32GB 3200Mhz,RTX 3070TI,M2 1TB/Ігровий ПК",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #58:**
-```json
-{
-  "ad_id": 873454026,
-  "title": "Продам игровой компьютер",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #59:**
-```json
-{
-  "ad_id": 922836748,
-  "title": "Продам килимки для мишки",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #60:**
-```json
-{
-  "ad_id": 920750849,
-  "title": "Продам потужний ігровий ПК | Ryzen 5 5600 + RTX 5060 | Готовий до ігор",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #61:**
-```json
-{
-  "ad_id": 911282195,
-  "title": "Продам компьютер в полном комплекте",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #62:**
-```json
-{
-  "ad_id": 931055730,
-  "title": "Ігровий компʼютер rtx 4060/i5-12400f/ddr4 32gb",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #63:**
-```json
-{
-  "ad_id": 929235312,
-  "title": "Ігровий ПК | RTX 3060 12GB | Ryzen 5500 | 16GB | M.2 SSD | Компʼютер",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #64:**
-```json
-{
-  "ad_id": 898437989,
-  "title": "Lenovo ThinkCentre M75Q RYZEN 5 PRO 3400GE 8/256GB HDMI DP WiFi #8731",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #65:**
-```json
-{
-  "ad_id": 931069618,
-  "title": "Системный блок старенький в",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #66:**
-```json
-{
-  "ad_id": 913251037,
-  "title": "Компютерні колонки Gemix",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #67:**
-```json
-{
-  "ad_id": 769775453,
-  "title": "Срочно Компьютер BRAVO",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #68:**
-```json
-{
-  "ad_id": 917769860,
-  "title": "Персональний Компютер Ryzen 7 5700g, 64gb ram ddr4",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #69:**
-```json
-{
-  "ad_id": 911281449,
-  "title": "Збірка ПК під ключ.",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #70:**
-```json
-{
-  "ad_id": 930697957,
-  "title": "моноблок Dell inspiron 5459 all-in-one",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #71:**
-```json
-{
-  "ad_id": 776941796,
-  "title": "Системный блок + монітор",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #72:**
-```json
-{
-  "ad_id": 930901318,
-  "title": "Продам компютер fx6300+1050ti ОЗУ 16 гб",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #73:**
-```json
-{
-  "ad_id": 763293662,
-  "title": "компютер компьютер системний блок",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #74:**
-```json
-{
-  "ad_id": 930391237,
-  "title": "Моноблок Lenovo m93z All-in-One 23\"",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #75:**
-```json
-{
-  "ad_id": 856720361,
-  "title": "Компьютер з ліцензованим windows",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #76:**
-```json
-{
-  "ad_id": 776941580,
-  "title": "Комп’ютер системний блок",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #77:**
-```json
-{
-  "ad_id": 899583655,
-  "title": "Компютер Intel NUC 13 Pro Kit,",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #78:**
-```json
-{
-  "ad_id": 931068946,
-  "title": "ПК GT 1030 2 GB GDDR5 +INTEL I3 8100 8 GBDDR4",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #79:**
-```json
-{
-  "ad_id": 774251746,
-  "title": "Компютер з монітором та клавіатурою куплений у Німеччині",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #80:**
-```json
-{
-  "ad_id": 931068862,
-  "title": "Intel NUC NUC6i7KYK Skull Canyon, Core i7, 32GB DDR4, WD NVMe SSD, Компактний Mini PC",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #81:**
-```json
-{
-  "ad_id": 931068742,
-  "title": "Важливо шановні!",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #82:**
-```json
-{
-  "ad_id": 563924433,
-  "title": "Компьютер Amd системный блок",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #83:**
-```json
-{
-  "ad_id": 931068603,
-  "title": "Ігровий ПК i5-3570 RX470 4GB",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #84:**
-```json
-{
-  "ad_id": 927968915,
-  "title": "ПК ryzen 7 5700x3d rtx3060ti",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #85:**
-```json
-{
-  "ad_id": 871090220,
-  "title": "Потужний ігровий системний блок Dell Precision T3610",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #86:**
-```json
-{
-  "ad_id": 922835319,
-  "title": "Пк на 1080ti 32 ОЗУ 3600МГц",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #87:**
-```json
-{
-  "ad_id": 920060491,
-  "title": "Комп\"ютер (ПК, персональний коп\"ютер)",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #88:**
-```json
-{
-  "ad_id": 762818002,
-  "title": "Apple Mac Mini A1176 Desktop - 1.83/2x512/80/COMBO/AP/BT",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #89:**
-```json
-{
-  "ad_id": 927247437,
-  "title": "Продам ігровий пк",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #90:**
-```json
-{
-  "ad_id": 928321200,
-  "title": "Продам копʼютер LG",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #91:**
-```json
-{
-  "ad_id": 765177855,
-  "title": "Продам / соберу ПК в отличном состоянии",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #92:**
-```json
-{
-  "ad_id": 931067966,
-  "title": "мощный игровой ПК в сборе. razyn 5 5600 & rtx 2060 super & RAM 16 + монитор 144 hz , клавиатура, мышка superlite, кранштейн , стол, коврик, наушники",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #93:**
-```json
-{
-  "ad_id": 931068072,
-  "title": "Ігровий ПК. Повний комплект. і5, 16гб. DDR4, RX580 8GB, SSD",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #94:**
-```json
-{
-  "ad_id": 930888645,
-  "title": "Игровой ПК MSI RTX 3050 8GB / Intel Core i3-10105F / 16GB RAM / SSD + HDD",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #95:**
-```json
-{
-  "ad_id": 569954730,
-  "title": "Продам системный блок",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #96:**
-```json
-{
-  "ad_id": 873047298,
-  "title": "Продаю потужний ігровий ПК! Ідеальний  для геймерів та ентузіастів!",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #97:**
-```json
-{
-  "ad_id": 931067901,
-  "title": "Пк полностю рабочие детали не запускаться в описание",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #98:**
-```json
-{
-  "ad_id": 931067885,
-  "title": "Продам  настольний компʼютер MSI ms 7680 з монітором Asus ml238h",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #99:**
-```json
-{
-  "ad_id": 931067855,
-  "title": "Продам ігровий пк!!!",
-  "status": "passed_is_real_pc"
-}
-```
-**Семпл #100:**
-```json
-{
-  "ad_id": 928429294,
-  "title": "Системний блок для cs, wot з відеокартою 8Gb",
+  "ad_id": 924323068,
+  "title": "Компютер i5 9400f ,gtx 1650",
   "status": "passed_is_real_pc"
 }
 ```

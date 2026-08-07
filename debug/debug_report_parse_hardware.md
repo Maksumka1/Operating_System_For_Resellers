@@ -1,6 +1,6 @@
 # 🐛 ДЕБАГ-ЗВІТ ПАРСИНГУ КОМПЛЕКТУЮЧИХ OLX (GraphQL)
-**Дата та час запуску:** 2026-08-07 00:16:05
-**Тривалість виконання:** 497.34 сек
+**Дата та час запуску:** 2026-08-07 22:23:35
+**Тривалість виконання:** 347.25 сек
 **Шлях до звіту:** `C:\Users\marke\OneDrive\Desktop\Operating_System\debug\debug_report_parse_hardware.md`
 
 ## 📌 1. Задача та мета коду
@@ -8,39 +8,38 @@
 
 ## 📊 2. Загальна статистика вхідних даних та відсіювання
 ### ⚙️ Секція: Supabase_Input
-- **Завантажено URLs для дедуплікації:** 52197
+- **Завантажено URLs для дедуплікації:** 52621
 
 ### ⚙️ Секція: Parser_Config
-- **Цільових моделей комплектуючих:** 37079
+- **Цільових моделей комплектуючих:** 31782
 
 ### ⚙️ Секція: OLX_GraphQL
-- **Отримано [videokarty]:** 520
-- **Отримано [protsessory]:** 520
-- **Отримано [materinskie-platy]:** 520
-- **Отримано [bloki-pitaniya]:** 517
-- **Отримано [zhestkie-diski]:** 520
-- **Отримано [moduli-pamyati]:** 516
-
-### ⚙️ Секція: Parsing_Metrics
-- **Успішно розпізнано [gpu]:** 82
-- **Успішно розпізнано [cpu]:** 62
-- **Успішно розпізнано [motherboard]:** 59
-- **Успішно розпізнано [psu]:** 44
-- **Успішно розпізнано [storage]:** 96
-- **Успішно розпізнано [ram]:** 76
+- **Отримано [videokarty]:** 463
+- **Отримано [protsessory]:** 467
+- **Отримано [materinskie-platy]:** 467
+- **Отримано [bloki-pitaniya]:** 467
+- **Отримано [zhestkie-diski]:** 358
+- **Отримано [moduli-pamyati]:** 414
 
 ### ⚙️ Секція: Filtering_Rules
-- **Відсіяно (Не розпізнано модель):** 1152
+- **Відсіяно (Не розпізнано модель):** 751
+
+### ⚙️ Секція: Parsing_Metrics
+- **Успішно розпізнано [gpu]:** 4
+- **Успішно розпізнано [cpu]:** 1
+- **Успішно розпізнано [storage]:** 1
+- **Успішно розпізнано [ram]:** 3
+- **Успішно розпізнано [psu]:** 1
 
 ### ⚙️ Секція: Summary
-- **Знайдено нових унікальних оголошень:** 419
-- **Немає нових оголошень для відправки в DB:** 1
+- **Знайдено нових унікальних оголошень:** 10
+- **Немає нових оголошень для відправки в DB:** 2
 
 ### ⚙️ Секція: Supabase_Output
-- **Успішно збережено в DB:** 419
+- **Успішно збережено в DB:** 10
 
 ### ⚙️ Секція: WebSocket
-- **Успішно надіслано тригер стріму:** 6
+- **Успішно надіслано тригер стріму:** 4
 
 ## 🔄 3. Детальні приклади даних
 ### 🚫 Відсіяні оголошення:
@@ -49,449 +48,11 @@
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/holodnaya-ta-tiha-manli-gaming-rtx-3080-ti-12-gb-gddr-6-x-384-bit-magazin-compic-ID10RWv3.html",
-  "title": "Холодная та тиха Manli Gaming RTX 3080 Ti 12 Gb GDDR-6 X 384 Bit магазин CompiC"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-xfx-radeon-rx-7900-gre-gaming-oem-ID10SdK7.html",
+  "title": "Відеокарта XFX Radeon RX 7900 GRE Gaming OEM"
 }
 ```
 **Семпл #2:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-zotac-geforce-rtx-5080-solid-core-16gb-gddr7-dlss4-magazin-compic-ID10FmyV.html",
-  "title": "Відеокарта Zotac GeForce RTX 5080 Solid Core 16GB GDDR7 DLSS4 Магазин CompiC"
-}
-```
-**Семпл #3:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Видеокарта MSI GeForce RTX 4060Ti, 8gb ( Не рабочая )"
-}
-```
-**Семпл #4:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Видеокарта,GTX 1060,6GB,MSI OC1"
-}
-```
-**Семпл #5:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарта Gt 1060 3gb"
-}
-```
-**Семпл #6:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-radeon-rx-5600-6gb-nova-videokarta-ID10WGvJ.html",
-  "title": "AMD Radeon RX 5600 6GB НОВА видеокарта"
-}
-```
-**Семпл #7:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарта ASUS Dual RTX 5060 Ti OC 8GB GDDR7 — гарантія"
-}
-```
-**Семпл #8:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-geforce-gtx-1080-gaming-z-8gb-ID10ZgXO.html",
-  "title": "MSI GeForce GTX 1080 Gaming Z 8GB"
-}
-```
-**Семпл #9:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "R9 Fury x 4gb водяне охолодження"
-}
-```
-**Семпл #10:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарта рх 580 8г"
-}
-```
-**Семпл #11:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/gtx-650-ti-videokarta-ID10F2jR.html",
-  "title": "GTX 650 TI Видеокарта"
-}
-```
-**Семпл #12:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам відеокарту asus r9270x - DC2T - 2GD5"
-}
-```
-**Семпл #13:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-rx-470-4-gb-powercolor-IDQ37Va.html",
-  "title": "Видеокарта RX 470 4 GB PowerColor"
-}
-```
-**Семпл #14:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-rtx-4090-24-gb-msi-ID10ZV1c.html",
-  "title": "Видеокарта Rtx 4090 24 gb msi"
-}
-```
-**Семпл #15:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-top-versya-rtx3090ti-24gb-msi-suprim-dealniy-stan-plomba-trade-in-ID10XiCJ.html",
-  "title": "відеокарта ТОП версія RTX3090Ti 24GB MSI Suprim ідеальний стан. Пломба. Trade-IN"
-}
-```
-**Семпл #16:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/sapphire-vega-56-pulse-8gb-ID110GiI.html",
-  "title": "Sapphire Vega 56 pulse 8gb"
-}
-```
-**Семпл #17:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Palit GTX 1060 StormX 3gb"
-}
-```
-**Семпл #18:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ventilyatori-asus-rog-strix-tuf-t129215su-20-60-70-80-3070-3080-3090-IDTQGpV.html",
-  "title": "Вeнтилятори ASUS ROG/STRIX/TUF T129215SU 20 60/70/80 3070/3080/3090"
-}
-```
-**Семпл #19:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-rx-470-4gb-v-dealnomu-stan-IDZJSK7.html",
-  "title": "відеокарта Rx 470 4gb в ідеальному стані"
-}
-```
-**Семпл #20:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-asus-rtx-5070-ID10ZWKf.html",
-  "title": "Видеокарта Asus RTX 5070"
-}
-```
-**Семпл #21:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-radeon-r9-290-4gb-IDRJ7nK.html",
-  "title": "Відеокарта \"Radeon R9 290\" 4gb"
-}
-```
-**Семпл #22:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/rx-570-4gb-gigabite-gaming-ID110Gay.html",
-  "title": "RX 570 4GB GIGABITE gaming"
-}
-```
-**Семпл #23:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-sapphire-amd-radeon-hd-6750-1gb-gddr5-ID110Ga4.html",
-  "title": "Відеокарта Sapphire AMD Radeon HD 6750 1GB GDDR5"
-}
-```
-**Семпл #24:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/nvidia-p106-100-6gb-analog-gtx-1060-6gb-otlichnoe-sostoyanie-ID110G8m.html",
-  "title": "NVIDIA P106-100 6GB (аналог GTX 1060 6GB) | Отличное состояние"
-}
-```
-**Семпл #25:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-asus-geforce-gtx-550-ti-1024mb-gddr5-IDY44ZM.html",
-  "title": "Відеокарта ASUS GeForce GTX 550 Ti 1024MB GDDR5"
-}
-```
-**Семпл #26:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарточка agp 32-128 mb."
-}
-```
-**Семпл #27:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-nvidia-palit-gaming-pro-gtx-1650-4gb-IDZF0up.html",
-  "title": "Видеокарта NVIDIA Palit GAMING PRO GTX 1650 4Gb"
-}
-```
-**Семпл #28:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-vdeokartu-rx-550-4gb-ID110G2t.html",
-  "title": "Продам відеокарту rx 550 4gb"
-}
-```
-**Семпл #29:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-msi-rx-470-8gb-garantya-velika-klkst-IDQwfj2.html",
-  "title": "Відеокарта MSI RX 470 8Gb Гарантія! Велика кількість!"
-}
-```
-**Семпл #30:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-asrock-rx-7600-challenger-oc-edition-8gb-gddr6-magazin-compic-ID10VwcP.html",
-  "title": "Відеокарта ASRock RX 7600 Challenger OC Edition 8GB GDDR6 Магазин CompiC"
-}
-```
-**Семпл #31:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Asus PCI-Ex GeForce 210 512MB"
-}
-```
-**Семпл #32:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Видеокарта Видеокарта NVIDIA Gigabyte Mini ITX GTX 1060 3Gb"
-}
-```
-**Семпл #33:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-sapphire-radeon-rx-580-8-gb-gddr5-ID110FWd.html",
-  "title": "Відеокарта Sapphire Radeon RX 580 8 GB GDDR5"
-}
-```
-**Семпл #34:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-rtx-3050-6gb-ID110FUn.html",
-  "title": "Продам rtx 3050 6gb"
-}
-```
-**Семпл #35:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/grova-vdeokarta-rtx3070-8gb-256bit-msi-ventus-3x-oc-trade-in-ID110FQS.html",
-  "title": "ігрова відеокарта RTX3070 8GB 256bit MSI Ventus 3X OC. Trade-IN"
-}
-```
-**Семпл #36:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-rtx-4060-palit-dual-8gb-ID110FQf.html",
-  "title": "Відеокарта RTX 4060 Palit Dual 8gb"
-}
-```
-**Семпл #37:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-nvidia-asus-tuf-rtx-3070-8gb-ID10UJZN.html",
-  "title": "Відеокарта nvidia asus tuf rtx 3070 8gb"
-}
-```
-**Семпл #38:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/grova-vdeokarta-top-versya-rtx4080-16gb-asus-tuf-gaming-trade-in-IDZQgzp.html",
-  "title": "ігрова відеокарта ТОП версія RTX4080 16GB ASUS TUF Gaming. Trade-IN"
-}
-```
-**Семпл #39:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Видиокарта.. на 1 г"
-}
-```
-**Семпл #40:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-amd-sapphire-hd-7750-1gb-IDZQ3yi.html",
-  "title": "Видеокарта AMD Sapphire HD 7750 1Gb"
-}
-```
-**Семпл #41:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/luchshaya-rtx-4090-asus-rog-strix-nvidia-pci-ex-geforce-24gb-ID10PVNZ.html",
-  "title": "Лучшая RTX 4090 ASUS ROG Strix NVIDIA PCI-Ex GeForce 24Gb"
-}
-```
-**Семпл #42:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Radeon VII pro 16 gb"
-}
-```
-**Семпл #43:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/holodna-msi-geforce-gtx-1080-sea-hawk-x-z-vodyanim-oholodzhennyam-ID10t6q1.html",
-  "title": "Холодна Msi GeForce GTX 1080 SEA HAWK X з Водяним Охолодженням"
-}
-```
-**Семпл #44:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "R9 270x 2gb ddr5"
-}
-```
-**Семпл #45:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Несправна 1660s strix"
-}
-```
-**Семпл #46:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-rtx-3060-ti-ventus-2x-ID10YqP0.html",
-  "title": "Msi rtx 3060 ti ventus 2x"
-}
-```
-**Семпл #47:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Раритет Рабочая Видеокарта, Звуковая, плата видеозахвата ISA PCI AGP , процессор"
-}
-```
-**Семпл #48:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gigabyte-pci-ex-radeon-rx-580-gaming-8gb-gddr-ID110FI5.html",
-  "title": "Відеокарта Gigabyte PCI-Ex Radeon RX 580 Gaming 8GB GDDR"
-}
-```
-**Семпл #49:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "XpertVision Geforce 8500 gt 256mb 600mhz 1200mhz ddr3 pci ex"
-}
-```
-**Семпл #50:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-vdeo-kartu-afox-geforce-gtx-750-ti-af750ti-4096d5h1-ID10Yqam.html",
-  "title": "Продам відео карту AFOX GeForce GTX 750 Ti AF750Ti-4096D5H1"
-}
-```
-**Семпл #51:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/video-karta-gt-630-2gb-ID10PuAu.html",
-  "title": "Видео карта Gt 630 2gb"
-}
-```
-**Семпл #52:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/2080-ti-22gb-3090-24gb-IDZXzhw.html",
-  "title": "2080 ti 22gb.( 3090 24gb. )"
-}
-```
-**Семпл #53:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "ігрова відеокарта RTX3060 12GB ASUS Dual OC на пломбі. Trade-IN"
-}
-```
-**Семпл #54:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/rx-470-480-570-garantya-6ms-stan-praktichno-yak-nov-IDZyKgo.html",
-  "title": "RX 470/480/570|Гарантія 6міс|Стан практично як нові"
-}
-```
-**Семпл #55:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-radeon-r5-230-2gb-ddr3-hdmi-vga-dvi-standart-nizkoproflna-opt-IDZWekW.html",
-  "title": "ASUS Radeon R5 230 2GB DDR3 HDMI+VGA+DVI  стандарт низкопрофільна опт"
-}
-```
-**Семпл #56:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/garantya-sapphire-rx480-8gb-vdeokarta-rx570-rx470-i-580-IDNwUGW.html",
-  "title": "Гарантія. Sapphire RX480 8GB відеокарта (rx570, rx470 и 580)"
-}
-```
-**Семпл #57:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-rx570-4gb-aorus-ID10P8WB.html",
-  "title": "Відеокарта RX570 4GB Aorus"
-}
-```
-**Семпл #58:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gigabyte-rtx-3080-ti-vision-oc-12g-ID110Ft6.html",
-  "title": "Відеокарта Gigabyte RTX 3080 ti vision oc 12g"
-}
-```
-**Семпл #59:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -499,172 +60,160 @@
   "title": "HP rtx 4070 ti oem 12 gb"
 }
 ```
-**Семпл #60:**
+**Семпл #3:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "NVidia GeForce RTX 3060 Gaming OC 12GB"
+  "title": "Відеокарта Gigabyte RTX 4060ti"
 }
 ```
-**Семпл #61:**
+**Семпл #4:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Игровая Видеокарта, r9 380x"
+  "title": "Radeon hd 7000 series"
 }
 ```
-**Семпл #62:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-asus-rtx-5070-ID10ZWKf.html",
-  "title": "Видеокарта Asus RTX 5070"
-}
-```
-**Семпл #63:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-msi-radeon-rx-6900-xt-gaming-x-trio-16gb-ID10To7x.html",
-  "title": "Відеокарта MSI Radeon RX 6900 XT Gaming X Trio 16GB"
-}
-```
-**Семпл #64:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-gainward-phantom-rtx-5090-ID10WAsg.html",
-  "title": "Видеокарта Gainward Phantom RTX 5090"
-}
-```
-**Семпл #65:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/karta-hp-quadro-p6000-913197-002-24gb-gddr5x-ID10Rtrq.html",
-  "title": "карта HP QUADRO P6000  913197-002 24GB GDDR5X"
-}
-```
-**Семпл #66:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/palit-geforce-gtx-1650-4gb-ID10CrWn.html",
-  "title": "Palit GeForce GTX 1650 4gb"
-}
-```
-**Семпл #67:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-msi-geforce-rtx-3080-suprim-x-10gb-gddr6x-top-ID10FYet.html",
-  "title": "Відеокарта MSI GeForce RTX 3080 SUPRIM X 10GB GDDR6X топ"
-}
-```
-**Семпл #68:**
+**Семпл #5:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Видеокарта NVIDIA MSI GAMING X GTX 1060 3Gb"
+  "title": "Gigabyte gtx1060 super 6gb"
 }
 ```
-**Семпл #69:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Видеокарта GeForce RTX 3060 GAMING Z TRIO 12G"
-}
-```
-**Семпл #70:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарта Gigabyte GeForce RTX 4060 Ti AERO OC 8192MB (GV-N406TAERO OC-8GD)"
-}
-```
-**Семпл #71:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарта Asus  EN9800gt"
-}
-```
-**Семпл #72:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарта MSI GeForce N9800GT Zilent, PCI-Ex16 2.0, 1 GB, GDDR3, 256bit (На Відновлення/Запчастини)"
-}
-```
-**Семпл #73:**
+**Семпл #6:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-evga-gtx1080ti-11gb-ID10Yj5n.html",
-  "title": "Відеокарта evga Gtx1080Ti 11gb"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/gtx-1070ti-8gb-evga-ID11105W.html",
+  "title": "gtx 1070ti 8gb evga"
 }
 ```
-**Семпл #74:**
+**Семпл #7:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-gigabyte-rtx-4090-windforce-2-ID10WAaV.html",
-  "title": "Видеокарта Gigabyte Rtx 4090 Windforce 2"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/rx470-4gb-256bit-gaming-x-4g-ID1111GB.html",
+  "title": "rx470 4gb 256bit GAMING X 4G"
 }
 ```
-**Семпл #75:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Rtx 4060 ti срочно"
-}
-```
-**Семпл #76:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарта Sapphire nitro R9 390X"
-}
-```
-**Семпл #77:**
+**Семпл #8:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-geforce-rtx-5070-ti-novaya-na-garantii-ID10ZuP3.html",
-  "title": "Продам  GEFORCE RTX 5070 TI (Новая на Гарантии)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-videokartu-rx-470-miner-4g-ID1111FO.html",
+  "title": "Продам видеокарту Rx 470 Miner 4g"
 }
 ```
-**Семпл #78:**
+**Семпл #9:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Відеокарти Radeon X550( ddr), Radeon НD 4350(ddr2)"
+  "title": "EN  8600 gt 512 mb"
 }
 ```
-**Семпл #79:**
+**Семпл #10:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-nvidia-asus-gtx-950-2gb-ID1111Ee.html",
+  "title": "Видеокарта NVIDIA Asus GTX 950 2Gb"
+}
+```
+**Семпл #11:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "MSI GeForce RTX 5060 Ti 8G SHADOW  (8 ГБ GDDR7)."
+  "title": "MSI PCI-Ex Radeon HD5750 1024MB GDDR5 (128bit)"
 }
 ```
-**Семпл #80:**
+**Семпл #12:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-rx-6900-xt-16-gb-ID10YaOj.html",
-  "title": "Видеокарта Rx 6900 xt 16 gb"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-nvidia-geforce-gtx-1070-8gb-gddr5-256-bit-1920-cuda-b-v-ID10Fbnu.html",
+  "title": "Відеокарта Nvidia GeForce GTX 1070 (8Gb / GDDR5 / 256 bit / 1920 CUDA) - Б/В"
 }
 ```
-**Семпл #81:**
+**Семпл #13:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-msi-ventus-3x-plus-geforce-rtx-3080vdeokarta-msi-geforce-rtx-3080-ven-ID10KjOz.html",
-  "title": "Відеокарта MSI Ventus 3X Plus Geforce RTX 3080\nВідеокарта MSI GeForce RTX 3080 VEN"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-palit-dual-rtx-3060-12gb-povniy-komplekt-ID10YRMg.html",
+  "title": "Відеокарта Palit Dual RTX 3060 12Gb (повний комплект)"
 }
 ```
-**Семпл #82:**
+**Семпл #14:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuter-lenovo-legion-tower-7i-gen-10-90y6003wus-ultra-9-285k-rtx-5080-32gb-2tb-nov-zapakovan-ID10ekXL.html",
+  "title": "Компютер Lenovo Legion Tower 7i Gen 10 (90Y6003WUS) Ultra 9 285k/RTX 5080/32Gb/2Tb Нові - запаковані!"
+}
+```
+**Семпл #15:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-gigabyte-geforce-rtx-2070-super-8gb-ID1111zB.html",
+  "title": "Видеокарта Gigabyte GeForce RTX 2070 SUPER 8GB"
+}
+```
+**Семпл #16:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/hp-rtx-4070-ti-oem-12-gb-ID110FqD.html",
+  "title": "HP rtx 4070 ti oem 12 gb"
+}
+```
+**Семпл #17:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Відео карта GeForce 1 Gb"
+}
+```
+**Семпл #18:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-rx570-4gb-gigabyte-IDZtSlk.html",
+  "title": "Відеокарта rx570 4gb gigabyte"
+}
+```
+**Семпл #19:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/geforce-gt-730-2gb-ID1111m9.html",
+  "title": "GeForce GT 730 2gb"
+}
+```
+**Семпл #20:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продам видеокарту 10-50"
+}
+```
+**Семпл #21:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/rtx-2060-super-palit-dual-ID10EqeJ.html",
+  "title": "Rtx 2060 super Palit dual"
+}
+```
+**Семпл #22:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-1060-3-gb-gigabyte-ID11119b.html",
+  "title": "Відеокарта 1060 3 гб gigabyte"
+}
+```
+**Семпл #23:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -672,140 +221,610 @@
   "title": "Відеокарта ігрова Asus Stix Gaming RX570 4GB  потужна, ідеал"
 }
 ```
-**Семпл #83:**
+**Семпл #24:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-strix-gtx-960-2gb-ID10p6DY.html",
+  "title": "Asus Strix GTX 960 2gb"
+}
+```
+**Семпл #25:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-sapphire-nitro-amd-radeon-rx-6800-xt-special-edition-ID10XwdR.html",
+  "title": "Відеокарта Sapphire NITRO+ AMD Radeon RX 6800 XT Special Edition."
+}
+```
+**Семпл #26:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-msi-ventus-3x-plus-geforce-rtx-3080vdeokarta-msi-geforce-rtx-3080-ven-ID10KjOz.html",
+  "title": "Відеокарта MSI Ventus 3X Plus Geforce RTX 3080\nВідеокарта MSI GeForce RTX 3080 VEN"
+}
+```
+**Семпл #27:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gigabyte-rtx-2070-8gb-gaming-ID10YDlv.html",
+  "title": "Відеокарта Gigabyte RTX 2070 8Gb Gaming"
+}
+```
+**Семпл #28:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-asus-rog-strix-gtx-1080-ti-11gb-gddr5x-ID10YXAx.html",
+  "title": "Відеокарта ASUS ROG Strix GTX 1080 Ti 11GB GDDR5X"
+}
+```
+**Семпл #29:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-geforce-gtx-1080-ti-msi-ID10BbOS.html",
+  "title": "Відеокарта Geforce GTX 1080 Ti MSI"
+}
+```
+**Семпл #30:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-nvidia-geforce-gtx-1080-ti-11gb-ID10aLo1.html",
+  "title": "Видеокарта NVIDIA GeForce GTX 1080 Ti 11GB"
+}
+```
+**Семпл #31:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-asus-pci-ex-geforce-rtx-5060-ti-dual-oc-edition-16gb-gddr7-128bit-2632-28000-hdmi-3-x-displayport-dual-rtx5060ti-o16g-ID10EpZO.html",
+  "title": "Відеокарта ASUS PCI-Ex GeForce RTX 5060 Ti Dual OC Edition 16GB GDDR7 (128bit) (2632/28000) (HDMI, 3 x DisplayPort) (DUAL-RTX5060TI-O16G)"
+}
+```
+**Семпл #32:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gigabyte-geforce-gtx-1070-g1-gaming-8g-ID1035yq.html",
+  "title": "Відеокарта Gigabyte GeForce GTX 1070 G1 Gaming 8G"
+}
+```
+**Семпл #33:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Видеокарта NVIDIA INNO3D X2 GTX 1060 3Gb"
+  "title": "Відеокарта Gigabyte Radeon HD5570 1Gb"
+}
+```
+**Семпл #34:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Видеокарта radeon HD 7770 1gd"
+}
+```
+**Семпл #35:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-ryzen-7-1800x-8-16-am4-ID1110VF.html",
+  "title": "Процессор Amd Ryzen 7 1800x 8/16 am4"
+}
+```
+**Семпл #36:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/1060-3gb-vdeokarta-ID1110OH.html",
+  "title": "1060 3gb відеокарта"
+}
+```
+**Семпл #37:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-msi-rtx-4060-8gb-ddr6-ID1110Nn.html",
+  "title": "Відеокарта MSI RTX 4060 8GB DDR6"
+}
+```
+**Семпл #38:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/rx-470-480-570-garantya-6ms-stan-praktichno-yak-nov-IDZyKgo.html",
+  "title": "RX 470/480/570|Гарантія 6міс|Стан практично як нові"
+}
+```
+**Семпл #39:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/2080-ti-msi-gamingx-trio-ID10YXP2.html",
+  "title": "2080 Ti MSI GamingX trio"
+}
+```
+**Семпл #40:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-asrock-radeon-rx-9060-xt-challenger-oc-16gb-IDZP5RR.html",
+  "title": "Відеокарта ASRock Radeon RX 9060 XT Challenger OC 16GB"
+}
+```
+**Семпл #41:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-gigabyte-geforce-gt710-ne-rabochaya-IDTp6Pc.html",
+  "title": "Видеокарта GIGABYTE GeForce GT710 не рабочая"
+}
+```
+**Семпл #42:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gigabyte-rtx-3060-eagle-oc-12-gb-gvn3060eagle-oc12gd-20-ID1110KG.html",
+  "title": "Відеокарта Gigabyte RTX 3060 Eagle OC 12 GB (GVN3060EAGLE_OC12GD_20)"
+}
+```
+**Семпл #43:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-nvidia-gt-530-2gb-potuzhnsha-za-gt-520-ID10Pv8F.html",
+  "title": "Відеокарта Nvidia GT 530 2GB (Потужніша за GT 520)"
+}
+```
+**Семпл #44:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gigabyte-geforce-gtx-1660-ti-oc-6g-ID1110F9.html",
+  "title": "Відеокарта Gigabyte GeForce GTX 1660 Ti OC 6G"
+}
+```
+**Семпл #45:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-vdeokartu-1080ti-ID1034M9.html",
+  "title": "Продам відеокарту 1080Ti"
+}
+```
+**Семпл #46:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-amd-radeon-rx-480-8gb-sapphire-d5-21260-00-b-v-ID1110v1.html",
+  "title": "Відеокарта AMD Radeon RX 480 8GB Sapphire D5 (21260-00) Б/В"
+}
+```
+**Семпл #47:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/50-sapphire-pulse-radeon-rx-570-8g-gddr5-oc-stan-garniy-ID1110mN.html",
+  "title": "(~50$) Sapphire PULSE Radeon RX 570 8G GDDR5 OC • стан гарний"
+}
+```
+**Семпл #48:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-nvidia-quadro-p400-ID10WUPM.html",
+  "title": "Видеокарта Nvidia Quadro P400."
+}
+```
+**Семпл #49:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-1650gtx-4-gb-ID1110cG.html",
+  "title": "Видеокарта 1650gtx 4 gb"
+}
+```
+**Семпл #50:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-gigabyte-gtx-1080-windforce-oc-8gb-ID10Awpp.html",
+  "title": "Продам Gigabyte GTX 1080 Windforce OC 8GB"
+}
+```
+**Семпл #51:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-nvidia-rtx-5070-asus-oc-dual-IDZNIKH.html",
+  "title": "Видеокарта nvidia rtx 5070 asus oc dual"
+}
+```
+**Семпл #52:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/palit-geforce-gtx-1650-4gb-ID10CrWn.html",
+  "title": "Palit GeForce GTX 1650 4gb"
+}
+```
+**Семпл #53:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-msi-rtx-3060-gaming-trio-z-12-gb-ID1110az.html",
+  "title": "Відеокарта MSI RTX 3060 Gaming Trio Z 12 Gb"
+}
+```
+**Семпл #54:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sapphire-radeon-rx-6600-pulse-ID10KXwO.html",
+  "title": "Sapphire Radeon rx 6600 pulse"
+}
+```
+**Семпл #55:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-b-u-asus-strix-rx580-8gb-top-sostoyanie-i-drugie-IDUsqD4.html",
+  "title": "Видеокарта б\\у ASUS STRIX RX580 8GB ТОП СОСТОЯНИЕ и другие"
+}
+```
+**Семпл #56:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Відеокарта Palit GeForce 8400 GS 256MB DDR2 HDMI DVI VGA"
+}
+```
+**Семпл #57:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-kak-novaya-asus-tuf-rtx-3080-10gb-gaming-na-plombe-obmen-IDTD2m4.html",
+  "title": "Видеокарта КАК НОВАЯ ASUS TUF RTX 3080  10Gb GAMING на пломбе, ОБМЕН"
+}
+```
+**Семпл #58:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Msi 1030 відеокарта"
+}
+```
+**Семпл #59:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nvidia-cmp-170hx-8gb-64gb-hbm2e-ga100-4096-bit-ID110ZWX.html",
+  "title": "NVIDIA CMP 170HX 8GB (64GB) HBM2e GA100 4096-bit"
+}
+```
+**Семпл #60:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeo-karta-geforce-gtx-1660-super-nvidia-ID110ZQy.html",
+  "title": "Відео карта GEFORCE GTX 1660 SUPER nvidia"
+}
+```
+**Семпл #61:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-nvidia-geforce-gtx-1050-ti-ID1033pL.html",
+  "title": "Asus NVIDIA GeForce GTX 1050 Ti"
+}
+```
+**Семпл #62:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-asus-pci-ex-radeon-rx-580-mining-8gb-gddr5-ID10Po87.html",
+  "title": "Видеокарта Asus PCI-Ex Radeon RX 580 Mining 8GB GDDR5"
+}
+```
+**Семпл #63:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/hd6790-1-gb-ddr5-robocha-vdkokarta-6770-650-460-ID10XV1B.html",
+  "title": "HD6790 1 Gb DDR5 робоча відкокарта 6770 650 460"
+}
+```
+**Семпл #64:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/acer-nitro-radeon-rx-9070-xt-oc-16gb-ID10WYbb.html",
+  "title": "Acer Nitro Radeon RX 9070 XT OC 16GB"
+}
+```
+**Семпл #65:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-geforce-gtx-1080-gaming-z-8gb-ID10ZgXO.html",
+  "title": "MSI GeForce GTX 1080 Gaming Z 8GB"
+}
+```
+**Семпл #66:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/rx-5700-xt-asus-tuf-gaming-ID110ZyT.html",
+  "title": "RX 5700 XT Asus tuf gaming"
+}
+```
+**Семпл #67:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-sapphire-radeon-rx-580-4gb-ddd5-nitro-otlichnoe-sost-IDZPyDz.html",
+  "title": "Видеокарта Sapphire Radeon RX 580 4Gb DDD5 NITRO+ отличное сост."
+}
+```
+**Семпл #68:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-1660ti-starogo-vipusku-vida-na-zobrazhenn-artefakti-ID10srwX.html",
+  "title": "Відеокарта 1660ti  старого випуску видає на зображенні артефакти"
+}
+```
+**Семпл #69:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/video-karta-rh-570-8-gb-i-drugie-komponenty-IDZQyPD.html",
+  "title": "видео карта рх 570 8 гб, и другие компоненты"
+}
+```
+**Семпл #70:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-p106-100-6gb-gurtom-znizhka-analog-gtx-1060-IDZYY5a.html",
+  "title": "Відеокарта P106-100 6GB гуртом знижка aнaлoг GTX 1060"
+}
+```
+**Семпл #71:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Відеокарта Nvidia GeForce 9600 GT"
+}
+```
+**Семпл #72:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-asus-rx570-4gbgb-IDZjwCk.html",
+  "title": "Відеокарта Asus rx570 4gb(гб)"
+}
+```
+**Семпл #73:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/gigabyte-1060-3gb-ID10hqpq.html",
+  "title": "gigabyte 1060 3gb"
+}
+```
+**Семпл #74:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-gigabyte-gaming-oc-rtx-3080-10gb-msi-lhr-i-drugie-karty-IDRs7yn.html",
+  "title": "Видеокарта GIGABYTE GAMING OC   RTX 3080 10Gb MSI..LHR и другие карты"
+}
+```
+**Семпл #75:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-vdeo-kartu-afox-geforce-gtx-750-ti-af750ti-4096d5h1-ID10Yqam.html",
+  "title": "Продам відео карту AFOX GeForce GTX 750 Ti AF750Ti-4096D5H1"
+}
+```
+**Семпл #76:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-gigabyte-rtx-4090-windforce-2-ID10WAaV.html",
+  "title": "Видеокарта Gigabyte Rtx 4090 Windforce 2"
+}
+```
+**Семпл #77:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/dell-nvidia-geforce-rtx-3080-10gb-gddr6x-ID10MgM6.html",
+  "title": "Dell NVIDIA GeForce RTX 3080 10GB GDDR6X"
+}
+```
+**Семпл #78:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-rx9070-xt-red-devil-na-garantii-ID10ThRg.html",
+  "title": "Видеокарта RX9070 XT Red Devil (на гарантии)"
+}
+```
+**Семпл #79:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-evga-rtx-3080-10gb-pd-vdnovlennya-ID110YXR.html",
+  "title": "Відеокарта Evga rtx 3080 10gb (під відновлення)"
+}
+```
+**Семпл #80:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Radeon R9 280X IceQ 3gb"
+}
+```
+**Семпл #81:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Видеокарта Asus EAH3730/HTDI/1G/A"
+}
+```
+**Семпл #82:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nvidia-gtx-1070-8gb-ID110YQD.html",
+  "title": "Nvidia GTX 1070 8gb"
+}
+```
+**Семпл #83:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/gigabyte-geforce-gt-730-2048mb-gddr5-IDYt3mY.html",
+  "title": "Gigabyte geforce gt 730 2048mb gddr5"
 }
 ```
 **Семпл #84:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-gtx-1080-ti-gaming-x-rtx-11-gb-garantya-ID10qGWn.html",
-  "title": "Msi GTX 1080 Ti Gaming X Rtx 11-GB Гарантія"
+  "reason": "no_hardware_target_matched",
+  "title": "Видеокарта NVIDIA NVS 300/NVIDIA Quadro 512Mb в идеальном состоянии!"
 }
 ```
 **Семпл #85:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-asus-geforce-rtx-4080-16gb-gddr6x-tuf-gaming-oc-tuf-rtx4080-o16g-gaming-ID10Ma1u.html",
-  "title": "Видеокарта Asus GeForce RTX 4080 16GB GDDR6X (TUF GAMING OC TUF-RTX4080-O16G-GAMING)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-videokartu-nvidia-geforce-gt440-IDZQybk.html",
+  "title": "Продам видеокарту Nvidia Geforce GT440"
 }
 ```
 **Семпл #86:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-saphire-rx-580-8-gb-magazin-compic-v-zaporozhe-1070-1080ti-IDTJbCp.html",
-  "title": "Видеокарта Saphire Rx 580 8 Gb магазин COMPiC в Запорожье 1070 1080ti"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-rtx-2060-super-8gb-inno3d-ID110YEO.html",
+  "title": "Видеокарта RTX 2060 SUPER 8gb inno3D"
 }
 ```
 **Семпл #87:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Відеокарта Gigabyte RTX 4060ti"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gtx660-2gb-r7240-4gb-gt710-2gb-ID10FhsO.html",
+  "title": "Відеокарта GTX660 2Гб, R7240 4Гб, GT710 2Гб"
 }
 ```
 **Семпл #88:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gigabyte-pci-ex-geforce-rtx-3080-ti-eagle-oc-12g-12-gb-gddr6x-ID10JzYB.html",
-  "title": "Відеокарта Gigabyte PCI-Ex GeForce RTX 3080 Ti EAGLE OC 12G 12 GB GDDR6X"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-rtx-4090-24-gb-msi-ID10ZV1c.html",
+  "title": "Видеокарта Rtx 4090 24 gb msi"
 }
 ```
 **Семпл #89:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-msi-radeon-rx-6900-xt-gaming-x-trio-16gb-ID10To7x.html",
-  "title": "Відеокарта MSI Radeon RX 6900 XT Gaming X Trio 16GB"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-asus-rog-strix-geforce-gtx-1070-ti-8gb-garantya-magazin-pro-pc-ID1109nB.html",
+  "title": "Відеокарта ASUS ROG STRIX GeForce GTX 1070 Ti 8GB | Гарантія | Магазин | Pro PC"
 }
 ```
 **Семпл #90:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "MSI GTX 1060 6G Gaming X"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-radeon-rx-470-ID10POZO.html",
+  "title": "відеокарта Radeon RX 470."
 }
 ```
 **Семпл #91:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "RTX 5060 ti 8G MSI gaming trio"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-asus-dual-amd-radeon-rx-6600-ID110fM6.html",
+  "title": "Відеокарта Asus Dual AMD Radeon RX 6600"
 }
 ```
 **Семпл #92:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gt-730-ID10n3qB.html",
-  "title": "Відеокарта gt 730"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/palit-geforce-rtx-4070-ti-super-gamingpro-oc-ID110Ypn.html",
+  "title": "Palit GeForce RTX 4070 Ti SUPER GamingPro OC"
 }
 ```
 **Семпл #93:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/videokarta-rx-6800-16-gb-nuzhno-proshit-bios-ID10YRQi.html",
-  "title": "Видеокарта Rx 6800 16 gb Нужно прошить биос"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-gtx-1650-super-gaming-x-4gb-gddr6-geforce-ID10U6xd.html",
+  "title": "MSI GTX 1650 SUPER Gaming X 4GB GDDR6 GeForce"
 }
 ```
 **Семпл #94:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/rx-580-8gb-net-izobrazheniya-ID10Z3UN.html",
-  "title": "RX 580 8GB  нет изображения"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-radeon-rx470-4gb-ID110YrH.html",
+  "title": "Відеокарта Radeon rx470 4gb"
 }
 ```
 **Семпл #95:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Asus GeForce GTX 550"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/gigabyte-gtx-1650-4gb-ID110Yq2.html",
+  "title": "Gigabyte GTX 1650 4gb"
 }
 ```
 **Семпл #96:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/garantya-rtx-2060-super-8gb-inno3d-twin-x2-grova-vdeokarta-tehnobro-ID10Hr1o.html",
-  "title": "Гарантія! RTX 2060 Super 8GB Inno3D Twin X2 Ігрова відеокарта ТехноБро"
+  "reason": "no_hardware_target_matched",
+  "title": "Видеокарта gf 210"
 }
 ```
 **Семпл #97:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Продам видео карту  1660 msi Ventus xs oc"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/xfx-rx-580-8gb-vdeokarta-ID110YeJ.html",
+  "title": "XFX rx 580 8gb відеокарта"
 }
 ```
 **Семпл #98:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/sapphire-rx-460-2gb-povniy-komplekt-ID10P59z.html",
-  "title": "Sapphire RX 460 2GB повний комплект"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-rtx-5070-ti-ID10CgQ5.html",
+  "title": "Відеокарта RTX 5070 Ti"
 }
 ```
 **Семпл #99:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Видеокарта ASUS GeForce 8800 GS 384Mb"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vdeokarta-gigabyte-geforce-gt-740-1gb-gddr5-gv-n740d5oc-1gi-ID110YaG.html",
+  "title": "Відеокарта Gigabyte GeForce GT 740 1GB GDDR5 GV-N740D5OC-1GI"
 }
 ```
 **Семпл #100:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Видеокарта 512M DDR4"
+  "title": "Видеокарта 1Gb 2Gb DDR3 DDR5"
 }
 ```
 
@@ -814,727 +833,19 @@
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-8600k-3-6-ghz-ID10XgDv.html",
-  "title": "Процесор Intel Core i5-8600K 3.6 GHz"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i3-9100f-4-core-4-2ghz-lga1151-ID10PozU.html",
+  "title": "Intel Core i3-9100F 4-Core 4.2GHz LGA1151"
 }
 ```
 **Семпл #2:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Процессор AMD Athlon II x4 640 3 Ghz"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ryzen7-5700x3d-tuf-gaming-b450-plus-ii-ozu-16gb-samsung-ID10VaPq.html",
+  "title": "Ryzen7 5700x3d+TUF GAMING B450-PLUS II+ озу 16gb Samsung"
 }
 ```
 **Семпл #3:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор Intel Celeron Dual-Core E3200 2.40GHz LGA775"
-}
-```
-**Семпл #4:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор lga775 e6600⁸"
-}
-```
-**Семпл #5:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/s1700-top-set-intel-core-i9-13900k-asus-rog-strix-z790-wi-fi-trade-in-IDZKK35.html",
-  "title": "s1700 ТОП сет Intel Core i9-13900K+ASUS ROG STRIX Z790 Wi-Fi. Trade-in"
-}
-```
-**Семпл #6:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор AMD Athlon ii x3 450 3.2 GHz. 3 ядра/3 потока. Soket AM3."
-}
-```
-**Семпл #7:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-12400f-torg-ID110Gy1.html",
-  "title": "процесор intel core i5 12400f є торг"
-}
-```
-**Семпл #8:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/am4-protsesor-amd-ryzen-5-3600x-4-4ghz-6yader-12potokv-trade-in-ID10LNVq.html",
-  "title": "AM4 процесор AMD Ryzen 5 3600X 4.4GHz 6ядер\\12потоків. Trade-IN"
-}
-```
-**Семпл #9:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-ryzen-3-1200-box-4-yadra-soket-am4-v-korobke-s-kulerom-ID10E0Pg.html",
-  "title": "Процессор AMD Ryzen 3 1200 BOX (4 ядра, сокет AM4), в коробке с кулером"
-}
-```
-**Семпл #10:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процессор Intel Core i9-7980XE Extreme Edition 18 ядер 36 потоков s2066"
-}
-```
-**Семпл #11:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Комплект: материнська плата, процесор, водяне охолодження"
-}
-```
-**Семпл #12:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процессор Athlon II  2 ядра 240-250-260-270, sAM3"
-}
-```
-**Семпл #13:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам процессор G4400"
-}
-```
-**Семпл #14:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/svzhiy-s1200-set-z-vdeo-intel-pentium-g6400-4ghz-asrock-h470-m-2-ssd-i-m-2-wi-fi-IDYSzD6.html",
-  "title": "свіжий s1200 сет з відео Intel Pentium G6400 4GHz + ASRock H470 M.2 SSD i M.2 Wi-Fi"
-}
-```
-**Семпл #15:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-6500-s1151-IDXVxbM.html",
-  "title": "Процесор Intel Core i5 6500 s1151"
-}
-```
-**Семпл #16:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-7-7800x3d-IDYEELt.html",
-  "title": "AMD Ryzen 7 7800X3D"
-}
-```
-**Семпл #17:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-xeon-e5-1607-v3-3-10ghz-lga-2011-3-IDUdQZh.html",
-  "title": "Intel Xeon E5-1607 v3 3.10ghz LGA 2011-3"
-}
-```
-**Семпл #18:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-i7-6700-3-4ghz-4-0ghz-IDX27su.html",
-  "title": "Процесор I7 6700 3.4ghz-4.0ghz"
-}
-```
-**Семпл #19:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "AMD Ryzen 2700 Tray"
-}
-```
-**Семпл #20:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodayu-protsesor-amd-ryzen-3-1200-soket-am4-povnstyu-robochiy-stabl-IDZI6Uy.html",
-  "title": "Продаю процесор AMD Ryzen 3 1200 (сокет AM4).\nПовністю робочий, стабіл"
-}
-```
-**Семпл #21:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "‼️Процесор для ноутбука Intel Pentium P6100 3 МБ кеш-памяті"
-}
-```
-**Семпл #22:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-7400-3-00ghz-6mb-8gt-s-sr32w-s1151-tray-ID10Y1Cr.html",
-  "title": "Процесор Intel Core i5-7400 3.00GHz/6MB/8GT/s (SR32W) s1151, tray"
-}
-```
-**Семпл #23:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "AMD Ryzen 2200G + боксовий кулер + термопаста"
-}
-```
-**Семпл #24:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-protsesor-i5-9600k-ID10L2JL.html",
-  "title": "Продам процесор i5-9600k"
-}
-```
-**Семпл #25:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "AMD Ryzen 2700X Tray"
-}
-```
-**Семпл #26:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-protsessor-xeon-2665-IDYF8oG.html",
-  "title": "Продам процессор Xeon 2665"
-}
-```
-**Семпл #27:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/s1700-protsesor-intel-core-i5-13600k-14yader-20potokv-5-1ggts-z-vdeoyadrom-trade-in-ID10zmgh.html",
-  "title": "s1700 процесор Intel Core i5-13600K 14ядер\\20потоків 5.1ГГц з відеоядром. Trade-IN"
-}
-```
-**Семпл #28:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам процесор ."
-}
-```
-**Семпл #29:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/s1151v2-protsesor-intel-core-i5-9600k-6yader-4-6ghz-trade-in-ID10XhJt.html",
-  "title": "s1151v2 процесор Intel Core i5-9600K 6ядер 4.6GHz. Trade-in"
-}
-```
-**Семпл #30:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам процесор Processor Intel Core i3-2330M SR04J"
-}
-```
-**Семпл #31:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/noviy-protsesor-amd-ryzen-7-9800x3d-IDXYPam.html",
-  "title": "Новий процесор AMD Ryzen 7 9800X3D"
-}
-```
-**Семпл #32:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/s1200-protsesor-10pokolnnya-intel-pentium-gold-g6405-4-1ggts-z-grafkoyu-IDYLSXO.html",
-  "title": "s1200 процесор 10покоління Intel Pentium GOLD G6405 4.1ГГц з графікою"
-}
-```
-**Семпл #33:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-5-7500f-ID110FGA.html",
-  "title": "Amd RYZEN 5 7500f"
-}
-```
-**Семпл #34:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/s1151-set-intel-core-i5-7500-3-8ghz-z-vdeoyadrom-atx-asus-h270-trade-in-ID10HweN.html",
-  "title": "s1151 сет Intel Core i5-7500 3.8GHz з відеоядром + ATX ASUS H270. Trade-IN"
-}
-```
-**Семпл #35:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i3-8100-lga1151-zapasn-tri-nzhki-krplennya-dlya-kulera-ID10NtXb.html",
-  "title": "Intel Core i3-8100 LGA1151 + запасні три ніжки кріплення для кулера"
-}
-```
-**Семпл #36:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-ryzen-7-8700f-ID10XOKw.html",
-  "title": "Процессор AMD Ryzen 7 8700F"
-}
-```
-**Семпл #37:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-14400f-box-v-idealnomu-stan-ID10YQR2.html",
-  "title": "Процесор Intel Core i5-14400F Box в идеальному стані"
-}
-```
-**Семпл #38:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-intel-core-i3-14100-lga1700-ID108Gcc.html",
-  "title": "Процессор Intel Core i3-14100 LGA1700"
-}
-```
-**Семпл #39:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "AMD Sempron 2800+ АМ2 + BOX кулер"
-}
-```
-**Семпл #40:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ryzen-9-7900x-asrock-b650-pg-lightning-ID10OTU5.html",
-  "title": "Ryzen 9 7900X і Asrock B650 PG LIGHTNING"
-}
-```
-**Семпл #41:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор Thesys Z80H для ZX Spectrum і не тільки, КР580ВМ80А"
-}
-```
-**Семпл #42:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-xeon-e5-2699-v3-2-3-3-6-ghz-18yad-36pot-e5-2699v3-IDY43Be.html",
-  "title": "Процесор Intel Xeon E5 2699 V3 | 2.3-3.6 GHz | 18яд.36пот. | E5-2699v3"
-}
-```
-**Семпл #43:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/topovyy-kuler-id-cooling-frozn-a620-pro-se-argb-dlya-igrovogo-pk-ID10Ov5f.html",
-  "title": "Топовый кулер ID Cooling Frozn A620 Pro SE ARGB для игрового ПК"
-}
-```
-**Семпл #44:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/noviy-protsesor-amd-ryzen-9-9950x-9000-series-IDY32sj.html",
-  "title": "Новий Процесор AMD Ryzen 9 9950X 9000 Series"
-}
-```
-**Семпл #45:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/s1700-set-intel-core-i5-14600kf-plata-b760-ddr4-vodyanka-trade-in-ID10THhl.html",
-  "title": "s1700 сет Intel Core i5-14600KF + плата B760 DDR4 + водянка. Trade-IN"
-}
-```
-**Семпл #46:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-ryzen-3-2200g-ID110EVo.html",
-  "title": "Продам Ryzen 3 2200G"
-}
-```
-**Семпл #47:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "AMD phenom X2 550 + боксовий кулер"
-}
-```
-**Семпл #48:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesori-intel-i5-6402p-6500-4-4yadra-rozprodazh-IDUEzXB.html",
-  "title": "Процесори Intel  i5-6402P/6500 4/4ядра  РОЗПРОДАЖ!"
-}
-```
-**Семпл #49:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-amd-ryzen-9-9950x3d-am5-noviy-IDZRReu.html",
-  "title": "Процесор AMD Ryzen 9 9950X3D AM5 новий"
-}
-```
-**Семпл #50:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-xeon-e5-2640v3-ID110EHi.html",
-  "title": "INTEL Xeon e5-2640v3"
-}
-```
-**Семпл #51:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i3-4150-3-5ghz-3mb-5gt-s-sr1pj-IDZC1rM.html",
-  "title": "Процесор Intel Core i3-4150 3.5GHz/3MB/5GT/s (SR1PJ)"
-}
-```
-**Семпл #52:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-7400-3-0ghz-6mb-8gt-s-sr32w-IDZC1nO.html",
-  "title": "Процесор Intel Core i5-7400 3.0GHz/6MB/8GT/s (SR32W)"
-}
-```
-**Семпл #53:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i7-3610qm-2-3ghz-6144kb-socket-g2-cpu-protsessor-sr0mn-ID110Ev1.html",
-  "title": "Intel Core i7-3610QM 2.3GHz 6144KB Socket G2 CPU процессор SR0MN"
-}
-```
-**Семпл #54:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/s1200-protsesor-intel-core-i9-10850k-10yader-20potokv-5-2ggts-z-grafkoyu-trade-in-ID10TGIm.html",
-  "title": "s1200 процесор Intel Core i9-10850K 10ядер\\20потоків 5.2ГГц з графікою. Trade-IN"
-}
-```
-**Семпл #55:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/potuzhniy-set-intel-core-i9-10850k-10yader-20pot-5-2ggts-z-vdeo-plata-asus-z490-trade-in-ID10TGI8.html",
-  "title": "потужний сет Intel Core i9-10850K 10ядер\\20пот 5.2ГГц з відео + плата ASUS Z490. Trade-in"
-}
-```
-**Семпл #56:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процы со старых ноутов"
-}
-```
-**Семпл #57:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор 450/512/100/2.0V S1 SECC2"
-}
-```
-**Семпл #58:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор для ноутбука Intel Pentium P6200 Socket G1 PGA988"
-}
-```
-**Семпл #59:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-intel-core-i9-11900kf-asus-prime-z590-a-s1200-ID10yTJh.html",
-  "title": "Комплект Intel Core i9 11900KF+ Asus Prime Z590 -A  s1200"
-}
-```
-**Семпл #60:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i7-6700k-4-00ghz-s1151-sr2l0-i7-6700k-IDZvF47.html",
-  "title": "Процесор Intel Core i7-6700K 4.00GHz s1151 (SR2L0) / i7 6700K"
-}
-```
-**Семпл #61:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор Phenom II 1055T"
-}
-```
-**Семпл #62:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Intel Xeon X7560 2.26GHz 8 ядер 16 потоків 24MB L3 LGA1567"
-}
-```
-**Семпл #63:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "I3-1105f.        ."
-}
-```
-**Семпл #64:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесори до ретро ПК"
-}
-```
-**Семпл #65:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Intel Core 2 Quad Q9500 сокет 775 процессоры"
-}
-```
-**Семпл #66:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-5-1600af-v-neizvestnom-sostoyanii-ID10YiRh.html",
-  "title": "AMD Ryzen 5 1600AF в неизвестном состоянии"
-}
-```
-**Семпл #67:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Рідинне охолодження corsair icue h150i elite capellix з лед підсвіткою"
-}
-```
-**Семпл #68:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-9500-8500-8400-7400-7600k-6500-ID10SLfT.html",
-  "title": "Процесор intel core i5 9500/8500/8400/7400/7600k/6500"
-}
-```
-**Семпл #69:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процессор AMD Athlon II X4 640 AM3 / AM3+ (4 ядра)"
-}
-```
-**Семпл #70:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Комплект Материнская плата Asus H-170 pro и i5-6500 с видео ядром"
-}
-```
-**Семпл #71:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Xeon E5-2640v4 процессор CPU"
-}
-```
-**Семпл #72:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Xeon x5650 (12M Cache)"
-}
-```
-**Семпл #73:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-5-6500-s-1151-sky-lake-IDUNmuC.html",
-  "title": "Intel Core і5 -6500 -s.1151 Sky lake"
-}
-```
-**Семпл #74:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-ryzen-5-5600-ID10ZRzk.html",
-  "title": "Процесор Ryzen 5 5600"
-}
-```
-**Семпл #75:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-9-7900-box-kuler-v-komplekt-yak-noviy-ID10Sp1b.html",
-  "title": "AMD Ryzen 9 7900 BOX (кулер в комплекті) | як новий"
-}
-```
-**Семпл #76:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-protsessor-intel-i5-8600k-ID10MUxa.html",
-  "title": "Продам процессор Intel I5-8600k"
-}
-```
-**Семпл #77:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i9-14900k-lga1700-24-yadra-32-potoka-ID10QnTF.html",
-  "title": "Intel Core i9-14900K LGA1700 24 ядра / 32 потока"
-}
-```
-**Семпл #78:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-2-quad-q6600-4x2-4ghz-8mb-cache-1066mhz-bu-s775-pk-IDDusy5.html",
-  "title": "Процесор Intel Core 2 Quad Q6600 4x2.4GHz 8mb cache 1066MHz бу s775 пк"
-}
-```
-**Семпл #79:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процессор 2 ядра Intel core  3.3 Ghz"
-}
-```
-**Семпл #80:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесори intel celeron, pentium, 2 duo"
-}
-```
-**Семпл #81:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-materinska-plata-asus-rog-strix-z690-e-gaming-wifi-intel-core-i5-13600k-ID110vfX.html",
-  "title": "Комплект: материнська плата Asus ROG Strix Z690-E Gaming WiFi + Intel Core i5-13600K"
-}
-```
-**Семпл #82:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процессор Core 2 Duo E6550"
-}
-```
-**Семпл #83:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesori-intel-i5-9500t-9500-9600k-s1151-rozprodazh-ID10jMiu.html",
-  "title": "Процесори Intel i5 9500T/9500/9600K s1151. Розпродаж!"
-}
-```
-**Семпл #84:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "‼️Топова повітряна система охолодження для CPU Scythe Ashura (SCASR-1000)"
-}
-```
-**Семпл #85:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-do-pk-i7-6700-16-gb-ddr4-mat-plata-kuller-ID10YXVq.html",
-  "title": "Комплект до пк, i7 6700, 16 gb ddr4, мат. плата, куллер"
-}
-```
-**Семпл #86:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "AMD Athlon II  робочій"
-}
-```
-**Семпл #87:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Кулер для процесора Thermalright AXP120-X67 Black ARGB (новий, AM4 / Intel)"
-}
-```
-**Семпл #88:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор Intel Core 2 Duo E4500 2.20 GHz / 2 M / 800 (SLA95) s775"
-}
-```
-**Семпл #89:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор Intel Pentium G5600 3,9GHz"
-}
-```
-**Семпл #90:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-xeon-e5-2623-v4-ID10YAlp.html",
-  "title": "Процесор Intel Xeon E5-2623 v4"
-}
-```
-**Семпл #91:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор amd ryzen 7600х"
-}
-```
-**Семпл #92:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "ПРОДАМ процессор AMD 5 7500F"
-}
-```
-**Семпл #93:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "AMD Athlon II X3 460. Intel Pentium B960. Система охлаждения Samsung 300V3A/300V4A/300V5A"
-}
-```
-**Семпл #94:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Комплект: материнська плата, процесор, водяне охолодження"
-}
-```
-**Семпл #95:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Процессор AMD Ryzen 3 2200"
-}
-```
-**Семпл #96:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Кулер вентилятор процессора Intel LGA775 для Core2 Duo, Quad"
-}
-```
-**Семпл #97:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -1542,7 +853,298 @@
   "title": "і5-8500 Intel Core 3.00 ghz процесор"
 }
 ```
-**Семпл #98:**
+**Семпл #4:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процесор AMD Athlon II X3 455 3.3GHz/1.5MB/4000MHz AM3"
+}
+```
+**Семпл #5:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор Turion 64 X2  TL58 1.9GHz TMDTL58HAX5DC Socket S1"
+}
+```
+**Семпл #6:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/set-intel-core-i7-12700kf-12yader-5ghz-plata-gigabyte-wi-fi-trade-in-ID10va1d.html",
+  "title": "сет Intel Core i7-12700KF 12ядер 5GHz + плата Gigabyte Wi-Fi. Trade-IN"
+}
+```
+**Семпл #7:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-a4-3400-2-7-ghz-1mb-IDUenXB.html",
+  "title": "Процессор AMD A4-3400 2.7 GHz/1MB"
+}
+```
+**Семпл #8:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ryzen5600x-noviy-IDZRaVB.html",
+  "title": "Ryzen5600x новий"
+}
+```
+**Семпл #9:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процесор Intel E7500"
+}
+```
+**Семпл #10:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Intel Core i3-2310M"
+}
+```
+**Семпл #11:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "звуковой процессор MSP3465G C12 160579.001.JCMHF"
+}
+```
+**Семпл #12:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i3-9100f-ID1111gV.html",
+  "title": "Intel Core i3-9100F"
+}
+```
+**Семпл #13:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i5-4690k-top-z-lnyki-5-chetvertogo-pokolnnya-IDSii9D.html",
+  "title": "Intel core i5 4690k - TOP з лінійки і5 четвертого покоління"
+}
+```
+**Семпл #14:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-xeon-698x-86yader-do-4-8ggts-256gb-ddr5-8800mhz-asus-w890-sage-se-lga4710-ws-ID10zQyf.html",
+  "title": "Комплект Xeon 698x 86ядер до 4.8Ггц + 256GB DDR5 8800MHz + Asus w890 SAGE SE LGA4710 WS"
+}
+```
+**Семпл #15:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-zapakovaniy-protsesor-amd-ryzen-5600x-ID10ytKe.html",
+  "title": "Продам запакований процесор AMD Ryzen 5600x"
+}
+```
+**Семпл #16:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i9-14900k-lga1700-24-yadra-32-potoka-ID10QnTF.html",
+  "title": "Intel Core i9-14900K LGA1700 24 ядра / 32 потока"
+}
+```
+**Семпл #17:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i3-6320-ID10EqaZ.html",
+  "title": "intel core i3 6320"
+}
+```
+**Семпл #18:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор AMD Ryzen 5 PRO 1600. Бу."
+}
+```
+**Семпл #19:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор AMD Athlon 3000G 3.5GHz,4MB,35W,AM4 TRAY"
+}
+```
+**Семпл #20:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор 3яд AMD Atlon 2 3300гц"
+}
+```
+**Семпл #21:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-7-7700-am5-protsesor-v-dealnomu-stan-ID10Zv2Z.html",
+  "title": "AMD Ryzen 7 7700 AM5 процесор, в ідеальному стані"
+}
+```
+**Семпл #22:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/s1700-protsesor-intel-core-i5-12500-4-6ghz-z-vdeoyadrom-trade-in-IDYYtQs.html",
+  "title": "s1700 процесор Intel Core i5-12500 4.6GHz з відеоядром. Trade-in"
+}
+```
+**Семпл #23:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Кулер Noctua D14 Intel AMD AM2 AM3 AM4 s1155/ s1151/ s1200/ s1700/ s2011/ s775/ s1150/ s1156"
+}
+```
+**Семпл #24:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор AMD Athlon II X2 340 3.2GHz/2000MHz/1MB  sFM2"
+}
+```
+**Семпл #25:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ryzen-3-1200-polnostyu-robochiy-ID1110K0.html",
+  "title": "Ryzen 3 1200, полностью робочий"
+}
+```
+**Семпл #26:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-8600k-3-6-ghz-ID10XgDv.html",
+  "title": "Процесор Intel Core i5-8600K 3.6 GHz"
+}
+```
+**Семпл #27:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/noviy-protsesor-amd-ryzen-9-9950x-9000-series-IDY32sj.html",
+  "title": "Новий Процесор AMD Ryzen 9 9950X 9000 Series"
+}
+```
+**Семпл #28:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-ryzen-5-7500f-socket-am5-6-yadrer-5-0-ggts-mozhno-s-materinkoy-ID10WxE3.html",
+  "title": "Процессор AMD Ryzen 5 7500F Socket AM5 6 ядрер 5.0 ГГц можно с материнкой"
+}
+```
+**Семпл #29:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-protsessor-intel-i5-8600k-ID10MUxa.html",
+  "title": "Продам процессор Intel I5-8600k"
+}
+```
+**Семпл #30:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/set-am4-ryzen-5-2600-z-kulerom-plata-gigabyte-a520-m-2-trade-in-ID10L81S.html",
+  "title": "сет AM4 Ryzen 5 2600 з кулером + плата Gigabyte A520 M.2. Trade-IN"
+}
+```
+**Семпл #31:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процесор процессор CPU AMD Athlon 2"
+}
+```
+**Семпл #32:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/i7-6700-intel-core-3-40ghz-protsesor-ID10TFUd.html",
+  "title": "i7-6700 Intel Core 3.40ghz процесор"
+}
+```
+**Семпл #33:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/27-protsesor-ryzen-5-2600-tray-stan-garniy-ID1110t4.html",
+  "title": "(~27$) процесор Ryzen 5 2600 • TRAY • стан гарний"
+}
+```
+**Семпл #34:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-i7-9700kf-asrock-z370pro4-ID1110pj.html",
+  "title": "Intel I7-9700KF + ASROCK Z370pro4"
+}
+```
+**Семпл #35:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-i39100f-ID1110kv.html",
+  "title": "Процесор i39100f"
+}
+```
+**Семпл #36:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-intel-core-i3-9100f-2-9ghz-4-yader-8gt-s-9mb-s1151-IDZnTcS.html",
+  "title": "Процессор Intel Core i3-9100F 2.9GHz- 4 ядер  / 8GT / s / 9MB s1151"
+}
+```
+**Семпл #37:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-ryzen-3-1200-s-ohlazhdeniem-ID10gPdQ.html",
+  "title": "Процессор AMD RYZEN 3 1200 с охлаждением"
+}
+```
+**Семпл #38:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор Athlon x3 445, sAM3"
+}
+```
+**Семпл #39:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-quadcore-intel-core-i3-8100-3600-mhz-s1151-v2-IDZlp6D.html",
+  "title": "Процессор QuadCore Intel Core i3-8100, 3600 MHz , s1151 V2"
+}
+```
+**Семпл #40:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Рідинне охолодження corsair icue h150i elite capellix з лед підсвіткою"
+}
+```
+**Семпл #41:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-protsesor-i5-9600k-ID10L2JL.html",
+  "title": "Продам процесор i5-9600k"
+}
+```
+**Семпл #42:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -1550,7 +1152,38 @@
   "title": "Продам Ryzen 3 2200G"
 }
 ```
-**Семпл #99:**
+**Семпл #43:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "процесор G3258 3.2 ghz 3MB Cache LGA1150 s1150"
+}
+```
+**Семпл #44:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-xeon-e5-2620-v2-6-yader-12-potokv-lga2011-ID10J0Ll.html",
+  "title": "Процесор Intel Xeon E5-2620 v2 6 ядер 12 потоків LGA2011"
+}
+```
+**Семпл #45:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/i5-11400-asus-prime-b560m-k-ID11101l.html",
+  "title": "i5 11400 + Asus Prime b560m-k"
+}
+```
+**Семпл #46:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-protsessor-intel-i5-8600k-ID10MUxa.html",
+  "title": "Продам процессор Intel I5-8600k"
+}
+```
+**Семпл #47:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -1558,11 +1191,410 @@
   "title": "РОЗСТРОЧКА МОНО НА 3 МІСЯЦІ! Intel Core i5 14600KF, Asus TUF B760M-Plus, ID-Cooling SE-206XT топовий сучасний ігровий комплект"
 }
 ```
-**Семпл #100:**
+**Семпл #48:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-i3-6100-povnstyu-robochiy-ID10EnX4.html",
+  "title": "процесор i3 6100 повністю робочий"
+}
+```
+**Семпл #49:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Боксовые кулера Intel и AMD"
+  "title": "Процесор  INTEL Core Ultra 9 285 (BX80768285) Новий! open box"
+}
+```
+**Семпл #50:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор АMD Athlon II X4 640"
+}
+```
+**Семпл #51:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор Intel Pentium Dual-Core P6200"
+}
+```
+**Семпл #52:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-protsesor-i3-9100f-ID110YZh.html",
+  "title": "продам процесор i3 9100F"
+}
+```
+**Семпл #53:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-xeon-e5-2623-v4-ID10YAlp.html",
+  "title": "Процесор Intel Xeon E5-2623 v4"
+}
+```
+**Семпл #54:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i7-6700-s1151-IDY7dY4.html",
+  "title": "Процесор Intel Core i7 6700 s1151"
+}
+```
+**Семпл #55:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-14400f-box-v-idealnomu-stan-ID10YQR2.html",
+  "title": "Процесор Intel Core i5-14400F Box в идеальному стані"
+}
+```
+**Семпл #56:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-intel-pentium-e5400-IDSpTSf.html",
+  "title": "Процессор Intel Pentium Е5400"
+}
+```
+**Семпл #57:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор Intel Core 2 Duo E4500 2.2 GHz s775, tray"
+}
+```
+**Семпл #58:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продам процессор intel core 2 duo"
+}
+```
+**Семпл #59:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessory-i5-13400-i7-13700-11700k-9700-ID110YMa.html",
+  "title": "Процессоры i5 13400, i7 13700, 11700k, 9700"
+}
+```
+**Семпл #60:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-9-9900x-nov-zapakovan-ID10T3iR.html",
+  "title": "AMD Ryzen 9 9900X нові-запаковані"
+}
+```
+**Семпл #61:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-a8-9600-am4-IDY4uAj.html",
+  "title": "Процессор AMD A8-9600 AM4"
+}
+```
+**Семпл #62:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/9700k-z390-asrock-IDZQxWw.html",
+  "title": "9700к + z390 asrock"
+}
+```
+**Семпл #63:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-protsessor-intel-core-i5-6600-3-30ghz-ID10gN1B.html",
+  "title": "Продам процессор intel core i5-6600 3,30ghz"
+}
+```
+**Семпл #64:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процессор Intel Core 2 Quad Q9300 2.5GHz/6M/1033 (SLACQ) s775"
+}
+```
+**Семпл #65:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-xeon-e5-2667-2-9-3-5-ghz-lga2011-130w-b-v-ID110Ycs.html",
+  "title": "Процесор Intel Xeon e5-2667 2.9-3.5 GHz, LGA2011 130W Б/В"
+}
+```
+**Семпл #66:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "ПРОДАМ процессор AMD 5 7500F"
+}
+```
+**Семпл #67:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-intel-core-i9-7980xe-extreme-edition-18-yader-36-potokov-s2066-ID10Pkv4.html",
+  "title": "Процессор Intel Core i9-7980XE Extreme Edition 18 ядер 36 потоков s2066"
+}
+```
+**Семпл #68:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-amd-ryzen-7-9800x3d-nov-ID10W1uk.html",
+  "title": "Процесор AMD Ryzen 7 - 9800x3D | Нові"
+}
+```
+**Семпл #69:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-intel-core-i5-10400f-msi-b560m-pro-e-16-gb-apacer-ddr4-ID110YbI.html",
+  "title": "комплект Intel Core i5-10400F + MSI B560M PRO-E + 16 ГБ Apacer DDR4"
+}
+```
+**Семпл #70:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i7-3770-3-4ghz-IDZBs5p.html",
+  "title": "Intel Core i7 3770 3.4Ghz"
+}
+```
+**Семпл #71:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protstsesor-r5-3600-ID10ElKe.html",
+  "title": "проццесор r5 3600"
+}
+```
+**Семпл #72:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Материнсеая плата"
+}
+```
+**Семпл #73:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "•ТОП•Куллер/Башня/Охолодження для процесору•Am3+• Не 1155 1150 775 Ам4,2011 1151,2011•Cooler Master,OSZ AMD/Intel НЕ:Gamemax Deep Cool MSI Asus•"
+}
+```
+**Семпл #74:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ryzen-7-7700-3-80ghz-max-5-30ghz-8c-16t-l3-32mb-ID102Zut.html",
+  "title": "ryzen 7 7700 3.80Ghz/Max 5.30Ghz    8c/16T  L3-32mb"
+}
+```
+**Семпл #75:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-athlon-ii-x2-250-ID10gLKa.html",
+  "title": "AMD Athlon II x2 250"
+}
+```
+**Семпл #76:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-core-i5-12400f-box-garantiya-ID110VXP.html",
+  "title": "Intel Core i5-12400F BOX Гарантия!"
+}
+```
+**Семпл #77:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продам процесор Intel Celeron D 326 (Socket LGA775) б/в"
+}
+```
+**Семпл #78:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "‼️Топова повітряна система охолодження для CPU Scythe Ashura (SCASR-1000)"
+}
+```
+**Семпл #79:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-core-i5-9500-8500-8400-7400-7600k-6500-ID10SLfT.html",
+  "title": "Процесор intel core i5 9500/8500/8400/7400/7600k/6500"
+}
+```
+**Семпл #80:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "‼️Топова повітряна система охолодження для CPU Scythe Ashura (SCASR-1000)"
+}
+```
+**Семпл #81:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-7-7700-am5-protsesor-v-dealnomu-stan-ID10Zv2Z.html",
+  "title": "AMD Ryzen 7 7700 AM5 процесор, в ідеальному стані"
+}
+```
+**Семпл #82:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "AMD Wraith Stealth (базовий кулер)"
+}
+```
+**Семпл #83:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-7-7700-7500f-IDXRrGD.html",
+  "title": "AMD Ryzen 7 7700, 7500f"
+}
+```
+**Семпл #84:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "AMD Ryzen Threadripper Pro 7945wx"
+}
+```
+**Семпл #85:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-ryzen-5-5500-b-u-idealnoe-sostoyanie-ID110W1C.html",
+  "title": "Процессор AMD Ryzen 5 5500 (Б/у, идеальное состояние)"
+}
+```
+**Семпл #86:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Б\\У Процесор Intel Celeron T3500, SLGJV"
+}
+```
+**Семпл #87:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-intel-celeron-g1830-2-8ghz-5gt-s-2mb-bx80646g1830-s1150-ID10gKWc.html",
+  "title": "Процессор Intel Celeron G1830 2.8GHz/5GT/s/2MB (BX80646G1830) s1150"
+}
+```
+**Семпл #88:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процесор Xeon x5460 3.16 під 775 сокет"
+}
+```
+**Семпл #89:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-intel-xeon-5160-3-00ghz-4m-1333-slag9-para-IDTPtUe.html",
+  "title": "Процесор Intel Xeon 5160 3.00GHz/4M/1333 SLAG9 є пара"
+}
+```
+**Семпл #90:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-pentium-g4400-ID102XWi.html",
+  "title": "Intel Pentium G4400"
+}
+```
+**Семпл #91:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-intel-pentium-g4560-IDSUzJn.html",
+  "title": "Процессор INTEL Pentium G4560"
+}
+```
+**Семпл #92:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продаю процесор Xeon"
+}
+```
+**Семпл #93:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-2200g-boksoviy-kuler-termopasta-ID10TpLp.html",
+  "title": "AMD Ryzen 2200G + боксовий кулер + термопаста"
+}
+```
+**Семпл #94:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-amd-ryzen-5-5500-b-u-idealnoe-sostoyanie-ID110W1C.html",
+  "title": "Процессор AMD Ryzen 5 5500 (Б/у, идеальное состояние)"
+}
+```
+**Семпл #95:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Процеcор Intel Core 2 Duo E8400 3,0GHz 6MB s775 лот 50 шт."
+}
+```
+**Семпл #96:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/serverniy-protsesor-intel-xeon-e5-2695-v3-ID10FlYv.html",
+  "title": "Серверний процесор Intel Xeon E5-2695 V3"
+}
+```
+**Семпл #97:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-ryzen-7-7700-ID110WxO.html",
+  "title": "AMD Ryzen 7 7700"
+}
+```
+**Семпл #98:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-svy-ryzen-3-2200g-ID10QaEB.html",
+  "title": "Продам свій Ryzen 3 2200G"
+}
+```
+**Семпл #99:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsessor-intel-core-i5-10600kf-ID10Pqfd.html",
+  "title": "Процессор Intel core i5 10600kf"
+}
+```
+**Семпл #100:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/protsesor-amd-ryzen-5-3500x-3-6ghz-32m-100-000000158-sam4-ID110WuU.html",
+  "title": "Процесор AMD Ryzen 5 3500X 3.6GHz/32M (100-000000158) sAM4"
 }
 ```
 
@@ -1571,188 +1603,118 @@
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-gigabyte-z790-ud-s1700-intel-z790-pci-ex16-ID10QMt2.html",
-  "title": "Материнська плата Gigabyte Z790 UD (s1700, Intel Z790, PCI-Ex16)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-asus-strix-x870-a-gaming-wifi-am5-ID10YxFv.html",
+  "title": "Материнская плата Asus STRIX X870-A Gaming WiFi (AM5)"
 }
 ```
 **Семпл #2:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-asrock-b850m-steel-legend-wifi-oftsyna-garantya-ID1101qq.html",
-  "title": "Материнська плата ASRock B850M Steel Legend WiFi (Офіційна гарантія)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/asrock-b650pg-lightning-na-remont-zapchastini-ID10xPyc.html",
+  "title": "Asrock b650pg lightning на ремонт/запчастини"
 }
 ```
 **Семпл #3:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-gigabyte-x870-eagle-wifi7-ID10AZhe.html",
-  "title": "Материнська плата GIGABYTE X870 EAGLE WIFI7"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-intel-core-i9-10850k-asus-tuf-gaming-z490-plus-wi-fi-ID10O0OT.html",
+  "title": "Комплект Intel Core i9 10850K + Asus TUF GAMING Z490-PLUS (WI-FI)"
 }
 ```
 **Семпл #4:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Gigabyte GA G33M-S2"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/gigabyte-h310m-s2h-g5400-ID1111NL.html",
+  "title": "Gigabyte H310M S2H + G5400"
 }
 ```
 **Семпл #5:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнську плату ASRock з процесором AMD Athlon"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/maxan-challenger-b650-ID1111LH.html",
+  "title": "Maxan Challenger b650"
 }
 ```
 **Семпл #6:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Матиринка m5a97 plus"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-komplekt-materinka-huanahzi-x79-2-49-deluxe-e5-2689-16gb-IDX9JhI.html",
+  "title": "Продам комплект,  материнка huanahzi x79 2.49 deluxe + e5 2689 +16gb"
 }
 ```
 **Семпл #7:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнские платы 1155 сокет. 1151 сокет. Топовые и бюджетные."
+  "title": "Материнская плата+процессор+память"
 }
 ```
 **Семпл #8:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Потужный недорогие комплекты i5 + материнская плата 1150 можно с памятью ddr3"
+  "title": "Материнська плата M848A v5.0, РОЗЄМ 462, 2x DDR AGP, PCI"
 }
 ```
 **Семпл #9:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-asrock-x370-pro4-ta-ryzen-5-1600-ID110Gcn.html",
-  "title": "Комплект Asrock x370 pro4 та ryzen 5 1600"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-asus-tuf-gaming-b650m-plus-wi-fi-protsesor-amd-ryzen-5-7600-bez-ssd-ta-operativno-pamyat-ID10PxfD.html",
+  "title": "Материнська плата Asus TUF Gaming B650M-Plus Wi-Fi, процесор AMD Ryzen 5 7600 (без SSD та оперативної памяті)"
 }
 ```
 **Семпл #10:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "ASUS Prime X399-A + Ryzen Threadripper 1920X + кулер"
+  "title": "Продам кулер AVC для процессора, рабочее состояние"
 }
 ```
 **Семпл #11:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнская плата Asus P4P800SE"
+  "title": "Материнская плата с комплектуюшуми"
 }
 ```
 **Семпл #12:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "s1200 mini-ITX материнка Z490i AORUS ULTRA Wi-Fi BT (10\\11покоління)"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskie-platy-asrock-775dual-915gl-asus-p5g-mx-asrock-n68c-gs-fx-ID10Ex3R.html",
+  "title": "Материнские платы ASRock 775Dual-915GL. Asus P5G-MX.  ASRock N68C-GS FX."
 }
 ```
 **Семпл #13:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/rozstrochka-3-msyats-vd-mono-ryzen-7-7700-gigabyte-b850-eagle-wifi6e-be-quiet-pure-rock-3lx-topoviy-groviy-komplekt-am5-ID10WKqz.html",
-  "title": "РОЗСТРОЧКА 3 МІСЯЦІ ВІД МОНО! Ryzen 7 7700, Gigabyte B850 Eagle WiFi6E, Be Quiet! Pure Rock 3LX топовий ігровий комплект АМ5"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-x99-xd3-intel-xeon-e5-2698b-v3-do-3-4-ghz-32gb-4x8gb-16-yader-32-potoki-ddr3-1866-mhz-ecc-reg-quad-channel-tpm-2-0-secure-boot-ID10WCch.html",
+  "title": "Комплект X99-XD3 + Intel Xeon E5-2698B v3 до 3.4 GHz + 32GB (4x8GB), 16 ядер/32 потоки, DDR3 1866 MHz ECC Reg quad channel, TPM 2.0, Secure Boot"
 }
 ```
 **Семпл #14:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-tuf-gaming-x670e-plus-wifi-IDYG43k.html",
-  "title": "Asus TUF Gaming X670E-Plus WiFi"
+  "reason": "no_hardware_target_matched",
+  "title": "ASUS Prime X399-A + Ryzen Threadripper 1920X + кулер"
 }
 ```
 **Семпл #15:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinka-asus-z68-virtu-ID10YI1z.html",
-  "title": "Материнка Asus z68 virtu"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-sabertooth-z170-mark1-ID10Sz22.html",
+  "title": "Asus Sabertooth Z170 Mark1"
 }
 ```
 **Семпл #16:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата am2, am3. Ddr2"
-}
-```
-**Семпл #17:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата"
-}
-```
-**Семпл #18:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "комплектація материнська плата"
-}
-```
-**Семпл #19:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам компютерні запчастини"
-}
-```
-**Семпл #20:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/mat-plata-asrock-h110m-dgs-lga1151-ddr4-IDZQDBC.html",
-  "title": "Мат плата Asrock h110m dgs Lga1151 ddr4"
-}
-```
-**Семпл #21:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-gigabyte-z370-hd3-ID110Gha.html",
-  "title": "Материнская плата GIGABYTE Z370 HD3"
-}
-```
-**Семпл #22:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата до ноутбука читати оголошення"
-}
-```
-**Семпл #23:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-intel-core-i3-8100-gigabyte-b365m-aorus-elite-16gb-ddr4-ID10P9O3.html",
-  "title": "Комплект Intel Core i3-8100 + Gigabyte B365M Aorus Elite + 16GB DDR4"
-}
-```
-**Семпл #24:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Мат плата Asus 760GM p21 fx+процесор 4 ядра amd athlon 2 adx64"
-}
-```
-**Семпл #25:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам  материнскую плату"
-}
-```
-**Семпл #26:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -1760,327 +1722,290 @@
   "title": "Комплект Gigabyte GA-B85M-DS3H-A + Intel Core i3-4160 + ОЗП 16GB DDR3"
 }
 ```
+**Семпл #17:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-i5-10400f-asus-prime-h510m-a-pccooler-gi-x4sd-ID10PvZu.html",
+  "title": "Комплект i5-10400F + Asus Prime H510M-A + PcCooler GI-X4SD"
+}
+```
+**Семпл #18:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-gigabyte-ga-a320m-h-kuler-dlya-tsp-ID1111g4.html",
+  "title": "Материнська плата GIGABYTE GA-A320M-H + кулер для ЦП"
+}
+```
+**Семпл #19:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-komplekt-materinska-plata-asus-prime-b450m-a-ryzen-5-3600-ssd-samsung-kuler-vinga-ID1111eT.html",
+  "title": "Ігровий комплект: Материнська плата ASUS Prime B450M-A + Ryzen 5 3600 + SSD Samsung + Кулер Vinga"
+}
+```
+**Семпл #20:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Материнская плата Sony VAIO VPCF1 в сборе, рабочая, с процессором и видеокартой"
+}
+```
+**Семпл #21:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Материнська плата Asus P5QL-PRO  + intel core 2  Duo  E8500  3.16 Ghz  + 4GB RAM DDR2"
+}
+```
+**Семпл #22:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Комплект gigabyte ga-f2a68hm-s1 + CPU +RAM"
+}
+```
+**Семпл #23:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-materinskuyu-platu-msi-7600gm-p21-vmeste-s-protsessorom-amd-fx-4100-ID10E9Eg.html",
+  "title": "Продам материнскую плату MSI 7600GM-P21 вместе с процессором Amd FX 4100."
+}
+```
+**Семпл #24:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-materinska-colorful-c-h81a-btc-v20-prots-operativka-4gb-IDTkbQR.html",
+  "title": "комплект материнска colorful c.h81a-btc v20 проц ,оперативка 4гб"
+}
+```
+**Семпл #25:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "материнская плата Meizu M2 Note"
+}
+```
+**Семпл #26:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "комплектующие материнская плата + процессор + озу"
+}
+```
 **Семпл #27:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнская плата Intel DG965RY S775 965 4×DDR2"
+  "title": "Заглушки для материнських плат I/O Shields"
 }
 ```
 **Семпл #28:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнская плата Новые AM4,1151v2,1200,1700"
+  "title": "Материнские платы 1155 сокет. 1151 сокет. Топовые и бюджетные."
 }
 ```
 **Семпл #29:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата+проц+опертивка"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-asus-tuf-z390-plus-gaming-wi-fi-i5-9600kf-bashnya-aardwolf-performa-10x-ID10U4eL.html",
+  "title": "Комплект Asus TUF Z390-PLUS GAMING Wi-Fi + i5-9600KF + башня Aardwolf PERFORMA 10X"
 }
 ```
 **Семпл #30:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/hexacore-intel-i5-9600-4-6ghz-16gb-ddr4-materinka-moschniy-komplekt-dlyapk-ID10gPE6.html",
+  "title": "HexaCore Intel i5-9600 4.6Ghz/16gb ddr4/Материнка  Мощний комплект дляПК"
 }
 ```
 **Семпл #31:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Gigabyte GA-73VM-S2 системная плата на базе чипсета GeForce 7050 S775"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-i7-6700-4-0ghz-16gb-ddr4-materinka-komplekt-soket1151-dlya-sistemnogo-bloka-ID10gOMl.html",
+  "title": "Intel i7-6700 4.0Ghz+16gb ddr4+Материнка  комплект сокет1151 для системного блока"
 }
 ```
 **Семпл #32:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Asus k8n системная плата на базе чипсета nVIDIA nForce 3 250 S754"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/hexacore-intel-i5-9600-4-6ghz-asus-h310m-k-oholodzhennya-moschniy-komplekt-6yader-IDZQ3xl.html",
+  "title": "HexaCore Intel i5-9600 4.6Ghz+ASUS H310M-K/охолодження Мощний комплект 6ядер"
 }
 ```
 **Семпл #33:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "MSI K9NGM-L системная плата на базе чипсета NVIDIA GeForce 6100 AM2"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-i7-950-3-3-3ghz-ohlad-materinka-komplekt-8potokv-dlya-pk-ID102Zhl.html",
+  "title": "Intel i7-950 3-3.3Ghz/охлад/Материнка Комплект 8потоків для ПК"
 }
 ```
 **Семпл #34:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-asrock-870-extreme-3-IDXnBUM.html",
-  "title": "Материнская плата ASRock - 870 EXTREME 3"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/i7-4820k-3-9ghz-gigabyte-x79-ohlad-moschniy-komplekt-8potokv-ID1030mQ.html",
+  "title": "i7-4820K 3.9Ghz/Gigabyte X79/охлад Мощний комплект 8потоків"
 }
 ```
 **Семпл #35:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Срочно. Материнская плата  asus A68HM-K"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-i5-7500-3-4-3-8ghz-materinka-h270-ohlad-moschniy-bistriy-komplekt-s1151-dlyapk-ID10gPjj.html",
+  "title": "Intel i5-7500 3.4-3.8ghz/Материнка H270/охлад Мощний бистрий комплект s1151 дляПК"
 }
 ```
 **Семпл #36:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата Asrock extreme 4 1150 +ЦП и куллер"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nova-materinska-plata-jginyue-b850m-pro-am5-ID1110Pk.html",
+  "title": "Нова Материнська плата JGINYUE B850M PRO AM5"
 }
 ```
 **Семпл #37:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-1150-asrock-h81-r2-0-intel-core-i5-4670k-8gb-ddr3-ID10WrTG.html",
-  "title": "Комплект 1150 ASRock H81 R2.0 + Intel Core i5-4670K + 8GB DDR3"
+  "reason": "no_hardware_target_matched",
+  "title": "Материнская плата ASUS M4A78"
 }
 ```
 **Семпл #38:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-asus-rog-crosshair-x870e-hero-btf-am5-amd-ryzen-nova-apex-aorus-IDYvNro.html",
-  "title": "Материнська плата ASUS ROG CROSSHAIR X870E Hero BTF AM5 amd ryzen Нова apex aorus"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/mat-plata-msi-b450a-pro-amd-am4-ryzen-IDZQyCN.html",
+  "title": "Мат плата MSI B450A-Pro AMD AM4 Ryzen"
 }
 ```
 **Семпл #39:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнська плата під ремонт / донорство + (куллер, I/O планка, CMOS батарейка)"
+  "title": "Плата материнська,,Asus M2M  E+процесор"
 }
 ```
 **Семпл #40:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата GIGABYTE GA-970A-DS3 (rev. 1.1) Socket AM3 plus."
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-h81m-p33-soc-1150-usb3-dvi-intel-core-i3-4150-IDXfPlV.html",
+  "title": "MSI H81M-P33 (soc 1150, USB3, DVI)+Intel Core i3-4150"
 }
 ```
 **Семпл #41:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата Asus P5VD2-MX"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-b150m-pro-vhsoket-1151v1-core-i5-6500-3-2ghz-kuler-IDYLQyj.html",
+  "title": "MSI B150M PRO-VH(сокет 1151v1) + Core i5-6500 3.2GHz + кулер"
 }
 ```
 **Семпл #42:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнські плати"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-x99-xd3-intel-xeon-e5-2698b-v3-do-3-4-ghz-32gb-4x8gb-16-yader-32-potoki-ddr3-1866-mhz-ecc-reg-quad-channel-tpm-2-0-secure-boot-ID10WCch.html",
+  "title": "Комплект X99-XD3 + Intel Xeon E5-2698B v3 до 3.4 GHz + 32GB (4x8GB), 16 ядер/32 потоки, DDR3 1866 MHz ECC Reg quad channel, TPM 2.0, Secure Boot"
 }
 ```
 **Семпл #43:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата комплект"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kompyuternaya-sborka-asrock-g41m-vs3-i-xeon-e5430-IDWKdxF.html",
+  "title": "Компьютерная сборка Asrock g41m-vs3 и Xeon e5430"
 }
 ```
 **Семпл #44:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Мануал материнки Asus M2N-X plus"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/biostar-a58ml-ver-7-6-soket-fm2-i-drugie-pod-remont-zapchasti-IDUIquJ.html",
+  "title": "BIOSTAR A58ML ver 7.6 (Сокет FM2+) и другие под РЕМОНТ \\ ЗАПЧАСТИ"
 }
 ```
 **Семпл #45:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Gigabyte GA-78LMT-S2P (sAM3+, AMD FX, Phenom)"
+  "title": "Материнська плата MSI 970A-G46 (sAM3+, AMD970, PCI-E 2.0x16)"
 }
 ```
 **Семпл #46:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-msi-mag-tomahawk-b550-ID10DCYo.html",
-  "title": "Материнська плата MSI MAG tomahawk b550"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-asus-prime-b365m-a-IDYCUHx.html",
+  "title": "Материнська плата Asus Prime B365M-A"
 }
 ```
 **Семпл #47:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-asus-prime-b350m-e-IDZO63v.html",
-  "title": "Материнська плата ASUS PRIME B350M-E"
+  "reason": "no_hardware_target_matched",
+  "title": "Материнська плата m2a480vp-pb jetway"
 }
 ```
 **Семпл #48:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "материнська плата комплект NF61S Micro AM2 SE +ОЗУ + проц+ БП в бонус"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/personalniy-kompyuter-dlya-gor-ta-roboti-core-i9-9900k-512-gb-nvme-ssd-ID10tEPt.html",
+  "title": "Персональний Компютер для Ігор Та роботи Core i9 9900k  512 Гб NVME SSD"
 }
 ```
 **Семпл #49:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinka-asus-v-zbor-i3-ddr3-4-gb-ID10ZkKM.html",
-  "title": "Материнка Asus (в зборі) + i3 + DDR3 4 ГБ"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-am3-8gb-ddr3-ID110PD8.html",
+  "title": "Комплект AM3+ 8GB DDR3"
 }
 ```
 **Семпл #50:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-soyo-x99-d4-tpm-2-0-e5-2643-v3-16gb-intel-xeon-lga-2011-3-x99-ddr4-zeon-kseon-ID10S2vz.html",
-  "title": "Комплект SOYO X99 D4 TPM 2.0 / E5 2643 v3 / 16GB intel xeon lga 2011-3 x99 ddr4 зеон ксеон"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-i7-6700-4-0ghz-kuler-materinka-asus-bistriy-moschniy-komplekt-s1151-IDZQ3nF.html",
+  "title": "Intel i7-6700 4.0ghz +кулер+ материнка ASUS  Бистрий мощний комплект s1151"
 }
 ```
 **Семпл #51:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-m5a78l-m-le-16gb-kuler-IDTH7BB.html",
-  "title": "Материньська плата m5a78l m le + 16gb + кулер"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/intel-i5-6600-3-9ghz-ohlad-materinka-s1151-komplektdlya-sistemnogo-bloka-IDZOsOh.html",
+  "title": "intel i5-6600 3.9Ghz+охлад+Материнка s1151 Комплектдля системного блока"
 }
 ```
 **Семпл #52:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнка і комплектуючі"
+  "title": "Материнская плата Gigabyte Ga-H11OM-S2H+проц"
 }
 ```
 **Семпл #53:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/i7-8700k-asus-rog-strix-z370-e-gaming-be-quiet-ID10ETmR.html",
-  "title": "i7-8700K + ASUS ROG Strix Z370-E Gaming + be quiet!"
+  "reason": "no_hardware_target_matched",
+  "title": "Комплект контроллеров Danfoss (EKC 302B + EKC 202D1 + модуль EKA 178A)"
 }
 ```
 **Семпл #54:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата для компьютера Jetway M2GTA-4VP (Socket AM2)"
-}
-```
-**Семпл #55:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "комплект майнинг ферма для начинающих"
-}
-```
-**Семпл #56:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-asus-prime-h270m-plus-ID110Ej4.html",
-  "title": "Материнська плата  ASUS PRIME h270m- plus"
-}
-```
-**Семпл #57:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "PCI Riser HP Compaq плата розширення"
-}
-```
-**Семпл #58:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата Asrock Rack Z690D4U"
-}
-```
-**Семпл #59:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Нова NZXT N9 Z890 LGA 1851 ATX Gaming Motherboard White pcie 5.0"
-}
-```
-**Семпл #60:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Asrock b650pg lightning на ремонт/запчастини"
-}
-```
-**Семпл #61:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата Asrock extreme 4 1150 +ЦП и куллер"
-}
-```
-**Семпл #62:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата"
-}
-```
-**Семпл #63:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнські плати ASRock, ASUS,GIGABITE,MSI. (Ретро)"
-}
-```
-**Семпл #64:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-intel-i3-9100f-msi-h310m-pro-vd-plus-ID10Yo85.html",
-  "title": "Комплект Intel i3-9100F + MSI H310M PRO-VD PLUS"
-}
-```
-**Семпл #65:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам материнську плату ASUS P5G-MX"
-}
-```
-**Семпл #66:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата Acer Q5WT6 LA-8531P"
-}
-```
-**Семпл #67:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата GIGABYTE GA-M61PME-S2 разом з процесором"
-}
-```
-**Семпл #68:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продаю БУ комплект материнскую плату 1155 + процесор intel Core 9 2600 + кулер и оперативная память 16 гб"
-}
-```
-**Семпл #69:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська Плата Б/У Є ВИБІР s1156 1155,AM3, AM3+, Am2, FM1, FM2 s775"
-}
-```
-**Семпл #70:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-platu-asus-tuf-z790-pro-wifi-intel-14700k-ID10YBxl.html",
-  "title": "Продам плату Asus TUF Z790-PRO WIFI + Intel 14700K"
-}
-```
-**Семпл #71:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -2088,216 +2013,357 @@
   "title": "Игровой комплект MSI A520M A PRO Ryzen 5 3500X амд amd райзен 5 am4"
 }
 ```
+**Семпл #55:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-socket-am4-a320m-asrock-a320m-hdv-rev-4-02-ddr4-m-2-nvme-ID110XMl.html",
+  "title": "Материнська плата Socket AM4 A320M / ASRock A320M-HDV / REV. 4.02 / DDR4 / M.2 NVMe"
+}
+```
+**Семпл #56:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-asus-prime-a320m-k-sam4-amd-a320-IDYNAc7.html",
+  "title": "Материнська плата Asus Prime A320M-K (sAM4, AMD A320 )"
+}
+```
+**Семпл #57:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-gigabyte-ga-h270-hd3-s1151-g6-7-intel-h270-4ddr4-ID10ssEk.html",
+  "title": "Материнська плата Gigabyte GA-H270-HD3 s1151 g6-7 Intel H270 4*DDR4"
+}
+```
+**Семпл #58:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Материнські плати, процесори, ретро"
+}
+```
+**Семпл #59:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-msi-b350-ryzen-5-1600-3-2ghz-sam4-IDYKrg3.html",
+  "title": "Материнская плата MSI B350 + Ryzen 5 1600 3.2GHz, sAM4"
+}
+```
+**Семпл #60:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-asus-prime-b350-plus-sam4-ID10AQBJ.html",
+  "title": "Материнская плата ASUS PRIME B350 -PLUS , sAM4"
+}
+```
+**Семпл #61:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-msi-h110m-pro-d-s1151-intel-h110-IDZ8nwW.html",
+  "title": "Материнська плата MSI H110M PRO-D (s1151, Intel H110)"
+}
+```
+**Семпл #62:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-asus-z170-pro-gaming-s-protsessorom-intel-core-i5-6600k-ID10PwxP.html",
+  "title": "Материнская плата asus z170 pro gaming с процессором intel core i5 6600k"
+}
+```
+**Семпл #63:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/xeon-e5-2650v3-materinskaya-plata-ID11109l.html",
+  "title": "Xeon e5 2650v3 + материнская плата"
+}
+```
+**Семпл #64:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-materinskuyu-platu-supermicro-a2sdi-4c-hln4f-intel-atom-c3558-64gb-ecc-ram-ID10EnAj.html",
+  "title": "Продам материнскую плату Supermicro A2SDI-4C-HLN4F Intel Atom C3558 + 64gb ecc ram"
+}
+```
+**Семпл #65:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/rozstrochka-3-msyats-vd-mono-ryzen-7-7700-gigabyte-b850-eagle-wifi6e-be-quiet-pure-rock-3lx-topoviy-groviy-komplekt-am5-ID10WKqz.html",
+  "title": "РОЗСТРОЧКА 3 МІСЯЦІ ВІД МОНО! Ryzen 7 7700, Gigabyte B850 Eagle WiFi6E, Be Quiet! Pure Rock 3LX топовий ігровий комплект АМ5"
+}
+```
+**Семпл #66:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-intel-core-i5-9400f-asus-prime-h310m-k-r2-0-ID10XJGC.html",
+  "title": "Комплект Intel Core i5-9400F + ASUS PRIME H310M-K R2.0"
+}
+```
+**Семпл #67:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-materinskaya-plata-protsessor-xeon-e3-1230-v6-4-8-yadra-i7-7700-16-gb-ddr-4-ID10TMlj.html",
+  "title": "Комплект материнская плата + процессор xeon e3 1230 v6 4/8 ядра (i7 7700) + 16 gb ddr 4"
+}
+```
+**Семпл #68:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Нова NZXT N9 Z890 LGA 1851 ATX Gaming Motherboard White pcie 5.0"
+}
+```
+**Семпл #69:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-socket-1151-b250a-btc-ne-rabochaya-ID10PnWT.html",
+  "title": "Материнская плата Socket 1151 B250A-BTC не рабочая!"
+}
+```
+**Семпл #70:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/klka-shtuk-s1200-materinka-gigabyte-h410m-s2h-v2-dlya-10-pokolnnya-IDZDOnt.html",
+  "title": "Є кілька штук. s1200 материнка Gigabyte H410M S2H V2 для 10 покоління"
+}
+```
+**Семпл #71:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Biostar P31B-A7 + Celeron 3.06 + DDR2"
+}
+```
 **Семпл #72:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-rog-strix-b760-f-gaming-wi-fis1700-intel-b760-na-garantii-ID10NY07.html",
-  "title": "Asus ROG STRIX B760-F Gaming Wi-Fi(s1700, Intel B760) на гарантии"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-gigabyte-ga-z68p-ds3-i3-3240-8gb-ddr3-IDPsJQk.html",
+  "title": "Материнская плата Gigabyte GA-Z68P-DS3 i3-3240 + 8GB DDR3"
 }
 ```
 **Семпл #73:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнка Z600 с адаптером под ATX БП"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-h55itx-a-e-wifi-i3-560-IDPsJGH.html",
+  "title": "Материнская плата H55ITX-A-E WIFI i3-560"
 }
 ```
 **Семпл #74:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-tuf-gaming-x670e-plus-wifi-IDYG43k.html",
-  "title": "Asus TUF Gaming X670E-Plus WiFi"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-gigabyte-ga-h61m-d2h-usb3-rev1-0-lga1155-ID110DP1.html",
+  "title": "Материнская плата Gigabyte GA-H61M-D2H-USB3 rev1.0 LGA1155"
 }
 ```
 **Семпл #75:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнская плата Foxconn G31MXP"
+  "title": "Материнська плата AN515-57 N20C1  3050ti i5- 11400H\n\nПроцес"
 }
 ```
 **Семпл #76:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнская плата GIGABYTE GA-990XA-UD3 (AM3+)"
+  "title": "Корпус до персонального компютера"
 }
 ```
 **Семпл #77:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-qiyida-x99-k9s-xeon-e5-2699-v3-18-36-lga2011-3-ID10YQfY.html",
-  "title": "Комплект QIYIDA X99 K9S + Xeon E5-2699 v3 18/36 LGA2011-3"
+  "reason": "no_hardware_target_matched",
+  "title": "Материнская плата gigabyte GA-MA69VM-S2"
 }
 ```
 **Семпл #78:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "АКЦІЯ! Материнська плата Asus Prime N100I-D D4, Intel N100 Quad-Core 2.0GHz 1×Ddr4 Sodimm, VGA/HDMI/DP mITX"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-prime-b250-plus-ID10hpXL.html",
+  "title": "asus prime B250-PLUS"
 }
 ```
 **Семпл #79:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата Asus P5GC"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-msi-x79a-gd45-intel-core-i7-4930k-3-4ghz-kuler-socket-2011-garantiya-1-god-ID10c0yt.html",
+  "title": "Материнская плата MSI X79A-GD45 + Intel Core i7-4930K 3,4GHz + кулер (Socket 2011) Гарантия 1 год"
 }
 ```
 **Семпл #80:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Процесор та материнська плата"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-gigabyte-b450m-s2h-am4-ID10ZVOH.html",
+  "title": "Материнская плата Gigabyte B450M S2H AM4"
 }
 ```
 **Семпл #81:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата ,Процессор ,Оперативная память"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-komplekt-asus-tuf-b450m-pro-gaming-amd-ryzen-5-5600-ID10Z98t.html",
+  "title": "Ігровий комплект Asus Tuf B450M-PRO Gaming + AMD Ryzen 5 5600"
 }
 ```
 **Семпл #82:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнська плата сокет AM3+"
+  "title": "Материнська плата MSI MS-6507"
 }
 ```
 **Семпл #83:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Компютерне залізо одним лотом. (Xeon X3440, Athlon 64 x2, FSP, DDR4. DDR3. DDR2). Торг"
+  "title": "Материнська плата DELL MT3804"
 }
 ```
 **Семпл #84:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Мат. плата ASUS P5PL2"
+  "title": "Продаю материнську плату відразу з чіпом"
 }
 ```
 **Семпл #85:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-komplekt-ryzen-7-2700-biostar-b350-kuler-ID10s0TY.html",
-  "title": "Ігровий комплект Ryzen 7 2700 Biostar B350 кулер"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-gigabyte-ga-g31m-es2-s775-IDTBWLz.html",
+  "title": "Материнская плата Gigabyte GA-G31M-ES2/ s775"
 }
 ```
 **Семпл #86:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/asus-rog-strix-b760-f-gaming-wi-fis1700-intel-b760-na-garantii-ID10NY07.html",
-  "title": "Asus ROG STRIX B760-F Gaming Wi-Fi(s1700, Intel B760) на гарантии"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-h81m-p33-soc-1150-usb3-dvi-intel-core-i3-4150-IDXfPlV.html",
+  "title": "MSI H81M-P33 (soc 1150, USB3, DVI)+Intel Core i3-4150"
 }
 ```
 **Семпл #87:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/msi-mpg-b650i-edge-wifi-povniy-komplekt-z-rdnoyu-korobkoyu-ID10SrvR.html",
-  "title": "MSI MPG B650I EDGE WIFI | повний комплект з рідною коробкою"
+  "reason": "no_hardware_target_matched",
+  "title": "Материнская плата"
 }
 ```
 **Семпл #88:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-biostar-tb360-lga1151-intel-g4900-ID10MqY7.html",
-  "title": "Материнська плата Biostar TB360 LGA1151 + Intel G4900"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-materinska-plata-msi-h310-pro-vdh-plus-i3-9100f-4-2ggts-kuler-deepcool-gammaxx-300-vse-spravne-ID110YQH.html",
+  "title": "Комплект материнська плата MSI H310 PRO VDH PLUS + i3 9100F 4.2Ггц + кулер DeepCool GAMMAXX 300, все справне"
 }
 ```
 **Семпл #89:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Psp материнські плати не робочі"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-komplekt-msi-a520m-a-pro-ryzen-5-3500x-amd-amd-rayzen-5-am4-IDXhfMs.html",
+  "title": "Игровой комплект MSI A520M A PRO Ryzen 5 3500X амд amd райзен 5 am4"
 }
 ```
 **Семпл #90:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "материнська плата GA-H67MA-USB3-B3 сокет 1155, ОЗУ макс 32гб; сата-6шт"
+  "title": "Материнская плата Asus F80CR"
 }
 ```
 **Семпл #91:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Комплект Intel 6 ядер / 24 Gb озу материнка + проц +кулер + озу Evga x"
+  "title": "Майн плата Філіпс 42PFL4208T/12 під ремонт"
 }
 ```
 **Семпл #92:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата ASUS P5G41T-M LX2/GB/LPT"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinska-plata-gigabyte-b850-aorus-elite-wi-fi7-ice-ID10YIvb.html",
+  "title": "Материнська плата GIGABYTE B850 AORUS ELITE WI-FI7 ICE"
 }
 ```
 **Семпл #93:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата для часов Samsung gear sport, под ремонт"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-gigabyte-ga-a88xm-d3h-amd-a8-7600-ID10R7dP.html",
+  "title": "Комплект Gigabyte GA-A88XM-D3H + AMD A8-7600"
 }
 ```
 **Семпл #94:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/igrovoy-komplekt-rayzen-msi-a520m-ryzen-5-3600-amd-amd-ryzen-am4-ID108kGa.html",
-  "title": "Игровой комплект райзен MSI A520M Ryzen 5 3600 амд amd ryzen am4"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/materinskaya-plata-asus-h110m-k-intel-pentium-g4400-ID10WbKR.html",
+  "title": "Материнская плата Asus h110m-k + intel pentium g4400"
 }
 ```
 **Семпл #95:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-intel-i3-9100f-msi-h310m-pro-vd-plus-ID10Yo85.html",
-  "title": "Комплект Intel i3-9100F + MSI H310M PRO-VD PLUS"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-komplektom-asrock-b760-pro-rs-intel-i7-14700k-ID10xnSV.html",
+  "title": "Продам комплектом asrock b760 pro rs і Intel i7 14700k"
 }
 ```
 **Семпл #96:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "EPoX EP-7KXA Slot A + AMD Athlon 650MHz - комплект для коллекции"
+  "title": "Материнская плата ASUS P5Q, процессор и оперативная память"
 }
 ```
 **Семпл #97:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнська плата Foxconn N15235 Socket AM2 + AMD Athlon 64 X2 + 2 ГБ RAM"
+  "title": "Asus p7p55d deluxe s1156+подарунок)"
 }
 ```
 **Семпл #98:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнська плата NFORCE4M-A V3.0"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekt-asrock-n68c-gs-prots-amd-fx-6300-6-yader-pamyat-4gb-kuler-ID10gN6X.html",
+  "title": "Комплект AsRock N68C-GS + проц amd fx 6300 (6 ядер) + память 4гб + Кулер"
 }
 ```
 **Семпл #99:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Материнская плата комплект Asus P4B533-X"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-platu-micro-itx-onda-b650plus-itx-am5-ddr5-IDZEs1t.html",
+  "title": "Продам плату Micro ITX ONDA B650PLUS-ITX AM5 DDR5."
 }
 ```
 **Семпл #100:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Материнские платы 1155 сокет. 1151 сокет. Топовые и бюджетные."
+  "title": "Комплект старих комплектуючих ПК: Foxconn Socket 775, відеокарти, кулери, DVD-приводи"
 }
 ```
 
@@ -2306,281 +2372,19 @@
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/bloki-zhivlennya-fsp-hp-fujitsu-200-850w-IDVRYdh.html",
-  "title": "Блоки живлення FSP HP FUJITSU 200-850W"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/polumodulnyy-blok-pitaniya-be-quiet-dark-power-pro-550w-gold-garantiya-1-god-ID10VM7s.html",
+  "title": "Полумодульный блок питания Be quiet Dark Power PRO 550w GOLD Гарантия 1 год"
 }
 ```
 **Семпл #2:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/bloki-zhivlennya-dlya-grovih-pk-be-quiet-thermaltake-300-850w-6-8pin-gpu-IDVRY8d.html",
-  "title": "Блоки живлення для ігрових ПК Be quiet Thermaltake 300-850W 6/8pin GPU"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-vinga-vps-1350-1350vt-ID110Kdf.html",
+  "title": "Блок живлення Vinga VPS-1350 1350Вт"
 }
 ```
 **Семпл #3:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення SeaSonic Focus Plus 1000 Gold (SSR-1000FX)"
-}
-```
-**Семпл #4:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення LED jinbo 150вт"
-}
-```
-**Семпл #5:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продається 2 блока живлення і 2 кулера"
-}
-```
-**Семпл #6:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/top-blok-zhivlennya-850w-seasonic-prime-px-850-platinum-trade-in-ID10LNMs.html",
-  "title": "ТОП блок живлення 850W Seasonic PRIME PX-850 PLATINUM. Trade-in"
-}
-```
-**Семпл #7:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Chieftec Proton BDF-500S Блок живлення"
-}
-```
-**Семпл #8:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/atx-blok-zhivlennya-550w-qube-bronze-trade-in-ID10zmzV.html",
-  "title": "ATX блок живлення 550W QUBE (bronze). Trade-IN"
-}
-```
-**Семпл #9:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/svzhiy-blok-zhivlennya-700w-qube-bronze-4-4-cpu-4x6-2-gpu-trade-in-IDZDvwx.html",
-  "title": "свіжий блок живлення 700W QUBE Bronze (4+4 CPU. 4x6+2 GPU). Trade-IN"
-}
-```
-**Семпл #10:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-300w-dlya-pk-ID102CkF.html",
-  "title": "Блок живлення 300W для ПК"
-}
-```
-**Семпл #11:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания High Power 370w"
-}
-```
-**Семпл #12:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "NEW Блоки живлення BITMAIN APW12 (APW121417b) для S19/ T19/ L7/ K7"
-}
-```
-**Семпл #13:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Нові Блоки живлення BITMAIN APW12 14-17v (B) для S19 (xp), K7, L7, KS3"
-}
-```
-**Семпл #14:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-zalman-zm1200-arx-1200w-acrux-series-ID10p6Cd.html",
-  "title": "Блок питания Zalman ZM1200-ARX 1200w Acrux Series"
-}
-```
-**Семпл #15:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания  Q-dion QD400"
-}
-```
-**Семпл #16:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Seasonic SSR-1300GB (Prime 1300 Gold)"
-}
-```
-**Семпл #17:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Seasonic SSR-850GD (PRIME 850 Gold)"
-}
-```
-**Семпл #18:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/svzhiy-yaksniy-blok-zhivlennya-750w-corsair-rm750-gold-trade-in-ID110FKu.html",
-  "title": "свіжий якісний блок живлення 750W Corsair RM750 GOLD. Trade-IN"
-}
-```
-**Семпл #19:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "БУ блоки питания в полностью рабочем состоянии ATX"
-}
-```
-**Семпл #20:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-na-pk-500w-ID10DZMh.html",
-  "title": "Блок Живлення на ПК, 500w"
-}
-```
-**Семпл #21:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-thermaltake-tr2-420w-IDYgHp6.html",
-  "title": "Блок живлення Thermaltake TR2-420w"
-}
-```
-**Семпл #22:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-thermaltake-smart-rgb-500w-ID110FvQ.html",
-  "title": "Блок живлення Thermaltake Smart RGB 500W"
-}
-```
-**Семпл #23:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам блок живлення"
-}
-```
-**Семпл #24:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/850w-750w-650w-550w-450w-yaksn-brendov-bloki-zhivlennya-protestovan-povnstyu-roboch-stan-garniy-ID10KwGv.html",
-  "title": "850W 750W 650W 550W 450W Якісні брендові блоки живлення Протестовані повністю робочі Стан гарний"
-}
-```
-**Семпл #25:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-chieftec-600w-IDVekcH.html",
-  "title": "Блок живлення Chieftec 600W"
-}
-```
-**Семпл #26:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания для стационарного компьютера Б/У"
-}
-```
-**Семпл #27:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания Cougar CMX 1200 Вт 80 PLUS Bronze"
-}
-```
-**Семпл #28:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-vinga-vps-750w-gold-IDZwysV.html",
-  "title": "Блок живлення Vinga VPS 750W Gold"
-}
-```
-**Семпл #29:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-fsp-2000w-fsp2000-a0agpbi-IDPVxsH.html",
-  "title": "Блок живлення FSP 2000W (FSP2000-A0AGPBI)"
-}
-```
-**Семпл #30:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания с радио завода"
-}
-```
-**Семпл #31:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Потужний Блок Живлення( пускозарядний пристрій для машин) AC 220v-DC 1"
-}
-```
-**Семпл #32:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-be-quiet-straight-power-12-1000w-bn338-80-plus-platinum-garantya-sche-9-rokv-ID10VhVs.html",
-  "title": "Блок живлення be quiet! Straight Power 12 1000W (BN338), 80 PLUS Platinum — гарантія ще 9 років"
-}
-```
-**Семпл #33:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-vinga-vps-1650-v2-mining-edition-ID110EH3.html",
-  "title": "Блок живлення Vinga VPS 1650 V2 Mining edition"
-}
-```
-**Семпл #34:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-polaris-1250w-ID10HuWO.html",
-  "title": "Блок живлення Polaris 1250W"
-}
-```
-**Семпл #35:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення комп\"ютерний, від акумуляторної бат. DC/DC 32-72V"
-}
-```
-**Семпл #36:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/thermaltake-gt-snow-850w-gold-modulniy-blok-zhivlennya-ID10j294.html",
-  "title": "Thermaltake GT SNOW 850W Gold | Модульний блок живлення"
-}
-```
-**Семпл #37:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "NEW Блоки живлення BITMAIN APW12 (APW121215F) для S19/ T19/ L7/ K7"
-}
-```
-**Семпл #38:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -2588,176 +2392,86 @@
   "title": "Блок живлення для Пк 650w 750w 850w як нові ,гарантія, сервіс !"
 }
 ```
-**Семпл #39:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення для монітора ADS-40NP-19-1, 19030E - 19V 1.58A 30W 5.5x2.5mm"
-}
-```
-**Семпл #40:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення HPC-500-H12S"
-}
-```
-**Семпл #41:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Corsair CS650M"
-}
-```
-**Семпл #42:**
+**Семпл #4:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/cooler-master-v850-sfx-gold-850w-mpy-8501-sfhagv-ID10NaC1.html",
-  "title": "Cooler Master V850 SFX Gold 850W (MPY-8501-SFHAGV)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-500w-vinga-vps-500apfc-4-4-cpu-6-2-gpu-trade-in-ID10nH3u.html",
+  "title": "блок живлення 500W VINGA VPS-500APFC (4+4 CPU \\ 6+2 GPU). Trade-IN"
 }
 ```
-**Семпл #43:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Адаптер(блок питания) HP 24V, 500mA, 12W, 6.5mm x 3.0 ..."
-}
-```
-**Семпл #44:**
+**Семпл #5:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-dlya-pk-650w-750w-850w-gurt-rozdrb-garantya-IDX24Vz.html",
-  "title": "Блок живлення для Пк 650w 750w 850w гурт роздріб гарантія!"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/be-quiet-system-power-10-650w-80-bronze-ID1111I5.html",
+  "title": "be quiet! System Power 10 650w 80+ Bronze"
 }
 ```
-**Семпл #45:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Новий блок живлення"
-}
-```
-**Семпл #46:**
+**Семпл #6:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-aerocool-vx-700w-IDZQeIa.html",
-  "title": "Блок живлення Aerocool VX-700W"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-atng-ata-800fb-b-800w-ID1111DS.html",
+  "title": "Блок живлення ATNG ATA-800FB-B 800W"
 }
 ```
-**Семпл #47:**
+**Семпл #7:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Серверний блок живлення Emerson 1975W (IBM / Lenovo)"
+  "title": "Кабелі живлення для блоку живлення PCI-E, SATA"
 }
 ```
-**Семпл #48:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оригінальні кабелі до компютерних блоків живлення Asus"
-}
-```
-**Семпл #49:**
+**Семпл #8:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/seasonic-prime-ultra-850w-titanium-ssr-850tr-titanoviy-top-modulniy-rtx-gtx-gt-mx-rx-gaming-oc-ID10PaHT.html",
-  "title": "Seasonic PRIME Ultra 850W Titanium (SSR-850TR) титановий  топ Модульний rtx gtx gt mx rx gaming oc"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-griffon-400-w-IDY4yKD.html",
+  "title": "Блок живлення Griffon 400 w"
 }
 ```
-**Семпл #50:**
+**Семпл #9:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-seasonic-focus-gx-650-650w-ssr-650fx-3743-IDZOMso.html",
-  "title": "Блок живлення Seasonic Focus GX-650 650W (SSR-650FX) - 3743"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-850w-thermaltake-rgb-IDXCFoc.html",
+  "title": "Блок живлення 850W Thermaltake RGB"
 }
 ```
-**Семпл #51:**
+**Семпл #10:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-hpc-350-102-350w-ID10DXAj.html",
-  "title": "Блок питания HPC 350-102 (350W)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-na-750w-vd-cooler-master-gold-ID11118Q.html",
+  "title": "Блок живлення на 750W від Cooler Master (Gold)"
 }
 ```
-**Семпл #52:**
+**Семпл #11:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/bloki-zhivlennya-600w-chieftec-gps-600ab-ta-aerocool-vx-plus-ID110DT2.html",
-  "title": "Блоки живлення 600W Chieftec GPS-600AB та AeroCool VX PLUS"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/corsair-rm1000-shift-blok-zhivlennya-ID10PvH7.html",
+  "title": "Corsair RM1000 SHIFT блок живлення"
 }
 ```
-**Семпл #53:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блоки живлення для компютера"
-}
-```
-**Семпл #54:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення ATX GAMEMAX GM-500"
-}
-```
-**Семпл #55:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Без гарантій віддам"
-}
-```
-**Семпл #56:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания"
-}
-```
-**Семпл #57:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення chieftec iarena 450 gpa 450s8"
-}
-```
-**Семпл #58:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення до компьютера CHIFTEC GPS 600A8 Новий!"
-}
-```
-**Семпл #59:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Full Energy BGM-125Pro"
-}
-```
-**Семпл #60:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "NEW Блоки живлення BITMAIN APW17 (APW171215c) для S21/ T21/ L9/ L11"
-}
-```
-**Семпл #61:**
+**Семпл #12:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-seasonic-prime-titanium-650w-ssr-650td-3734-IDYkaM6.html",
-  "title": "Блок живлення Seasonic Prime Titanium 650W (SSR-650TD) - 3734"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitanie-gamemax-modelgm-700b-700w-ID11114I.html",
+  "title": "Блок питание GameMax MODEL:GM- 700B, 700w"
 }
 ```
-**Семпл #62:**
+**Семпл #13:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/modulniy-blok-zhivlennya-650w-chieftec-a80-ctg-650c-trade-in-ID10nFRY.html",
+  "title": "модульний блок живлення 650W Chieftec A80 CTG-650C. Trade-IN"
+}
+```
+**Семпл #14:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -2765,64 +2479,410 @@
   "title": "Блок живлення MSI MPG PCIE5 1000 Вт 80+ Gold"
 }
 ```
-**Семпл #63:**
+**Семпл #15:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Блок живлення на 12 вольт KENWOOD"
+  "title": "Перехідник  процесору CPU/відеокарти GPU (4-8, 6-8, 4-6 pin)/MOLEX"
 }
 ```
-**Семпл #64:**
+**Семпл #16:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-seasonic-focus-gx-750-750w-ssr-750fx-3366-IDYDB3P.html",
+  "title": "Блок живлення Seasonic Focus GX-750 750W (SSR-750FX) - 3366"
+}
+```
+**Семпл #17:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-650w-chieftec-ctb-650s-2x6-2pin-gpu-IDYbjoT.html",
+  "title": "Блок живлення 650W Chieftec CTB-650S 2x6+2pin GPU"
+}
+```
+**Семпл #18:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-380w-acbel-pc9045-za1g-IDYbiMi.html",
+  "title": "Блок живлення 380W AcBel PC9045-ZA1G"
+}
+```
+**Семпл #19:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-700w-bequiet-system-power-bqt-s6-sys-ua-700w-80-IDZM23Y.html",
+  "title": "Блок живлення 700W beQuiet! System Power BQT S6-SYS-UA-700W 80+"
+}
+```
+**Семпл #20:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Зарядка для телефона зарядка для стареньких тл"
+  "title": "Блок живлення для компютера"
 }
 ```
-**Семпл #65:**
+**Семпл #21:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Chieftec 2009 рік"
+  "title": "Блок живлення Paptoxx RAP-PRO-450"
 }
 ```
-**Семпл #66:**
+**Семпл #22:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Компьютерный блок питания CHIEFTEC GPS-1250C 80+GOLD"
+  "title": "Блок питания YP20106P"
 }
 ```
-**Семпл #67:**
+**Семпл #23:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-chieftec-gpa-500s8-500w-IDY3gVf.html",
+  "title": "Блок живлення Chieftec GPA-500S8 500W"
+}
+```
+**Семпл #24:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Продам блок питания Fortron FSP-250-60-GTA (б/у)"
+  "title": "Кулера разные на U , диаметр , обороты"
 }
 ```
-**Семпл #68:**
+**Семпл #25:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Модульные провода белого цвета комплектом для блока питания."
+}
+```
+**Семпл #26:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-chieftec-a-135-1000w-atx-80-plus-bronze-IDZQA5r.html",
+  "title": "Блок живлення Chieftec A-135 1000W ATX 80 PLUS Bronze"
+}
+```
+**Семпл #27:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/bloki-zhivlennya-dlya-grovih-pk-be-quiet-thermaltake-300-850w-6-8pin-gpu-IDVRY8d.html",
+  "title": "Блоки живлення для ігрових ПК Be quiet Thermaltake 300-850W 6/8pin GPU"
+}
+```
+**Семпл #28:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/corsair-tx850-850w-IDYTNK9.html",
+  "title": "Corsair TX850 850W"
+}
+```
+**Семпл #29:**
 ```json
 {
   "reason": "no_hardware_target_matched",
   "title": "Corsair RM850x 80 Plus Gold 2020 рік Блок живлення ігровий модульний gtx rtx gt rx mx gaming oc"
 }
 ```
-**Семпл #69:**
+**Семпл #30:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Зарядка Блок живлення HP 45W 90W 4530 4.5x3.0 Blue pin Blue tip ОРИГІНАЛ"
+  "title": "Блок живлення APW9"
 }
 ```
-**Семпл #70:**
+**Семпл #31:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/phanteks-amp-750w-80-plus-gold-seasonic-platforma-blok-zhivlennya-modulniy-groviy-bzh-bp-rtx-rx-gtx-gt-gaming-oc-ID10UoVz.html",
-  "title": "Phanteks AMP 750W 80 Plus Gold (Seasonic платформа) Блок живлення модульний ігровий бж БП rtx rx gtx gt gaming oc"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-chieftec-gpa-500s-500w-ID10PwsP.html",
+  "title": "Блок живлення Chieftec GPA-500S 500W"
 }
 ```
-**Семпл #71:**
+**Семпл #32:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Блок живлення для компютера"
+}
+```
+**Семпл #33:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-chieftec-a80-ctg-650c-modulnyy-650-vatt-ID10srUx.html",
+  "title": "Блок питания Chieftec  A80 CTG-650C  (Модульный)  650 Ватт"
+}
+```
+**Семпл #34:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/bp-axes-400-vatt-ID10Eo0u.html",
+  "title": "БП Axes 400 ватт"
+}
+```
+**Семпл #35:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-chieftec-850w-80-bronze-povnstyu-spravniy-ID110Zte.html",
+  "title": "Блок живлення Chieftec 850W 80+ Bronze – повністю справний"
+}
+```
+**Семпл #36:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-chieftec-400w-IDZLgmh.html",
+  "title": "Блок питания Chieftec 400w"
+}
+```
+**Семпл #37:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-seasonic-atx-750w-black-v-dealnomu-stan-z-garantyu-ID10YS18.html",
+  "title": "Блок живлення SEASONIC ATX 750W Black в ідеальному стані з гарантією"
+}
+```
+**Семпл #38:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-blok-pitaniya-aerocool-vx-400-plus-ID10EnJX.html",
+  "title": "Продам блок питания  Aerocool VX-400 PLUS"
+}
+```
+**Семпл #39:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Переходник с MOLEX на SATA POWER"
+}
+```
+**Семпл #40:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Блок питание оригенальный HP"
+}
+```
+**Семпл #41:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-chieftec-850w-ID10je7Q.html",
+  "title": "Блок питания chieftec 850w"
+}
+```
+**Семпл #42:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-chieftec-powerup-750w-ID10ZRL3.html",
+  "title": "Блок питания Chieftec PowerUP 750w"
+}
+```
+**Семпл #43:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Блок живлення Thermalright Ag-750"
+}
+```
+**Семпл #44:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kenweiipc-kw-1600wpf-90-plus-gold-1600w-btc-mining-ai-ii-IDZjWrN.html",
+  "title": "Kenweiipc KW-1600WPF - 90 PLUS GOLD | 1600W, BTC, MINING, AI, ИИ"
+}
+```
+**Семпл #45:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-dlya-kompyutera-400-vat-IDW5pGZ.html",
+  "title": "Блок живлення для компютера 400 Ват"
+}
+```
+**Семпл #46:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Блок живлення Seasonic FOCUS PX-550"
+}
+```
+**Семпл #47:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-corsair-cs750m-750w-napvmodulniy-ID10KI7E.html",
+  "title": "Блок живлення Corsair CS750M 750W — напівмодульний"
+}
+```
+**Семпл #48:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-t-f-skywindintl-tf-2000w-IDXmcrF.html",
+  "title": "Блок живлення T.F.SKYWINDINTL TF-2000W"
+}
+```
+**Семпл #49:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-bloki-zhivlennya-400-500vt-IDVVT1J.html",
+  "title": "Продам Блоки живлення - 400-500Вт"
+}
+```
+**Семпл #50:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-frontier-atx-400-IDYt2QQ.html",
+  "title": "Блок питания Frontier atx-400"
+}
+```
+**Семпл #51:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-dell-6mvjh-250w-24-pin-IDVSQjl.html",
+  "title": "Блок живлення Dell 6MVJH / 250W / 24-Pin"
+}
+```
+**Семпл #52:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Компютерний блок живлення."
+}
+```
+**Семпл #53:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Нові Блоки живлення BITMAIN APW12 14-17v (B) для S19 (xp), K7, L7, KS3"
+}
+```
+**Семпл #54:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/850w-750w-650w-550w-450w-yaksn-brendov-bloki-zhivlennya-protestovan-povnstyu-roboch-stan-garniy-ID10KwGv.html",
+  "title": "850W 750W 650W 550W 450W Якісні брендові блоки живлення Протестовані повністю робочі Стан гарний"
+}
+```
+**Семпл #55:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-enermax-revolution-d-f-2-1050w-80-gold-ID10PRWt.html",
+  "title": "Блок живлення enermax revolution d.f. 2 1050w 80+ gold"
+}
+```
+**Семпл #56:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/12v-800w-serverniy-blok-zhivlennya-hp-80-platinum-hstns-pl41-pd41-g9-10-IDT13N0.html",
+  "title": "12V 800W серверний блок живлення HP 80+ Platinum HSTNS-PL41 PD41 G9-10"
+}
+```
+**Семпл #57:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-gamemax-gp-450w-IDVwvnv.html",
+  "title": "Блок живлення GameMax GP 450w"
+}
+```
+**Семпл #58:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Блок живлення GameMax GP 750B WH"
+}
+```
+**Семпл #59:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sistemniy-blok-phenom-x6-3-2-ghz-8gb-ram-1tb-120gb-rom-radeon-290-4gb-IDZOKLe.html",
+  "title": "Системний блок Phenom X6 3.2 GHz/8GB RAM/1Tb+120Gb ROM/Radeon 290 4GB"
+}
+```
+**Семпл #60:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продаю 2 бп, блока питания"
+}
+```
+**Семпл #61:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оригінальний кабель живлення Samsung \n- 3903-001130\n- 3 m\n- гарантія 3"
+}
+```
+**Семпл #62:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zalman-megamax-zm700-txii-700w-IDY4tDN.html",
+  "title": "Zalman MegaMax ZM700-TXII 700W"
+}
+```
+**Семпл #63:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Адаптер живлення AD 12/1A RH48-1201000dg LYNKSYS"
+}
+```
+**Семпл #64:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Блок питания ATX Gigabyte P850GM живлення"
+}
+```
+**Семпл #65:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Блок живлення    POWER LW1600PG ,"
+}
+```
+**Семпл #66:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-premalniy-groviy-topoviy-chieftec-navitas-1250w-sertifkat-gold-plomba-stan-novogo-potuzhniy-ID10suls.html",
+  "title": "Блок живлення преміальний,ігровий топовий Chieftec Navitas 1250W сертифікат Gold,пломба , стан нового, потужний"
+}
+```
+**Семпл #67:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-seasonic-vertex-gx-1200-1200w-gold-12122-gxafs-5475-IDYEgkT.html",
+  "title": "Блок живлення Seasonic Vertex GX-1200 1200W Gold (12122 GXAFS) - 5475"
+}
+```
+**Семпл #68:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -2830,214 +2890,245 @@
   "title": "Блок питания Be Quiet Dark Power Pro 1500w"
 }
 ```
+**Семпл #69:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-1stplayer-ps-500fk-500w-IDVG8u3.html",
+  "title": "Блок питания 1stplayer ps-500fk 500w"
+}
+```
+**Семпл #70:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-thermaltake-smart-700w-rgb-garantya-6-msyatsv-ID110XvP.html",
+  "title": "Блок живлення Thermaltake Smart 700W RGB Гарантія 6 Місяців"
+}
+```
+**Семпл #71:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Блок питания на 230 вольт"
+}
+```
 **Семпл #72:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Блок живлення D-Link Chassi 16slot Media conv 19\" (DMC-1000)"
+  "title": "Блок живлення - зарядний пристрій DELTA ESR-48/30d 1800W"
 }
 ```
 **Семпл #73:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення для компютера"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/bloki-pitaniya-chieftec-500vt-IDZNQAT.html",
+  "title": "Блоки  питания Chieftec 500вт."
 }
 ```
 **Семпл #74:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Блок живлення 9 В, 4 А"
+  "title": "Блок питания G.C.I. 230W Блок живлення 230 Вт"
 }
 ```
 **Семпл #75:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-cougar-600w-ID10UUjx.html",
-  "title": "Блок питания Cougar 600w"
+  "reason": "no_hardware_target_matched",
+  "title": "Продам блок питания монитора и трансформаторы."
 }
 ```
 **Семпл #76:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-seasonic-prime-ultra-gold-850w-ssr-850gd-2583-IDZET2U.html",
-  "title": "Блок живлення Seasonic Prime Ultra Gold 850W (SSR-850GD) - 2583"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-1600w-formata-atx-standartnyy-IDXoFpV.html",
+  "title": "Блок питания 1600w формата ATX (стандартный)"
 }
 ```
 **Семпл #77:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Seasonic Prime PX-650 80 Plus Platinum (SSR-650PD) модульний блок живлення Рідна пломба  гарний стан Ультимативний rtx gtx gt gaming oc rx"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-1250w-gold-otlichnyy-ID10lHQ9.html",
+  "title": "Блок питания 1250w Gold отличный"
 }
 ```
 **Семпл #78:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Frime Micro-ATX FPMO-400-8Z"
+  "title": "Блок питания Emerson 1975w майнинг"
 }
 ```
 **Семпл #79:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-thermaltake-850w-gold-otlichnyy-ID10mlXH.html",
-  "title": "Блок питания Thermaltake 850w gold. Отличный"
+  "reason": "no_hardware_target_matched",
+  "title": "NEW Блоки живлення BITMAIN APW12 (APW121215a) для S19/ T19/ L7/ K7"
 }
 ```
 **Семпл #80:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "SATA-кабель для модульного блока питания"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/seasonic-prime-platinum-1300w-ssr-1300pd-platinum-flagman-etalonn-testi-plomba-rtx-rx-gtx-gt-mx-gaming-oc-ID10Paim.html",
+  "title": "Seasonic PRIME Platinum 1300W (SSR-1300PD) Platinum Флагман  Еталонні тести  Пломба rtx rx gtx gt mx gaming oc"
 }
 ```
 **Семпл #81:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Блок  питания 48 вольт"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-seasonic-prime-tx-1000-1000w-titanium-ssr-1000tr-5468-ID10UXPk.html",
+  "title": "Блок живлення Seasonic Prime TX-1000 1000W Titanium (SSR-1000TR) - 5468"
 }
 ```
 **Семпл #82:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-thermaltake-berlin-750w-ID10YlER.html",
-  "title": "Блок живлення thermaltake Berlin 750w"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-gamemax-ge-700-700w-ID10MiIC.html",
+  "title": "Блок живлення GameMax GE-700 700W"
 }
 ```
 **Семпл #83:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Компьютерный блок питания."
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-chieftec-ctg-500-80p-IDXCykJ.html",
+  "title": "Блок живлення CHIEFTEC CTG-500-80P"
 }
 ```
 **Семпл #84:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Блок живлення та інші запчастини  series x"
+  "title": "Блок живлення IBM ASTEC AA23920L 2880W"
 }
 ```
 **Семпл #85:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Оригінальні кабелі до компютерних блоків живлення Asus"
+  "title": "Блок питания для пк"
 }
 ```
 **Семпл #86:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "NEW Блоки живлення BITMAIN APW11 для S19/ S21+/ XP Hydro"
+  "title": "Блоки живлення із моніторів. Ціна за все"
 }
 ```
 **Семпл #87:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Q-DION QD450 450Вт"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/super-flower-combat-sfx-750w-80-gold-atx-3-1-blok-zhivlennya-noviy-ID110VIA.html",
+  "title": "Super Flower Combat SFX 750w (80+ Gold,ATX 3.1) Блок живлення новий"
 }
 ```
 **Семпл #88:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-be-quiet-power-zone-2-850w-ID10OxIf.html",
-  "title": "Блок живлення Be quiet! Power zone 2 850w"
+  "reason": "no_hardware_target_matched",
+  "title": "Блок питания ASUS ADP-90SB bb оригинальный с сетевым кабелем."
 }
 ```
 **Семпл #89:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Блок питания 3В-24В (1-40А). Адаптер 5V 6V 9V 12V 18V 24V для роутера, LED стрічки. Опт/роздріб"
+  "title": "Блок питания Emerson 3500 w, роспайка 8pin+6pin+Pico"
 }
 ```
 **Семпл #90:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "ОПТ Блоки живлення Блок Питания 3В-24В (1-40А). Адаптери 5V 6V 9V 12V 18V 24V. Від 10 шт!"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-1150w-aerocool-imperator-templarius-ID110VpJ.html",
+  "title": "Блок живлення 1150w Aerocool Imperator Templarius"
 }
 ```
 **Семпл #91:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Адаптер питания 65W, 90W, 150W. для монитора  Apple Cinema display"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-blok-zhivlennya-chieftec-i-arena-400w-ID10gKWJ.html",
+  "title": "Продам блок живлення Chieftec i-arena 400w"
 }
 ```
 **Семпл #92:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания Corsair CX750M 80plus Bronze. Полумодельный блок. Полностью рабочий"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-vinga-vps-1350-be-quiet-system-power-700w-ID10QKiV.html",
+  "title": "Блок живлення Vinga VPS 1350, be quiet System Power 700W"
 }
 ```
 **Семпл #93:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Блок живлення Q-dion"
+  "title": "Кабеля  модульного БП  Chieftec A135. Be Quiet и нерабочие БП Chieftec"
 }
 ```
 **Семпл #94:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-pitaniya-cougar-600w-ID10UUjx.html",
-  "title": "Блок питания Cougar 600w"
+  "reason": "no_hardware_target_matched",
+  "title": "Seasonic Prime PX-650 80 Plus Platinum (SSR-650PD) модульний блок живлення Рідна пломба  гарний стан Ультимативний rtx gtx gt gaming oc rx"
 }
 ```
 **Семпл #95:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Б/в блок живлення від ПК Frontier ATX-400F (не працює)"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/bp-pccooler-hw600-np-600w-ID110V6p.html",
+  "title": "Бп PcCooler HW600-NP 600w"
 }
 ```
 **Семпл #96:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания Corsair AX1500 80 Plus Titanium"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-vinga-vps-1350w-80-bronze-IDXjXmI.html",
+  "title": "Блок живлення Vinga VPS 1350W 80+ Bronze"
 }
 ```
 **Семпл #97:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/bzh-80-gold-pd-remont-700w-850w-750w-thermaltake-gf-gt-toughpower-berlin-tr2-s-ID10Z0Pd.html",
-  "title": "БЖ 80+ Gold  під ремонт 700w 850w 750w Thermaltake GF GT toughpower berlin tr2 s"
+  "reason": "no_hardware_target_matched",
+  "title": "Msi mpg A850G PCIE5"
 }
 ```
 **Семпл #98:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Кабеля  модульного БП  Chieftec A135. Be Quiet и нерабочие БП Chieftec"
+  "title": "Блок живлення Gigabyte P650b"
 }
 ```
 **Семпл #99:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Блок питания серверный HP HSTNS-PR49 80PLUS PLATINUM 2650W"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/thermaltake-650w-ID110V0X.html",
+  "title": "Thermaltake 650w"
 }
 ```
 **Семпл #100:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Продаю блок питания"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/blok-zhivlennya-na-400-vt-IDUee0k.html",
+  "title": "Блок живлення на 400 вт"
 }
 ```
 
@@ -3046,87 +3137,11 @@
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-m-2-agi-512gb-ID10uvtc.html",
-  "title": "SSD диск M.2 Agi 512gb"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nakopitel-ssd-m-2-sata-1tb-razmery-22h42-100-zdorovya-ID10Qy7r.html",
+  "title": "Накопитель SSD M.2 SATA-1TB. Размеры 22х42. 100% здоровья."
 }
 ```
 **Семпл #2:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/seagate-exos-x20-st16000nm000d-3pc101-16tb-sata-3-5-hdd-ID10B9Q1.html",
-  "title": "Seagate Exos X20 / ST16000NM000D-3PC101 16TB SATA 3.5 HDD"
-}
-```
-**Семпл #3:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-m2-nvme-2280-samsung-256gb-nvme-2280-512gb-sk-hynix-nvme-western-digital-2230-dlya-pk-noutbuka-IDZPAa7.html",
-  "title": "ssd m2 nvme 2280 SAMSUNG 256GB нвме 2280 512gb SK hynix nvme Western Digital 2230 для пк ноутбука"
-}
-```
-**Семпл #4:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жесткие Диски для ПК/Ноутбука"
-}
-```
-**Семпл #5:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkie-diski-500gb-500gig-hdd-dlya-pk-3-5-2-5-ID10P8bN.html",
-  "title": "Жёсткие диски 500gb 500гиг. HDD для ПК 3.5, 2.5"
-}
-```
-**Семпл #6:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "мережеве обладнання різне Catalyst 3750  комутатори cisco розпродаж"
-}
-```
-**Семпл #7:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "SSD диск з програмами для діагностики авто"
-}
-```
-**Семпл #8:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-240gb-apacer-panther-as340-sata3-2-5-trade-in-IDZQgQm.html",
-  "title": "SSD диск 240GB Apacer PANTHER AS340 (SATA3 \\ 2.5\"). Trade-in"
-}
-```
-**Семпл #9:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/m-2-ssd-disk-500gb-kingston-nv2-nvme-pci-e-4-0-x4-trade-in-IDZQgLc.html",
-  "title": "M.2 SSD диск 500GB Kingston NV2 (NVMe\\PCI-e 4.0 x4). Trade-IN"
-}
-```
-**Семпл #10:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Старые, раритетные жесткие диски HDD"
-}
-```
-**Семпл #11:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/servern-zhorstk-diski-hgst-ultrastar-4tb-3-5-7200rpm-sas-12gb-s-hus726040al5210-ID10P5kY.html",
-  "title": "Серверні жорсткі диски HGST Ultrastar 4TB 3.5\" 7200rpm SAS 12Gb/s (HUS726040AL5210)."
-}
-```
-**Семпл #12:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -3134,93 +3149,299 @@
   "title": "Жорсткий диск Western Digital Black 500GB 7200rpm 32MB WD5000LPLX 2.5 SATA III"
 }
 ```
-**Семпл #13:**
+**Семпл #3:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-grucial-p3-plus-4tb-ID10ZgyS.html",
-  "title": "SSD Grucial P3 Plus 4TB"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-crucial-p3-plus-4tb-ID10YNJp.html",
+  "title": "SSD Crucial P3 Plus 4TB"
+}
+```
+**Семпл #4:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продам диски SSD и HDD"
+}
+```
+**Семпл #5:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-rgb-adata-xpg-spectrix-s20g-1tb-m-2-nvme-pcie-3-0-x4-3d-nand-ID10skZB.html",
+  "title": "SSD диск rgb adata XPG SPECTRIX S20G 1TB M.2 nvme PCIe 3.0 x4 3D NAND"
+}
+```
+**Семпл #6:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-hdd-toshiba-500gb-3-5-sata-iii-7200-rpm-2-sht-ID10Pn6E.html",
+  "title": "Жорсткий диск HDD Toshiba 500GB 3.5\" SATA III 7200 RPM. Є 2 шт."
+}
+```
+**Семпл #7:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-samsung-870-evo-series-500gb-2-5-sata-iii-v-nand-3bit-mlc-tlc-mz-77e500bw-mz-77e500b-eu-ID10Pn3F.html",
+  "title": "SSD диск Samsung 870 Evo-Series 500GB 2.5\" SATA III V-NAND 3bit MLC (TLC) (MZ-77E500BW/MZ-77E500B/EU)"
+}
+```
+**Семпл #8:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nakopitel-ssd-2-5-256gb-as350-panther-apacer-ID110S6Y.html",
+  "title": "Накопитель SSD 2.5\" 256GB AS350 PANTHER Apacer"
+}
+```
+**Семпл #9:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nakopitel-ssd-wd-green-240-gb-IDZQrT7.html",
+  "title": "Накопитель SSD WD Green 240 Gb"
+}
+```
+**Семпл #10:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/hdd-500gb-hgst-tayland-IDYSPTr.html",
+  "title": "HDD 500gb HGST Тайланд"
+}
+```
+**Семпл #11:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Жорсткий диск HDD 1T TOSHIBA"
+}
+```
+**Семпл #12:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-wd-purple-4tb-wd40purz-u-nayavnost-10-sht-ID10SFsT.html",
+  "title": "Жорсткий диск WD Purple 4TB WD40PURZ — у наявності 10 шт."
+}
+```
+**Семпл #13:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продам жорсткий диск"
 }
 ```
 **Семпл #14:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/toshiba-mq04abf100-1-tb-5400-rpm-sata-iii-ID110Gcr.html",
-  "title": "Toshiba mq04abf100 (1 tb,5400 rpm,sata III)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-nakopichuvach-samsung-evo-860-250gb-ID10mcNn.html",
+  "title": "SSD диск накопичувач Samsung EVO 860 250гб"
 }
 ```
 **Семпл #15:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/top-vibr-m-2-ssd-disk-1tb-samsung-970-evo-plus-pci-e-3-0-x4-nvme-trade-in-ID10pEqg.html",
-  "title": "ТОП вибір M.2 SSD диск 1TB Samsung 970 EVO PLUS (PCI-e 3.0 x4. NVMe). Trade-in"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/lacie-1tb-1000gb-yaksn-zovnshn-udarostyk-diski-mala-narobotka-mayzhe-nov-stan-garniy-ID10UrPo.html",
+  "title": "LaCie 1tb 1000GB Якісні зовнішні ударостійкі диски Мала нароботка майже нові Стан гарний"
 }
 ```
 **Семпл #16:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий диск.  .Ціна за два"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-960-pro-512-gb-b-u-ID10sk0m.html",
+  "title": "SSD Samsung 960 PRO 512 GB б/у"
 }
 ```
 **Семпл #17:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-2-5-hitachi-500gb-travelstar-5k750-hts547550a9e384-ID10E09Z.html",
-  "title": "Жорсткий диск 2.5\" Hitachi 500GB Travelstar 5K750 HTS547550A9E384"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/wd-blue-500gb-wd5000azlx-dealniy-stan-ID10sjYn.html",
+  "title": "WD Blue 500GB (WD5000AZLX) — Ідеальний стан"
 }
 ```
 **Семпл #18:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "HDD Western Digital WD5003ABYX"
+  "title": "Жорсткий диск Western Digital Blue 640GB 3.5\" SATA II (WD6400AAKS)"
 }
 ```
 **Семпл #19:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-toshiba-mk3252gsx-320gb-2-5-sata-ID110FRN.html",
-  "title": "Жорсткий диск Toshiba MK3252GSX 320GB 2.5\" SATA"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-nerobochiy-ssd-disk-m2-nvme-xraydisk-pro-1tb-ID110QR2.html",
+  "title": "Продам неробочий ssd диск m2 nvme xraydisk pro 1tb"
 }
 ```
 **Семпл #20:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-kingston-a400-480-gb-ID110FPC.html",
-  "title": "SSD Kingston A400 480 gb"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/vinchester-zhestkiy-disk-1tb-western-digital-wd-black-wd1003fzex-bystraya-seriya-rabochiy-IDYsFBI.html",
+  "title": "Винчестер жесткий диск 1Tb Western Digital WD Black WD1003FZEX быстрая серия рабочий"
 }
 ```
 **Семпл #21:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-2-5-120gb-kingston-sa400s37-120g-ID110FPZ.html",
-  "title": "SSD 2.5\" 120GB Kingston (SA400S37/120G)"
+  "reason": "no_hardware_target_matched",
+  "title": "Жорсткий диск для ПК 3,5\" HDD 1Тб SATA III"
 }
 ```
 **Семпл #22:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/seagate-expansion-desktop-8tb-IDUuDJp.html",
-  "title": "Seagate Expansion Desktop 8TB"
+  "reason": "no_hardware_target_matched",
+  "title": "Комплект раритет! Жёсткие диски HDD"
 }
 ```
 **Семпл #23:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/vinchester-3-5-wd-caviar-blue-wd3200aajs-320-gb-sata300-7200-IDNOFh5.html",
-  "title": "Винчестер 3.5 WD Caviar Blue wd3200aajs 320 gb sata300 7200"
+  "reason": "no_hardware_target_matched",
+  "title": "‼️кабель-перехідник USB на SATA або IDE для HDD або SSD"
 }
 ```
 **Семпл #24:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-m-2-agi-512gb-ID10uvtc.html",
+  "title": "SSD диск M.2 Agi 512gb"
+}
+```
+**Семпл #25:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Переходник USB 3.0 - SATA + адаптер питания для SSD и HDD 2.5 / 3.5"
+}
+```
+**Семпл #26:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-m-2-agi-512gb-ID10uvtc.html",
+  "title": "SSD диск M.2 Agi 512gb"
+}
+```
+**Семпл #27:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-3-5-hdd-3-4-6tb-IDR6xAr.html",
+  "title": "Жорсткий диск 3.5 HDD 3-4-6TB"
+}
+```
+**Семпл #28:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/qnap-ux-800u-rp-8-bay-sas-storage-expansion-52tb-68tb-22tb-enterprise-ID10QJoD.html",
+  "title": "QNAP UX-800U-RP 8-Bay SAS Storage Expansion 52TB (6×8TB + 2×2TB) Enterprise"
+}
+```
+**Семпл #29:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Винчестер (жёсткий диск) Seagate ST-4096."
+}
+```
+**Семпл #30:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/sandisk-optimus-gx-pro-8100-4tb-ID110Q4y.html",
+  "title": "SANDISK Optimus GX PRO 8100 4tb"
+}
+```
+**Семпл #31:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/samsung-9100-pro-2-tb-mz-vap2t0b-am-ID10ZILO.html",
+  "title": "Samsung 9100 PRO 2 TB MZ-VAP2T0B/AM"
+}
+```
+**Семпл #32:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/samsung-pm991a-512gb-nvme-pcie-m-2-2242-2280-ID110PBq.html",
+  "title": "Samsung PM991a 512Gb NVMe PCIe M.2 2242/2280"
+}
+```
+**Семпл #33:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-bestoss-gm888-m-2-ssd-7100-6000mb-s-1tb-pcie-4-0x4-m-2-2280-nvme-ID10DXqn.html",
+  "title": "SSD диск Bestoss GM888 M.2 SSD 7100/6000MB/s 1TB PCIe 4.0x4 M.2 2280 NVMe"
+}
+```
+**Семпл #34:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "SSD диск 1.92TB SSD Intel D3-S4610-series"
+}
+```
+**Семпл #35:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Bestoss S202 M.2 SATA NGFF.512/1t"
+}
+```
+**Семпл #36:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-hd-disk-500gb-ID10aRpG.html",
+  "title": "Жорсткий диск HD Disk 500GB"
+}
+```
+**Семпл #37:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-1tb-m2-nvme-pci-e-4-0-2280-samsung-ssd-disk-ID110PoB.html",
+  "title": "SSD 1TB M2 NVMe PCI-E 4.0 2280 Samsung ссд диск"
+}
+```
+**Семпл #38:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Раритетный жесткий диск Seagate ST343113A 4ГБ"
+}
+```
+**Семпл #39:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-hdd-8tb-sata-3-5-hgst-ultrastar-he8-dell-7200rpm-enterprise-100-health-garantiya-ID10mSuL.html",
+  "title": "Жесткий диск HDD 8TB SATA 3.5\" HGST Ultrastar He8 (Dell) 7200RPM Enterprise | 100% Health Гарантия!!!"
+}
+```
+**Семпл #40:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kingston-kc3000-4tb-m-2-2280-nvme-pcie-gen-4-0-x4-3d-tlc-nand-skc3000d-4096g-ID10QxaL.html",
+  "title": "Kingston KC3000 4TB M.2 2280 NVMe PCIe Gen 4.0 x4 3D TLC NAND (SKC3000D/4096G)"
+}
+```
+**Семпл #41:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -3228,532 +3449,7 @@
   "title": "SSD Gigabyte NVMe 512GB (модель GP-GSM2NE3512GNTD)"
 }
 ```
-**Семпл #25:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-kingston-fury-renegade-2tb-u-vdmnnomu-stan-ID10xKcw.html",
-  "title": "SSD Kingston FURY Renegade 2TB у відмінному стані"
-}
-```
-**Семпл #26:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-m-2-1tb-nvme-micron-3500-2280-r-do-7000-mb-s-w-do-6900-mb-s-mtfdkba1t0tgd-pcie-4-0-x4-oem-noviy-klkst-garantya-ID10KLEN.html",
-  "title": "SSD M.2 1Tb NVMe Micron 3500 2280 R: до 7000 MB/s, W: до 6900 MB/s  (MTFDKBA1T0TGD) PCIe 4.0 x4 OEM Новий! Є кількість + Гарантія"
-}
-```
-**Семпл #27:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/hhd-500gb-seagate-ID110FAr.html",
-  "title": "Hhd 500gb Seagate"
-}
-```
-**Семпл #28:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplekthdd-sata-250gb-3-5-120gb-2-5-pod-vosstanovlenie-zapchasti-ID102Bfx.html",
-  "title": "КомплектHDD SATA 250GB (3.5\")+120GB (2.5\") под восстановление/запчасти"
-}
-```
-**Семпл #29:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-western-digital-320-gb-ID102B8b.html",
-  "title": "Жесткий диск Western Digital 320 GB"
-}
-```
-**Семпл #30:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-hitachi-2-5-500gb-wdc-hgst-hts725050a7e630-IDUPr8V.html",
-  "title": "Жорсткий диск Hitachi 2.5\" 500GB WDC HGST (HTS725050A7E630)"
-}
-```
-**Семпл #31:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-seagate-1tb-barracuda-5400rpm-128mb-st2000lm015-sataiii-IDUPrpd.html",
-  "title": "Жорсткий диск Seagate 1ТB Barracuda 5400rpm 128MB ST2000LM015 SATAIII"
-}
-```
-**Семпл #32:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/top-vibr-ssd-disk-500gb-samsung-860-evo-sata3-2-5-trade-in-ID10dZqd.html",
-  "title": "ТОП вибір! SSD диск 500GB Samsung 860 EVO (SATA3 \\ 2.5\"). Trade-in"
-}
-```
-**Семпл #33:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорстиюкий диск hdd 256 gb"
-}
-```
-**Семпл #34:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Seagate Momentus 5400.6 ST9500325AS"
-}
-```
-**Семпл #35:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жесткий диск Seagate Barracuda"
-}
-```
-**Семпл #36:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-990-pro-2tb-m-2-nvme-noviy-100-resurs-ID10Z7em.html",
-  "title": "SSD Samsung 990 PRO 2TB M.2 NVMe - новий, 100% ресурс"
-}
-```
-**Семпл #37:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий диск Hitachi 100Gb"
-}
-```
-**Семпл #38:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/shvidksniy-ssd-m-2-nvme-500gb-ediloca-en760-pcie-4-0-z-radatorom-dlya-pk-ps5-noutbuk-shvidka-vdpravka-ID110F9i.html",
-  "title": "Швидкісний SSD M.2 NVMe 500GB Ediloca EN760 PCIe 4.0 з радіатором (для ПК / PS5 / Ноутбук) Швидка відправка"
-}
-```
-**Семпл #39:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жесткий диск для компютера"
-}
-```
-**Семпл #40:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-hdd-wd5003abyz-500gb-64mb-7200-3-5-ID104Z0Q.html",
-  "title": "Продам HDD WD5003ABYZ 500GB/64mb 7200 3.5\""
-}
-```
-**Семпл #41:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/m-2-ssd-disk-1tb-msi-spatium-m371-pci-e-3-0-x4-nvme-ID10g2xr.html",
-  "title": "M.2 SSD диск 1TB MSI Spatium M371 (PCI-e 3.0 x4. NVMe)"
-}
-```
 **Семпл #42:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-western-digital-80gb-7200rpm-8mb-3-5-sataii-IDYsKkG.html",
-  "title": "Жорсткий диск Western Digital 80Gb 7200rpm 8MB  3.5\" SATAII"
-}
-```
-**Семпл #43:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-m-2-1tb-nvme-micron-3500-2280-r-do-7000-mb-s-w-do-6900-mb-s-mtfdkba1t0tgd-pcie-4-0-x4-oem-noviy-klkst-garantya-ID10KLEN.html",
-  "title": "SSD M.2 1Tb NVMe Micron 3500 2280 R: до 7000 MB/s, W: до 6900 MB/s  (MTFDKBA1T0TGD) PCIe 4.0 x4 OEM Новий! Є кількість + Гарантія"
-}
-```
-**Семпл #44:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Sata диски по 1 терабайту"
-}
-```
-**Семпл #45:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/portativniy-nakopichuvach-4tb-usb-3-0-hdd-toshiba-ID10pfOg.html",
-  "title": "Портативний накопичувач 4TB USB 3.0 HDD Toshiba"
-}
-```
-**Семпл #46:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "накопичувач Samsung SSD M2 NVMe 970 EVO Plus"
-}
-```
-**Семпл #47:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-micron-2280-m2-nvme-pcie-1000-1024-gb-1tb-ID10HRAh.html",
-  "title": "SSD Micron 2280 m2 NVMe PCie 1000/1024 Gb 1Tb"
-}
-```
-**Семпл #48:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/nakopitel-ssd-m-2-sata-1tb-razmery-22h42-100-zdorovya-ID10Qy7r.html",
-  "title": "Накопитель SSD M.2 SATA-1TB. Размеры 22х42. 100% здоровья."
-}
-```
-**Семпл #49:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий диск для ПК 3,5\" HDD 1Тб SATA III"
-}
-```
-**Семпл #50:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/groviy-nadyniy-shvidkiy-wd-blue-azlx-3-5-hdd-500gb-7200prm-32mb-sataiii-stan-novogo-levada-IDZahez.html",
-  "title": "Ігровий надійний швидкий WD BLUE AZLX 3,5\" HDD 500Gb 7200prm 32Mb SATAIII - стан нового - Левада"
-}
-```
-**Семпл #51:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-hdd-western-digital-wd-green-500gb-sata-iii-wd5000aads-ID110E9f.html",
-  "title": "Жорсткий диск HDD Western Digital WD Green 500GB SATA III WD5000AADS"
-}
-```
-**Семпл #52:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Винчестер FUJITSU"
-}
-```
-**Семпл #53:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-ssd-120gb-hdd-1-5tb-500-320gb-ID10YoN8.html",
-  "title": "Жёсткий диск SSD 120Gb  HDD 1.5Tb 500 320Gb"
-}
-```
-**Семпл #54:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/new-ssd-samsung-micron-480gb-sm883-sm863a-rm881-5300max-IDYNQbo.html",
-  "title": "NEW! SSD Samsung, Micron 480Gb (SM883, SM863a, РМ881, 5300Max)"
-}
-```
-**Семпл #55:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Ретро HDD 3.5 IDE Western Digital 44MB 1990 р. Раритет"
-}
-```
-**Семпл #56:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-western-digital-wd-purple-1tb-dlya-vdeosposterezhennya-IDXJWkI.html",
-  "title": "Жорсткий диск Western Digital WD Purple 1TB для відеоспостереження"
-}
-```
-**Семпл #57:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-870-qvo-8-tb-sostoyanie-100-v-nalichii-3-shtuki-ID101JdG.html",
-  "title": "SSD Samsung 870 QVO 8 TB, состояние 100% (в наличии 3 штуки)"
-}
-```
-**Семпл #58:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "HDD диск та інше"
-}
-```
-**Семпл #59:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий, жесткий диск Seagate, Western Digital"
-}
-```
-**Семпл #60:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Ssd диски Kingston разных объемов."
-}
-```
-**Семпл #61:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий диск HDD 3,5\" 750Gb SATA3 Western Digital Black WD7501AALS 7200rpm/32Mb"
-}
-```
-**Семпл #62:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-rostovku-novyh-ssd-diskov-64gb-4tb-priehali-vkusnyashki-IDZQCT0.html",
-  "title": "Продам ростовку новых SSD дисков 64гб-4тб (приехали вкусняшки)"
-}
-```
-**Семпл #63:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-wd-purple-500gb-1tb-2tb-3tb-4tb-8tb-IDVoDwf.html",
-  "title": "Жорсткий диск WD Purple 500Gb, 1TB, 2TB, 3TB, 4TB, 8TB"
-}
-```
-**Семпл #64:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-nakopichuvach-kingston-a400-960-gb-sa400s37-960g-ID10Y86U.html",
-  "title": "SSD накопичувач Kingston A400 960 GB (SA400S37/960G)"
-}
-```
-**Семпл #65:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Одно колесо б/у . MICHELIN . 205/55R16. 91H."
-}
-```
-**Семпл #66:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-m-2-nvme-sk-hynix-pc711-512gb-perevreniy-vdmnniy-stan-ID10XFaa.html",
-  "title": "SSD диск M.2 NVMe SK hynix PC711 512GB – перевірений, відмінний стан"
-}
-```
-**Семпл #67:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-m2-nvme-128-gb-250gb-480gb-1-tb-samsung-hunix-toshiba-perehdniki-do-kompyutera-pci-e-ta-operativna-pamyat-ram-ID102Fzz.html",
-  "title": "SSD m2 NVME 128 Гб, 250Gb 480Gb 1 tb Samsung Hunix Toshiba, є перехідники до компютера PCI e та  оперативна память RAM"
-}
-```
-**Семпл #68:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-bestoss-2-5-sata-120-256-512gb-IDU1Wsi.html",
-  "title": "Ssd Bestoss (2.5 Sata) 120,256,512gb"
-}
-```
-**Семпл #69:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-850-pro-512gb-hdd-wd-1tb-green-IDZqWyC.html",
-  "title": "SSD Samsung 850 Pro 512GB,  HDD WD 1TB Green"
-}
-```
-**Семпл #70:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Ретро жорсткий диск IBM Deskstar IC35L020AVER07-0 на 20гб"
-}
-```
-**Семпл #71:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продається ретро жорсткий диск Samsung WN310820A, на 1.8  ГБ."
-}
-```
-**Семпл #72:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Ретро жесткий диск MFM Miniscribe M8425"
-}
-```
-**Семпл #73:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-seagate-skyhawk-surveillance-8tb-st8000vx0022-IDYvNMe.html",
-  "title": "Жорсткий диск Seagate SkyHawk Surveillance 8TB - ST8000VX0022"
-}
-```
-**Семпл #74:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий диск Тoshiba X300 (HDD) - HDWR180XZSTA"
-}
-```
-**Семпл #75:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstk-diski-3-5-6tb-hp-enterprise-7200rpm-sata3-ID10TFBD.html",
-  "title": "Жорсткі диски 3.5’ 6TB HP Enterprise 7200RPM SATA3"
-}
-```
-**Семпл #76:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-seagate-ironwolf-pro-14tb-7200rpm-st14000ne0008-ctan-novogo-ID10Rk25.html",
-  "title": "Жорсткий диск Seagate IronWolf Pro 14TB 7200rpm (ST14000NE0008) Cтан нового"
-}
-```
-**Семпл #77:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-zhestkiy-disk-8-tb-IDWMt2H.html",
-  "title": "Продам жесткий диск 8 тб"
-}
-```
-**Семпл #78:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий диск Seagate 40 gb"
-}
-```
-**Семпл #79:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "750гб вінчестер для ноута"
-}
-```
-**Семпл #80:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам жорсткий диск"
-}
-```
-**Семпл #81:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-ssd-120gb-hdd-1-5tb-500-320gb-ID10YoN8.html",
-  "title": "Жёсткий диск SSD 120Gb  HDD 1.5Tb 500 320Gb"
-}
-```
-**Семпл #82:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/seagate-barracuda-pro-10tb-hdd-sata-iii-7200-rpm-ID10M8ny.html",
-  "title": "Seagate BarraCuda Pro 10TB HDD SATA III 7200 RPM"
-}
-```
-**Семпл #83:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/m-2-ssd-disk-512gb-micron-2300-z-buferom-nvme-pci-e-3-0-x4-trade-in-ID108oiC.html",
-  "title": "M.2 SSD диск 512GB Micron 2300 з буфером (NVMe\\PCI-e 3.0 x4). Trade-IN"
-}
-```
-**Семпл #84:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий диск Western Digital Purple 4 ТБ"
-}
-```
-**Семпл #85:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-sm863-1-9tb-2tb-nadyn-ssd-diski-IDZTlD6.html",
-  "title": "Ssd Samsung SM863 1.9tb 2tb Надійні ssd диски"
-}
-```
-**Семпл #86:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "АКЦІЯ!!! Кабель SATA 3.0 ОПТ !!"
-}
-```
-**Семпл #87:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-nakopichuvach-crucial-bx500-2tb-sata-iii-3-roki-garant-ID10X9sy.html",
-  "title": "SSD накопичувач Crucial BX500 2TB Sata III (3 роки гарантії)"
-}
-```
-**Семпл #88:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жесткий диск HDD 2,0Tb TOSHIBA 64Mb"
-}
-```
-**Семпл #89:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-goodram-px500-gen-3-nvme-m-2-2280-512gb-z-garantyu-36-msyatsv-ID10T5vw.html",
-  "title": "SSD GOODRAM PX500 Gen.3 NVMe M.2 2280 512GB із гарантією 36 місяців"
-}
-```
-**Семпл #90:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-sk-hynix-pc711-1tb-nvme-m-2-gen3x4-ID110CTN.html",
-  "title": "SSD SK Hynix PC711 1Tb NVMe M.2 Gen3x4"
-}
-```
-**Семпл #91:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткий диск 3.5\" TOSHIBA, SAMSUNG, ST, WDC"
-}
-```
-**Семпл #92:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-kingston-nv3-1tb-m-2-97-ID10WvQV.html",
-  "title": "SSD Kingston NV3 1TB M.2  (97%)"
-}
-```
-**Семпл #93:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Вінчестери HDD SATA"
-}
-```
-**Семпл #94:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -3761,49 +3457,452 @@
   "title": "Жорсткий диск Toshiba PC P300 500 ГБ SATA 3.5\" 7200 об/хв"
 }
 ```
-**Семпл #95:**
+**Семпл #43:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-grucial-p3-plus-4tb-ID10ZgyS.html",
+  "title": "SSD Grucial P3 Plus 4TB"
+}
+```
+**Семпл #44:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-hitachi-deskstar-250-gb-IDLr9n8.html",
+  "title": "Жесткий диск Hitachi Deskstar 250 gb"
+}
+```
+**Семпл #45:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-patriot-burst-elite-480gb-2-5-sataiii-tlc-pbe480gs25ssdr-ID110OMQ.html",
+  "title": "SSD диск Patriot Burst Elite 480GB 2.5\" SATAIII TLC (PBE480GS25SSDR)"
+}
+```
+**Семпл #46:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-seagate-500-gb-IDJdQ2c.html",
+  "title": "Жорсткий диск Seagate 500 GB"
+}
+```
+**Семпл #47:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstk-diski-3-5-6tb-hp-enterprise-7200rpm-sata3-ID10TFBD.html",
+  "title": "Жорсткі диски 3.5’ 6TB HP Enterprise 7200RPM SATA3"
+}
+```
+**Семпл #48:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-goodram-px600-1tb-m-2-2280-pcie-4-0-x4-nvme-3d-nand-qlc-ID110OHk.html",
+  "title": "SSD диск Goodram PX600 1TB M.2 2280 PCIe 4.0 x4 NVMe 3D NAND QLC"
+}
+```
+**Семпл #49:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-m-2-nvme-1tb-netac-nv7000-t-pcie-4-0-7300-mb-s-stan-100-ID110OEl.html",
+  "title": "SSD M.2 NVMe 1TB Netac NV7000-t PCIe 4.0 (7300 MB/s) / Стан 100%"
+}
+```
+**Семпл #50:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/disk-ssd-nakopitel-kingston-a400-240gb-sataiii-3d-tlc-sa400s37-240g-96-ID110ODJ.html",
+  "title": "Диск SSD накопитель Kingston A400 240GB SATAIII 3D TLC (SA400S37/240G) 96%"
+}
+```
+**Семпл #51:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nakopichuvach-ssd-256gb-intel-545s-2-5-sataiii-tlc-ssdsc2kw256g8l-ID110Os8.html",
+  "title": "Накопичувач SSD 256GB Intel 545s 2.5\" SATAIII TLC (SSDSC2KW256G8L)"
+}
+```
+**Семпл #52:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-rostovku-novyh-ssd-diskov-64gb-4tb-priehali-vkusnyashki-IDZQCT0.html",
+  "title": "Продам ростовку новых SSD дисков 64гб-4тб (приехали вкусняшки)"
+}
+```
+**Семпл #53:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstk-diski-3-5-6tb-hp-enterprise-7200rpm-sata3-ID10TFBD.html",
+  "title": "Жорсткі диски 3.5’ 6TB HP Enterprise 7200RPM SATA3"
+}
+```
+**Семпл #54:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/16tb-gely-wd-wuh721816ale6l4-nas-sata-6gb-s-dc-hc550-synology-nas-b-u-IDZufyC.html",
+  "title": "16TB Гелій WD WUH721816ALE6L4 Nas SATA 6Gb/s DC HC550 synology nas Б/у"
+}
+```
+**Семпл #55:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Жесткий диск HDD Toshiba 3 ТБ в кармане USB 3.0"
+  "title": "HDD 2.5\" Жесткие диски Toshiba Hitachi 160/320/500 Sata"
+}
+```
+**Семпл #56:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-fujitsu-200gb-5400rpm-8mb-mhy2200bh-2-5-sata-IDYgRPY.html",
+  "title": "Жесткий диск Fujitsu 200GB 5400rpm 8MB MHY2200BH 2.5 SATA"
+}
+```
+**Семпл #57:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/western-digital-pasport-1-tb-ID10PoIH.html",
+  "title": "Western digital pasport 1 tb"
+}
+```
+**Семпл #58:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-wd-160gb-5400rpm-8mb-wd1600bevs-2-5-sata-IDYgRKQ.html",
+  "title": "Жесткий диск WD 160GB 5400rpm 8MB WD1600BEVS 2.5 SATA"
+}
+```
+**Семпл #59:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Жорсткий Диск DG146BB976 HP Enterprise 146GB 10K 2,5\" SAS"
+}
+```
+**Семпл #60:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Жесткий диск i.norys"
+}
+```
+**Семпл #61:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "SSD Patriot Viper VP4300 Lite M.2 на 1Т"
+}
+```
+**Семпл #62:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Кабель SATA-USB, адаптер жесткого диска USB 3.0-SATA III"
+}
+```
+**Семпл #63:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Память xbox 4GB оригинал"
+}
+```
+**Семпл #64:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/termnovo-zhorstkiy-disk-western-digital-purple-pro-10tb-wd102purp-ID10RmuV.html",
+  "title": "Терміново!!!Жорсткий диск Western Digital Purple Pro 10TB (WD102PURP)"
+}
+```
+**Семпл #65:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-micron-2280-m2-nvme-pcie-1000-1024-gb-1tb-ID10HRAh.html",
+  "title": "SSD Micron 2280 m2 NVMe PCie 1000/1024 Gb 1Tb"
+}
+```
+**Семпл #66:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-pm871b-256gb-m-2-sata-iii-ID10STnR.html",
+  "title": "SSD Samsung PM871b 256GB M.2 SATA III"
+}
+```
+**Семпл #67:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-wd-purple-4tb-wd40purz-u-nayavnost-10-sht-ID10SFsT.html",
+  "title": "Жорсткий диск WD Purple 4TB WD40PURZ — у наявності 10 шт."
+}
+```
+**Семпл #68:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-wd-purple-500gb-1tb-2tb-3tb-4tb-8tb-IDVoDwf.html",
+  "title": "Жорсткий диск WD Purple 500Gb, 1TB, 2TB, 3TB, 4TB, 8TB"
+}
+```
+**Семпл #69:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Шлейф Sata 2.5 HDD/SSD для Acer Nitro 5  и Predator Helios 300."
+}
+```
+**Семпл #70:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/goodram-cx400-128gb-ssd-sataiii-97-zhittya-550-mb-s-460-mb-s-ID110MJj.html",
+  "title": "Goodram CX400 128Gb SSD SATAIII 97% життя (550 МБ/с, 460 МБ/с)"
+}
+```
+**Семпл #71:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "SSD 128 жорсткий диск"
+}
+```
+**Семпл #72:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-western-digital-wd3200aajs-320gb-ID10E8u6.html",
+  "title": "Жесткий диск - Western digital wd3200aajs 320gb"
+}
+```
+**Семпл #73:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/seagate-ironwolf-pro-14tb-st14000ne0008-nas-vdmnniy-stan-smart-ok-ID10RPke.html",
+  "title": "Seagate IronWolf Pro 14TB ST14000NE0008 • NAS • Відмінний стан • SMART OK"
+}
+```
+**Семпл #74:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/samsung-pm863a-240gb-ssd-sata-2-5-99-zhittya-mz-7lm240n-mz7lm240hmhq-v-nand-3d-tlc-sata-6-gb-s-plp-metaleviy-korpus-ID110MwO.html",
+  "title": "Samsung PM863a 240Gb  SSD SATA 2.5 99% \"життя\" (MZ-7LM240N / MZ7LM240HMHQ) (V-NAND 3D TLC, SATA 6 Гб/с, PLP, металевий корпус)"
+}
+```
+**Семпл #75:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kingston-fury-renegade-2tb-nvme-gen-4-ID10PgMT.html",
+  "title": "Kingston Fury Renegade 2TB NVMe (Gen 4)"
+}
+```
+**Семпл #76:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "3.5\" Samsung sv1021h 10.2 Gb, sv0431d 4.3 Gb ATA"
+}
+```
+**Семпл #77:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Адаптер-перехідник M.2 NVMe PCI-E 4.0/3.0 (M.2 SSD до PCI-E X1)"
+}
+```
+**Семпл #78:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-seagate-barracuda-2-5-st2000lm015-2tb-hdd-ID10Bwv3.html",
+  "title": "Жорсткий диск Seagate BarraCuda 2,5\" (ST2000LM015) 2Tb HDD"
+}
+```
+**Семпл #79:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-990-pro-2tb-m-2-nvme-noviy-100-resurs-ID10Z7em.html",
+  "title": "SSD Samsung 990 PRO 2TB M.2 NVMe - новий, 100% ресурс"
+}
+```
+**Семпл #80:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-850-pro-512gb-hdd-wd-1tb-green-IDZqWyC.html",
+  "title": "SSD Samsung 850 Pro 512GB,  HDD WD 1TB Green"
+}
+```
+**Семпл #81:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhestkiy-disk-1tb-western-digital-ID110LRd.html",
+  "title": "Жесткий диск 1Tb Western Digital"
+}
+```
+**Семпл #82:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Жорсткі диски. HDD 2,5\". Умовно працюючі."
+}
+```
+**Семпл #83:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/16tb-gely-wd-wuh721816ale6l4-nas-sata-6gb-s-dc-hc550-synology-nas-b-u-IDZufyC.html",
+  "title": "16TB Гелій WD WUH721816ALE6L4 Nas SATA 6Gb/s DC HC550 synology nas Б/у"
+}
+```
+**Семпл #84:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Жорсткий диск HTC426020G7CE10 20 ГБ Travelstar 4200 об/хв 08K153"
+}
+```
+**Семпл #85:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/3tb-western-digital-wd-sata-nas-IDZ639w.html",
+  "title": "3TB western digital WD  SATA NAS"
+}
+```
+**Семпл #86:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Жеский диск на терабайт"
+}
+```
+**Семпл #87:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhostkiy-disk-80-gb-IDToJAT.html",
+  "title": "Жосткий диск 80 Гб"
+}
+```
+**Семпл #88:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Внутрішній жорсткий диск"
+}
+```
+**Семпл #89:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-teamgroup-t2535t120g0c101-120gb-shvidkiy-ta-nadyniy-nakopichuvach-dlya-pk-noutbukv-ID110LbS.html",
+  "title": "SSD TeamGroup T2535T120G0C101 120GB — швидкий та надійний накопичувач для ПК-Ноутбуків"
+}
+```
+**Семпл #90:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-860-evo-mz-76e250-250gb-shvidkiy-ta-nadyniy-nakopichuvach-dlya-pk-noutbkv-ID110LnA.html",
+  "title": "SSD Samsung 860 EVO (MZ-76E250) 250GB — швидкий та надійний накопичувач для ПК-Ноутбіків"
+}
+```
+**Семпл #91:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-kingston-nv3-1tb-m-2-97-ID10WvQV.html",
+  "title": "SSD Kingston NV3 1TB M.2  (97%)"
+}
+```
+**Семпл #92:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-sk-hynix-pc711-1tb-nvme-m-2-gen3x4-ID110CTN.html",
+  "title": "SSD SK Hynix PC711 1Tb NVMe M.2 Gen3x4"
+}
+```
+**Семпл #93:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/goodram-cx400-gen-2-512-gb-ssd-ID110hvB.html",
+  "title": "Goodram CX400 Gen.2 512 GB SSD"
+}
+```
+**Семпл #94:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-kingston-kc-s44256-6f-256gb-shvidkiy-ta-nadyniy-nakopichuvach-dlya-pk-noutbukv-ID110Lhn.html",
+  "title": "SSD Kingston KC-S44256-6F 256GB — швидкий та надійний накопичувач для ПК-Ноутбуків"
+}
+```
+**Семпл #95:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-nvme-256gb-ne-rabochiy-ID110Lms.html",
+  "title": "SSD диск NVMe 256Gb - не рабочий"
 }
 ```
 **Семпл #96:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-sm863-1-9tb-2tb-nadyn-ssd-diski-IDZTlD6.html",
-  "title": "Ssd Samsung SM863 1.9tb 2tb Надійні ssd диски"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/zhorstkiy-disk-seagate-barracuda-2-5-st2000lm015-2tb-hdd-ID10Bwv3.html",
+  "title": "Жорсткий диск Seagate BarraCuda 2,5\" (ST2000LM015) 2Tb HDD"
 }
 ```
 **Семпл #97:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Внешний жёсткий диск wd elements 1.5 Тб. Хорошее состояние."
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/disk-ssd-sata3-256-512gb-2-5-nov-IDZwW6p.html",
+  "title": "Диск SSD SATA3 256-512Gb 2.5 Нові!"
 }
 ```
 **Семпл #98:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/m-2-ssd-disk-1tb-adata-legend-850-5000mb-s-nvme-trade-in-ID10LCct.html",
-  "title": "M.2 SSD диск 1TB ADATA Legend 850 (5000MB\\s. NVMe). Trade-IN"
+  "reason": "no_hardware_target_matched",
+  "title": "Hdd 1000g WD 10ezex 3.5\""
 }
 ```
 **Семпл #99:**
 ```json
 {
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/tihiy-zhorstkiy-disk-6tb-wd-purple-wd60purz-sata3-5400rpm-64mb-kesh-ID10LC1R.html",
-  "title": "тихий Жорсткий диск 6TB WD Purple WD60PURZ SATA3\\5400RPM\\64MB кеш"
+  "reason": "no_hardware_target_matched",
+  "title": "Розпродаж! Жорсткі диски на запчастини або під ремонт!"
 }
 ```
 **Семпл #100:**
 ```json
 {
-  "reason": "no_hardware_target_matched",
-  "title": "Жорсткі диски hdd 2,5” (для ноутбуків, компʼютерів)"
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/hdd-1tb-2-5-7200-ID10E6v2.html",
+  "title": "HDD 1Tb 2.5 7200"
 }
 ```
 
@@ -3812,739 +3911,11 @@
 ```json
 {
   "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-g-skill-trident-z5-neo-rgb-ddr5-6000-32gb-f5-6000j3038f16gx2-tz5nr-ID10Xs9y.html",
-  "title": "Оперативна память G.Skill Trident Z5 Neo RGB DDR5-6000 32GB (F5-6000J3038F16GX2-TZ5NR)"
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-samsung-16gb-ddr4-ecc-reg-rdimm-2133mhz-m393a2g40db0-cpb2q-x99-xeon-ID10Nrkr.html",
+  "title": "Оперативна память Samsung 16GB DDR4 ECC REG RDIMM 2133MHz M393A2G40DB0-CPB2Q X99 Xeon"
 }
 ```
 **Семпл #2:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-samsung-m425r1gb4pb0-8gb-so-dimm-ddr5-5600mhz-nova-oem-klkst-garantya-ID10TEHV.html",
-  "title": "Оперативна память Samsung M425R1GB4PB0 8GB SO-DIMM DDR5 5600MHz НОВА OEM (є кількість) + Гарантія"
-}
-```
-**Семпл #3:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Kingston furry 32gb 3200 LED"
-}
-```
-**Семпл #4:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativnaya-pamyat-ddr3-8gb-4gb-2gb-ddr2-IDWr1oC.html",
-  "title": "оперативная память DDR3 8гб 4Gb 2гб DDR2"
-}
-```
-**Семпл #5:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "SSD Patriot 1T NEW"
-}
-```
-**Семпл #6:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "DDR3 2GB 1600 MHz (PC3-12800) Kingston HyperX KHX1600C9D3K2/4GX"
-}
-```
-**Семпл #7:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Нова оперативна память на чипах Hynix 16gb (2×8)  DDR 4"
-}
-```
-**Семпл #8:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-kingston-hyperx-32-gb-ddr4-ID110GBz.html",
-  "title": "Оперативна память Kingston і HyperX 32 gb ddr4"
-}
-```
-**Семпл #9:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/48gb-ddr5-6000mhz-cl30-ID110Gzv.html",
-  "title": "48gb ddr5 6000mhz cl30"
-}
-```
-**Семпл #10:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/g-skill-trident-z5-rgb-ddr5-7200-32gb-2x16gb-cl34-ID10b8CF.html",
-  "title": "G.SKILL Trident Z5 RGB DDR5 -7200 32GB (2x16GB) CL34"
-}
-```
-**Семпл #11:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/teamgroup-rgb-ddr4-16gb-2x8-2666mhz-cl15-operativna-pamyat-ID10STtD.html",
-  "title": "TeamGroup RGB DDR4 16GB (2X8) 2666Mhz CL15 Оперативна память"
-}
-```
-**Семпл #12:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативная память для ПК"
-}
-```
-**Семпл #13:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна паметь"
-}
-```
-**Семпл #14:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr3-g-skill-sniper-8gb-2x4gb-1600mhz-IDYF8yG.html",
-  "title": "Оперативна память DDR3 G.Skill Sniper 8Gb (2x4gb) 1600MHz"
-}
-```
-**Семпл #15:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "память DDR2 - 1 GB, 800Mh для ПК"
-}
-```
-**Семпл #16:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память"
-}
-```
-**Семпл #17:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативная память OCZ DDR2 2 Gb"
-}
-```
-**Семпл #18:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Kingston Fury Renegade NVMe M.2  на 1тб"
-}
-```
-**Семпл #19:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "оперативна память"
-}
-```
-**Семпл #20:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/goodram-8gb-ddr3-ID110FYP.html",
-  "title": "GoodRam 8gb ddr3"
-}
-```
-**Семпл #21:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-z-rgb-pdsvtkoyu-adata-xpg-spectrix-d35g-rgb-ddr4-16gb-3600mhz-cl18-stan-novo-ID10Sd7r.html",
-  "title": "Оперативна память  з RGB підсвіткою ADATA XPG Spectrix D35G RGB DDR4 16GB 3600MHz CL18 Стан нової"
-}
-```
-**Семпл #22:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/grova-operativna-pamyat-xpg-ddr4-32gb-2x16gb-tsna-vkazana-za-2-shtuki-3200mhz-ID100565.html",
-  "title": "Ігрова Оперативна память XPG DDR4 32GB 2x16GB ціна вказана за 2 штуки. 3200MHz"
-}
-```
-**Семпл #23:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память (hynix 2gb 1Rx8 PC3) і (Kingston 2Gb DDR3 1333 Mhz)"
-}
-```
-**Семпл #24:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kingston-fury-impact-32gb-ddr4-kf426s15ib1k2-32-ID10P9rk.html",
-  "title": "Kingston FURY Impact 32Gb DDR4  KF426S15IB1K2/32"
-}
-```
-**Семпл #25:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pamyat-ddr5-dlya-pk-64gb-2x32-5600mhz-exceleram-trade-in-ID10e0ew.html",
-  "title": "память DDR5 для ПК 64GB (2x32) 5600MHz EXCELERAM. Trade-IN"
-}
-```
-**Семпл #26:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память Crucial Ballistix 16 GB (2x8 GB) 3600 MHz"
-}
-```
-**Семпл #27:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kingston-ddr4-32gb-216gb-ID110FAS.html",
-  "title": "Kingston DDR4 32GB (2×16GB)"
-}
-```
-**Семпл #28:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/corsair-ddr3-xms-3-4gb-1600mhz-IDZwzlp.html",
-  "title": "Corsair DDR3 XMS 3 4Gb 1600Mhz"
-}
-```
-**Семпл #29:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память DDR2 NANYA 1GB 1Rx8 PC2-6400U-666-13-D1.800"
-}
-```
-**Семпл #30:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ozu-takems-8gb-ddr3-1-2-1333-mgts-ID110FsC.html",
-  "title": "ОЗУ-TakeMS 8gb ddr3 1/2 1333 МГц"
-}
-```
-**Семпл #31:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/crucial-ddr4-16gb-28gb-ID110Fpt.html",
-  "title": "Crucial DDR4 16GB (2×8GB)"
-}
-```
-**Семпл #32:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-netac-shadow-iii-ddr4-16gb-2x8gb-3200mhz-cl16-nova-ID10Yu0S.html",
-  "title": "Оперативна память Netac Shadow III DDR4 16GB (2x8GB) 3200MHz CL16. Нова."
-}
-```
-**Семпл #33:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr4-16gb-2x8gb-ID10OEAz.html",
-  "title": "Оперативна память DDR4 16GB 2x8GB"
-}
-```
-**Семпл #34:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ddr1-ddr2-ddr3-operativnaya-pamyat-1gb-2gb-4gb-8gb-IDQDZVb.html",
-  "title": "DDR1, DDR2, DDR3 оперативная память (1gb, 2gb, 4gb, 8gb)"
-}
-```
-**Семпл #35:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память DDR 2"
-}
-```
-**Семпл #36:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/serverna-operativna-pamyat-rdimm-ecc-ddr3-4-4-8-16gb-1333-2666mgts-IDYVZDZ.html",
-  "title": "Серверна оперативна память RDIMM ECC DDR3/4 4/8/16Gb 1333-2666Мгц"
-}
-```
-**Семпл #37:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/fusion-io-drive-320gb-ssd-ID110FfZ.html",
-  "title": "Fusion - io Drive 320Gb ssd"
-}
-```
-**Семпл #38:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Sandisk 1300 ioMemory"
-}
-```
-**Семпл #39:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/modul-pamyat-dlya-noutbuka-sodimm-ddr4-64gb-2x32gb-3200-mhz-fury-impact-kingston-fury-ex-hyperx-kf432s20ibk2-64-nova-ID10S233.html",
-  "title": "Модуль памяті для ноутбука SoDIMM DDR4 64GB (2x32GB) 3200 MHz Fury Impact Kingston Fury (ex.HyperX) (KF432S20IBK2/64) (Нова)"
-}
-```
-**Семпл #40:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/pamyat-ddr4-32gb-2x16gb-3200mhz-g-skill-ripjaws-v-odna-planka-ne-pratsyu-trade-in-ID10s76C.html",
-  "title": "память DDR4 32GB (2x16GB) 3200MHz G.Skill RipJaws V одна планка не працює. Trade-IN"
-}
-```
-**Семпл #41:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/sk-hynix-16gb-ecc-ddr4-2400-pc4-19200r-reg-serverna-IDZElTJ.html",
-  "title": "SK hynix 16GB ECC DDR4 2400 PC4-19200R Reg серверна"
-}
-```
-**Семпл #42:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/novaya-g-skill-tridentz-rgb-32gb-4x8gb-ddr4-3200-f4-3200c16q-32gtzr-olx-dostavka-v-tsene-ID102Abp.html",
-  "title": "Новая G.Skill TridentZ RGB 32GB (4x8GB) DDR4-3200 F4-3200C16Q-32GTZR, OLX доставка в цене!"
-}
-```
-**Семпл #43:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/g-skill-ddr5-6000-96-gb-kit-of-2x49152-ID10QXag.html",
-  "title": "G.Skill DDR5-6000 96 GB (Kit of 2x49152)"
-}
-```
-**Семпл #44:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/novaya-ddr3-8gb-1600mhz-12800u-intel-amd-operativnaya-pamyat-dlya-pk-IDJXL1m.html",
-  "title": "НОВАЯ DDR3 8GB 1600mhz 12800U Intel/AMD оперативная память для ПК"
-}
-```
-**Семпл #45:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/modul-pamyat-kingston-fury-32gb-2x16gb-ddr4-3600-mhz-beast-rgb-ID10OHI2.html",
-  "title": "Модуль памяті Kingston FURY 32Gb (2x16Gb) DDR4 3600 MHz Beast RGB"
-}
-```
-**Семпл #46:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ozu-ram-kingston-ddr4-16gb-2400mhz-ID10r3Yd.html",
-  "title": "Оперативна память ОЗУ RAM Kingston DDR4 16GB 2400Mhz"
-}
-```
-**Семпл #47:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-ssd-1tb-2tb-4tb-8tb-ssd-m2-2tb-IDYYVJs.html",
-  "title": "Продам  SSD 1TB / 2TB / 4TB /  8TB  |      SSD M2   2TB"
-}
-```
-**Семпл #48:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативная память  PC3 4gb"
-}
-```
-**Семпл #49:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativnaya-pamyat-16gb-odna-plashka-ddr4-2666mhz-ID110Exd.html",
-  "title": "Оперативная память 16gb , одна плашка ddr4 2666mhz"
-}
-```
-**Семпл #50:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память Kingston HyperX 8 GB (2x4GB) KHX24C11T1K2/8X"
-}
-```
-**Семпл #51:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам оперативну пам’ять G.Skill 16 ГБ (2×8 ГБ)"
-}
-```
-**Семпл #52:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Опиративная память. ОЗУ DDR 4.   4 Gb"
-}
-```
-**Семпл #53:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна памʼять 8 ГБ дд4"
-}
-```
-**Семпл #54:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативная память TeamGroup 2888mhz"
-}
-```
-**Семпл #55:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативная память"
-}
-```
-**Семпл #56:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Kingston Fury Renegade NVMe M.2  на 1тб"
-}
-```
-**Семпл #57:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-operativnu-pamyat-32gb-ddr4-termnovo-ID10YlHe.html",
-  "title": "Продам оперативну пам’ять 32gb ddr4! Терміново!"
-}
-```
-**Семпл #58:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Память ОЗУ 2GB Adata"
-}
-```
-**Семпл #59:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr3-1-2-4-8gb-1333-1600-1866mhz-IDVCVuF.html",
-  "title": "Оперативна память DDR3 1/2/4/8Gb 1333/1600/1866MHz"
-}
-```
-**Семпл #60:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Ddr 3  SODIMM 4gb для ноутбука комплект"
-}
-```
-**Семпл #61:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Серверна память SAMSUNG DDR3 32ГБ M386B4G70DM0-YK04 4Rx4"
-}
-```
-**Семпл #62:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Память DDR 3 4 gb 1600"
-}
-```
-**Семпл #63:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Память оперативная 2 Гб pc3-10600s-9-10-b10"
-}
-```
-**Семпл #64:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Kingston Fury Beast White ddr 5 2x16gb cl32-39-39"
-}
-```
-**Семпл #65:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Модуль памяті 1 Gb.,ddr 2"
-}
-```
-**Семпл #66:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Диск 1 Тбайт чистый"
-}
-```
-**Семпл #67:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "оперативна памʼять PATRIOT 16GB (2x8) 3200Mhz (PV416G320C6K)"
-}
-```
-**Семпл #68:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-transcend-ddr5-64gb-2x32gb-5600mhz-ID10YNFp.html",
-  "title": "Оперативна память Transcend DDR5 64GB (2x32GB) 5600MHz"
-}
-```
-**Семпл #69:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/amd-radeon-ddr4-16gb-2400-mhz-operativna-pamyat-ID10G4Mo.html",
-  "title": "AMD RADEON DDR4 16GB  2400 Mhz Оперативна память"
-}
-```
-**Семпл #70:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativnaya-pamyat-kingston-fury-beast-2x32-gb-64gb-ID10Z3WB.html",
-  "title": "Оперативная память kingston fury  beast  2x32 gb (64gb)"
-}
-```
-**Семпл #71:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память для ноутбука Kingston ddr4 3200mhz cl20"
-}
-```
-**Семпл #72:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна пам‘ять память 1 гб 1 gb"
-}
-```
-**Семпл #73:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-samsung-m425r1gb4pb0-8gb-so-dimm-ddr5-5600mhz-nova-oem-klkst-garantya-ID10TEHV.html",
-  "title": "Оперативна память Samsung M425R1GB4PB0 8GB SO-DIMM DDR5 5600MHz НОВА OEM (є кількість) + Гарантія"
-}
-```
-**Семпл #74:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Память для сервера ddr2 HYNIX 1Gb 2Rx8 PC2-5300F-555-11"
-}
-```
-**Семпл #75:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr4-16-8gb-corsair-vengeance-hyperx-komplekti-ta-poshtuchno-ID10l3vS.html",
-  "title": "Оперативна память DDR4- 16/8gb Corsair Vengeance / HyperX (Комплекти та поштучно)"
-}
-```
-**Семпл #76:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "ОЗУ DDR 4 8гб so-dimm для ноутбука"
-}
-```
-**Семпл #77:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память в ноутбук DDR2"
-}
-```
-**Семпл #78:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память Kingston Fury DDR4-3200 65536 MB PC4-25600 (Kit of 2x32768) Beast Black (KF432C16BBK2/64)"
-}
-```
-**Семпл #79:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "4 шт. серверна/powermac оперетивня память ddr2 PC2 4gb"
-}
-```
-**Семпл #80:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/servernaya-pamyat-32gb-2rx4-ddr4-pc4-2133p-ecc-reg-ID10vzRS.html",
-  "title": "Серверная память 32Gb 2Rx4 DDR4 PC4-2133P ECC REG"
-}
-```
-**Семпл #81:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ddr4-32gb-16-16-2400-mhz-cl16-amd-radeon-memory-ID10Zicq.html",
-  "title": "DDR4 32GB [16+16] 2400 Mhz CL16 AMD Radeon Memory"
-}
-```
-**Семпл #82:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память Samsung DDR5 5600"
-}
-```
-**Семпл #83:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/kingston-ddr4-16gb-2h8-3200mhz-cl22-so-dimm-operativna-pamyat-ID10Rp5T.html",
-  "title": "Kingston DDR4 16GB (2х8) 3200Mhz CL22 SO-DIMM Оперативна память"
-}
-```
-**Семпл #84:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "DDR 5 5600 32 GB"
-}
-```
-**Семпл #85:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память Kingston fury beast 3200, 2по 8GB,"
-}
-```
-**Семпл #86:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам планку оперативної пам’яті DDR3 1333 MHz 1.5V 240pinKingstek4GB"
-}
-```
-**Семпл #87:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-disk-msi-spatium-m371-500gb-nvme-m-2-2280-z-garantyu-5-rokv-ID10ZhNf.html",
-  "title": "SSD диск MSI Spatium M371 500GB NVMe M.2 2280 з гарантією 5 років"
-}
-```
-**Семпл #88:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/modul-pamyat-operativna-pamyat-dlya-kompyutera-ddr4-32gb-2x16gb-3600-mhz-fury-renegade-black-kingston-fury-ex-hyperx-kf436c16rb12k2-32-ID10Yqw6.html",
-  "title": "Модуль памяті (оперативна памʼять) для компютера DDR4 32GB (2x16GB) 3600 MHz Fury Renegade Black Kingston Fury (ex.HyperX) (KF436C16RB12K2/32)"
-}
-```
-**Семпл #89:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/serverna-pamyat-ddr5-64gb-2rx4-pc5-5600b-ecc-reg-5600mhz-ID10Xc45.html",
-  "title": "Серверна память DDR5 64Gb 2Rx4 PC5-5600B ECC REG 5600Mhz"
-}
-```
-**Семпл #90:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-operativnu-pamyat-32gb-ddr4-termnovo-ID10YlHe.html",
-  "title": "Продам оперативну пам’ять 32gb ddr4! Терміново!"
-}
-```
-**Семпл #91:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам оперативную память DDR 3 4X2"
-}
-```
-**Семпл #92:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативна память для пк ddr2 2gb"
-}
-```
-**Семпл #93:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/komplektuyuch-dlya-pk-osnova-dlya-kompyutera-pd-podalshu-zbrku-montor-intel-i5-10600kf-32gb-ddr4-hyperx-3200mhz-groviy-pk-kompyuter-kompyuter-ID10YkXP.html",
-  "title": "Комплектуючі для пк, основа для компютера під подальшу збірку + монітор. intel i5-10600KF 32ГБ DDR4 HyperX 3200MHz, ігровий пк, компютер, компютер"
-}
-```
-**Семпл #94:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Оперативная память для ноутбука SODIMM"
-}
-```
-**Семпл #95:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/ozp-kingston-ddr4-16gb-2x8gb-3600mhz-fury-beast-black-ID10Z1QU.html",
-  "title": "ОЗП Kingston DDR4 16GB (2x8GB) 3600Mhz FURY Beast Black"
-}
-```
-**Семпл #96:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/top-pamyat-ddr4-32gb-2x16-4400mhz-g-skill-tridentz-rgb-trade-in-IDZWXYH.html",
-  "title": "ТОП память DDR4 32GB (2x16) 4400MHz G.Skill TridentZ RGB. Trade-in"
-}
-```
-**Семпл #97:**
-```json
-{
-  "reason": "duplicate_url_already_in_db",
-  "url": "https://www.olx.ua/d/uk/obyavlenie/g-skill-ddr5-6000-96-gb-kit-of-2x49152-ID10QXag.html",
-  "title": "G.Skill DDR5-6000 96 GB (Kit of 2x49152)"
-}
-```
-**Семпл #98:**
-```json
-{
-  "reason": "no_hardware_target_matched",
-  "title": "Продам оперативну память GLOWAY DDR5 24GB (2x12GB) 5600 MT/s Біла (Б/В)"
-}
-```
-**Семпл #99:**
 ```json
 {
   "reason": "duplicate_url_already_in_db",
@@ -4552,3378 +3923,844 @@
   "title": "Оперативна память G.skill Trident Z Rgb DDR4 4266 Mhz 16 Gb 2 x 8 gb Samsung b-die Intel ryzen оперативка kingston"
 }
 ```
+**Семпл #3:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-kingston-ddr4-3200mhz-32gb-cl16-ID110gnC.html",
+  "title": "Оперативна память kingston ddr4 3200mhz 32gb cl16"
+}
+```
+**Семпл #4:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr5-32gb-4800-ID1111Hc.html",
+  "title": "Оперативна память ddr5 32gb 4800"
+}
+```
+**Семпл #5:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память DDR 4 16 гб"
+}
+```
+**Семпл #6:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Память оперативная ОЗУ RAM Hynix DDR2 256mb PC2-4200"
+}
+```
+**Семпл #7:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/servernaya-ddr3-4gb-8gb-16gb-32gb-1333-1600mgts-pc3-10600-pamyat-ecc-reg-IDPrjdj.html",
+  "title": "Серверная DDR3 4GB/8Gb/16GB/32GB 1333/1600мгц PC3-10600 память ECC REG"
+}
+```
+**Семпл #8:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/novaya-ddr3-8gb-1600mhz-12800u-intel-amd-operativnaya-pamyat-dlya-pk-IDJXL1m.html",
+  "title": "НОВАЯ DDR3 8GB 1600mhz 12800U Intel/AMD оперативная память для ПК"
+}
+```
+**Семпл #9:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/samsung-ddr4-8gb-sostoyanie-otlichnoe-polnostyu-rabochiy-lyubye-testy-proverki-ID10Nkxu.html",
+  "title": "Samsung ddr4 8gb состояние отличное полностью рабочий любые тесты проверки"
+}
+```
+**Семпл #10:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ddr1-ddr2-ddr3-operativnaya-pamyat-1gb-2gb-4gb-8gb-IDQDZVb.html",
+  "title": "DDR1, DDR2, DDR3 оперативная память (1gb, 2gb, 4gb, 8gb)"
+}
+```
+**Семпл #11:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продам оперативну память GLOWAY DDR5 24GB (2x12GB) 5600 MT/s Біла (Б/В)"
+}
+```
+**Семпл #12:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Модуль памяті для компютера Hynix DDR2 4Gb (4x1Gb)"
+}
+```
+**Семпл #13:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память 4gb"
+}
+```
+**Семпл #14:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ddr4-32gb-2x16gb-3200mhz-IDZBYWJ.html",
+  "title": "Ddr4 32gb 2x16gb 3200mhz"
+}
+```
+**Семпл #15:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-crucial-ballistix-tactical-ddr3-8gb-1600mhz-cl8-blt8g3d1608dt1tx0-ID10fpus.html",
+  "title": "Оперативна память Crucial Ballistix Tactical DDR3 8GB 1600MHz CL8 (BLT8G3D1608DT1TX0)"
+}
+```
+**Семпл #16:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/serverna-operativna-pamyat-ddr3-reg-ecc-16gb-32gb-chastota-1333-1600-1866mgts-ID10mbGc.html",
+  "title": "Серверна оперативна память DDR3 REG ECC 16gb і 32gb частота 1333 1600  1866мгц"
+}
+```
+**Семпл #17:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативная память Kingston DDR3-1333"
+}
+```
+**Семпл #18:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативная память DDR3 2GB/1333 Team Elite"
+}
+```
+**Семпл #19:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативная память DDR3L DDR2 GB RAM SDRAM SODIMM"
+}
+```
+**Семпл #20:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativnaya-pamyat-ddr3-4gb-1600mhz-ddr3-4gb-dlya-pk-IDTZ6Gs.html",
+  "title": "Оперативная память DDR3 4Gb 1600Mhz ДДР3 4Гб  для ПК"
+}
+```
+**Семпл #21:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/pamyat-ddr4-16gb-kit-2x8-2400mhz-team-trade-in-ID10rinK.html",
+  "title": "память DDR4 16GB Kit (2x8) 2400MHz Team. Trade-in"
+}
+```
+**Семпл #22:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ddr5-32gb-kit-patriot-viper-elite-5-ID10ZQDr.html",
+  "title": "Ddr5 32gb kit patriot viper elite 5"
+}
+```
+**Семпл #23:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативная память DDR3 2"
+}
+```
+**Семпл #24:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Память  DDR 400  2 шт х 256mb"
+}
+```
+**Семпл #25:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память Team Group 1/32gb 4800МГц"
+}
+```
+**Семпл #26:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/serverna-pamyat-ddr4-32gb-4rx4-pc4-2133p-ecc-reg-2133mhz-hp-ID10QHbl.html",
+  "title": "Серверна память DDR4 32Gb 4Rx4 PC4-2133P ECC REG 2133Mhz HP"
+}
+```
+**Семпл #27:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr5-sodimm-16gb-1rx16-pc5-4800b-sco-1010-xt-IDZTv6C.html",
+  "title": "Оперативна память ddr5 sodimm 16gb 1rx16 pc5-4800b-sco-1010 xt"
+}
+```
+**Семпл #28:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ozp-kingston-ddr4-2h8gb-3600mhz-fury-beast-rgb-black-ID10BDpD.html",
+  "title": "ОЗП Kingston DDR4 2х8GB 3600Mhz FURY Beast RGB Black"
+}
+```
+**Семпл #29:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-samsung-860-evo-500gb-ID10STzh.html",
+  "title": "SSD Samsung 860 EVO 500GB"
+}
+```
+**Семпл #30:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr4-8gb-ddr-3-8gb-IDZFVGh.html",
+  "title": "Оперативна память ddr4 8gb ddr 3 8gb"
+}
+```
+**Семпл #31:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продам оперативную память ddr2 2×1g 800"
+}
+```
+**Семпл #32:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-dlya-noutbuka-4gb-ddr3-ID10ssWQ.html",
+  "title": "Оперативна память для ноутбука 4GB DDR3"
+}
+```
+**Семпл #33:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память g.skill trident z 2x8 3200mhz"
+}
+```
+**Семпл #34:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "ОЗУ DDR2 Kingston"
+}
+```
+**Семпл #35:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Для ноутбука 16GB 2*8GB DDR3L 1600MHz Samsung PC3L 12800S 2Rx8 RAM Оперативна память"
+}
+```
+**Семпл #36:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-kingston-ddr3-8gb-4gb-4gb-ID10Ep3t.html",
+  "title": "Оперативна память Kingston DDR3 8Gb (4Gb +4Gb)"
+}
+```
+**Семпл #37:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-g-skill-trident-z5-neo-rgb-ddr5-6000-32gb-f5-6000j3038f16gx2-tz5nr-ID10Xs9y.html",
+  "title": "Оперативна память G.Skill Trident Z5 Neo RGB DDR5-6000 32GB (F5-6000J3038F16GX2-TZ5NR)"
+}
+```
+**Семпл #38:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Kingston 1x16 GB ⤵️ DDR4 | FURY Beast Black | Оперативна память | Кількість!"
+}
+```
+**Семпл #39:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Комплект Micron DDR3L 1867MHz 16GB (8+8) 1.35V 2Rx8 PC3L-14900 [ максимальна швидкість ], оперативна память, оригінал"
+}
+```
+**Семпл #40:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-g-skill-ddr5-32gb-2x16gb-6400mhz-trident-z5-neo-rgb-black-f5-6400j3239g16gx2-tz5nr-ID10Nx92.html",
+  "title": "Оперативна памʼять G.Skill DDR5 32GB (2x16GB) 6400Mhz Trident Z5 Neo RGB Black (F5-6400J3239G16GX2-TZ5NR)"
+}
+```
+**Семпл #41:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-pamyat-dlya-noutbukov-ddr4-16-8-4-2gb-ddr3-8-4gb-ddr2-2gb-ID10Qznq.html",
+  "title": "Продам память для ноутбуков. DDR4-16-8-4-2GB/DDR3-8-4GB/DDR2-2GB."
+}
+```
+**Семпл #42:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr4-16gb-hyperx-fury-black-2x8gb-ID1110ci.html",
+  "title": "Оперативна память DDR4 16GB HyperX Fury Black 2x8GB"
+}
+```
+**Семпл #43:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна Память Samsung 512MB 1Rx8 PC2-5300U-555-12-ZZ (Для ПК)"
+}
+```
+**Семпл #44:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-kingston-ddr3-2400-16-gb-4h4-gb-pc3-19200-cl-11-hyperx-predator-khx24c11t2k2-ID10PN3C.html",
+  "title": "Оперативна память Kingston DDR3-2400 16 Гб (4х4 Гб), PC3-19200, CL 11, HyperX Predator (KHX24C11T2K2)"
+}
+```
+**Семпл #45:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативная память DDR3 32 GB !6+16 для сервера"
+}
+```
+**Семпл #46:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/4-gb-operativna-pamyat-ddr3-noutbuchna-ID10jRPM.html",
+  "title": "4 Гб оперативна память ddr3 ноутбучна"
+}
+```
+**Семпл #47:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Материнська плата, процесор, блок живлення, память"
+}
+```
+**Семпл #48:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память Kingston DDR2 SDRAM (PC2-4200U) - 512 MB"
+}
+```
+**Семпл #49:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Карта оперативной памяти"
+}
+```
+**Семпл #50:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/dva-absolyutno-nov-modul-pamyat-crucial-ddr4-po-8-gb-ID110ZO6.html",
+  "title": "Два абсолютно нові модулі памяті \"crucial\" ddr4 по 8 GB"
+}
+```
+**Семпл #51:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/corsair-vengeance-lpx-ddr4-16gb-28gb-ID110ZMd.html",
+  "title": "Corsair Vengeance LPX DDR4 16GB (2×8GB)"
+}
+```
+**Семпл #52:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Kingston Fury Renegade NVMe M.2  на 1тб"
+}
+```
+**Семпл #53:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/g-skill-trident-z5-rgb-ddr5-7200-32gb-2x16gb-cl34-ID10b8CF.html",
+  "title": "G.SKILL Trident Z5 RGB DDR5 -7200 32GB (2x16GB) CL34"
+}
+```
+**Семпл #54:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nove-garantya-operativna-pamyat-ddr5-64gb-2x32gb-6000-cl30-g-skill-trident-z5-rgb-black-f5-6000j3040g32gx2-tz5rk-IDZOpsT.html",
+  "title": "Нове/ГАРАНТІЯ | Оперативна память DDR5 64GB (2x32GB) 6000/CL30 G.SKILL Trident Z5 RGB Black (F5-6000J3040G32GX2-TZ5RK)"
+}
+```
+**Семпл #55:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Samsung RAM 1GB 1Rx8 PC3-10600U-09-10-ZZZ"
+}
+```
+**Семпл #56:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativnaya-pamyat-samsung-8gb-ddr5-4800-pc5-4800-IDZoSxx.html",
+  "title": "Оперативная пам`ять Samsung 8GB DDR5 4800 PC5-4800"
+}
+```
+**Семпл #57:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативная память"
+}
+```
+**Семпл #58:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память 2GB DDR3L 1600MHz SODIMM SK Hynix для ноутбука"
+}
+```
+**Семпл #59:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ddr3-kingstone-4gb-2x2-dvokanal-IDYt1W6.html",
+  "title": "ddr3 kingstone 4gb (2x2) двоканал"
+}
+```
+**Семпл #60:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память ddr3 дві по 4."
+}
+```
+**Семпл #61:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-dlya-pk-ddr3-4-8gb-1333-1600-IDZT6oM.html",
+  "title": "Оперативна память для ПК DDR3 4-8Gb 1333-1600"
+}
+```
+**Семпл #62:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Память DDR2 800 1 GB"
+}
+```
+**Семпл #63:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/nova-g-skill-ripjaws-v-ddr4-32gb-2x16gb-3600mhz-cl18-22-22-42-1-35v-artikul-f4-3600c18d-32gvk-ID10Ps5v.html",
+  "title": "Нова (G.SKILL Ripjaws V DDR4 32GB (2x16GB) 3600MHz CL18-22-22-42 1.35V (артикул F4-3600C18D-32GVK)"
+}
+```
+**Семпл #64:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/crucial-ddr4-2666-sodimm-operativna-pamyat-dlya-noutbuka-8gb2x4gb-IDWbGdP.html",
+  "title": "Crucial DDR4 - 2666 Sodimm оперативна памʼять для ноутбука 8gb(2x4gb)"
+}
+```
+**Семпл #65:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ozu-ram-ddr4-samsung-kingston-sk-hynix-16gbx2-32gb-dlya-pk-ID10za2i.html",
+  "title": "Оперативна памʼять ОЗУ RAM DDR4 Samsung, Kingston, SK Hynix 16Gbx2 (32gb) для ПК"
+}
+```
+**Семпл #66:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память ддр4 4гб пк"
+}
+```
+**Семпл #67:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/novaoperativna-pamyat-netac-ddr4-32gb-216gb-3200mhz-cl16-ID10YASZ.html",
+  "title": "Нова‼️Оперативна пам’ять Netac DDR4 32GB 2×16GB 3200MHz CL16"
+}
+```
+**Семпл #68:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-samsung-ddr4-8gb-3200mhz-ID110X7h.html",
+  "title": "Оперативна память Samsung DDR4 8GB 3200MHz"
+}
+```
+**Семпл #69:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-dlya-noutbuka-so-dimm-ddr4-8-gb-3-200mhz-ID10spb5.html",
+  "title": "Оперативна память для ноутбука so-dimm ddr4 8 gb 3.200mhz"
+}
+```
+**Семпл #70:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-kllisre-4gb-ddr3-1600mhz-2x4gb-IDXXMVb.html",
+  "title": "Оперативна пам’ять Kllisre 4GB DDR3 1600MHz (2x4GB)"
+}
+```
+**Семпл #71:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativnaya-pamyat-kingston-hyperx-fury-ddr4-16gb-3466mhz-ID10EkSi.html",
+  "title": "Оперативная память Kingston HyperX Fury DDR4 16GB 3466MHz"
+}
+```
+**Семпл #72:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr4-netac-3200-3600mgts-16gb-28-ID110VMD.html",
+  "title": "Оперативна память DDR4  Netac 3200, 3600мгц 16гб (2*8)"
+}
+```
+**Семпл #73:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/plashka-apirativno-pamyat-g-skill-aegismodel-f3-1333c9d-8gisobm-4-gbtip-ddr3-1333-pc3-10600taymngi-cl9napruga-1-5-v-ID10Pn79.html",
+  "title": "Плашка апиративної памяті G.Skill Aegis\nМодель: F3-1333C9D-8GIS\nОбєм: 4 ГБ\nТип: DDR3-1333 (PC3-10600)\nТаймінги: CL9\nНапруга: 1.5 В"
+}
+```
+**Семпл #74:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна память samsung"
+}
+```
+**Семпл #75:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/grova-pamyat-g-skill-sniper-xmp-ddr3-2x4gb-1600mhz-pc3-1280-IDZwSf5.html",
+  "title": "Ігрова память G.Skill Sniper XMP DDR3  2x4Gb 1600MHz PC3-1280"
+}
+```
+**Семпл #76:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativnaya-pamyat-ddr3-mhz-1333-4gb-1plashkabu-v-gar-stan-za-1sht-IDVeypg.html",
+  "title": "Оперативная память DDR3 MHZ 1333,4GB (1плашка)бу в гар стані, за 1шт"
+}
+```
+**Семпл #77:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-hynix-ddr4-16-gb-2rx4-pc4-2133p-ra0-10-hma42gr7mfr4n-tf-t1-ab-1514-ID110VwJ.html",
+  "title": "Оперативна памʼять Hynix DDR4 16 GB 2RX4 PC4-2133P-RA0-10  HMA42GR7MFR4N-TF T1 AB 1514"
+}
+```
+**Семпл #78:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "DDR4 Crucial Ballistix Black CL16 2x8G 3200mhzB"
+}
+```
+**Семпл #79:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-kingston-fury-ex-hyperx-beast-black-ddr5-2x16gb-kf552c36bbek2-32-ID10PDzA.html",
+  "title": "Оперативна пам’ять Kingston FURY (ex. HyperX) Beast Black DDR5 2x16GB (KF552C36BBEK2-32)"
+}
+```
+**Семпл #80:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ssd-kingston-nv3-1tb-m-2-2280-nvme-pcie-4-0-x4-3d-nand-ID10ZHuF.html",
+  "title": "SSD Kingston NV3 1TB M.2 2280 NVMe PCIe 4.0 x4 3D NAND"
+}
+```
+**Семпл #81:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/ozp-g-skill-ddr4-3200mhz-trident-z-neo-16gb-2x8gb-abo-32gb-4x8gb-ID10EkgL.html",
+  "title": "ОЗП G.Skill DDR4 3200Mhz Trident Z Neo 16GB 2x8GB або 32GB 4x8GB"
+}
+```
+**Семпл #82:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/prodam-disk-ssd-m2-patriot-480gb-na-garant-1-5-roki-ID10InB4.html",
+  "title": "продам диск ssd m2 patriot 480GB на гарантії 1.5 роки"
+}
+```
+**Семпл #83:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оригинал ОЗУ HyperX DDR3-1866 8192MB PC3-14900 Fury Black HX318C10FB/8"
+}
+```
+**Семпл #84:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativno-pamyat-gtl-ddr4-8gb-udimm-dlya-domashnogo-kompyutera-ID110VeX.html",
+  "title": "Оперативної памяті GTL DDR4 8Gb UDIMM для домашнього компютера"
+}
+```
+**Семпл #85:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Память серверная регистровая Hynix 4Gb PC2-3200R DDR2-400 2Rx4 ECC буф"
+}
+```
+**Семпл #86:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr4-16gb-hyperx-fury-black-2x8gb-ID105KUB.html",
+  "title": "Оперативна память DDR4 16GB HyperX Fury Black 2x8GB"
+}
+```
+**Семпл #87:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Модуль памяти Hynix HP 4GB PC3-10600"
+}
+```
+**Семпл #88:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr4-4gb-samsung-so-dimm-dlya-noutbuka-3200mhz-ID10NpSJ.html",
+  "title": "Оперативна память DDR4 4GB Samsung SO-DIMM для ноутбука (3200MHz)"
+}
+```
+**Семпл #89:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Продам оперативную память Kingston 4/4 ddr3"
+}
+```
+**Семпл #90:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Память DDR2 для компютера 2Гб PC2-6400U 800MHz Adata 2Gb ДДР2 800МГц"
+}
+```
+**Семпл #91:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/kingston-fury-beast-ddr4-8gb-2666mhz-black-ID10ZhnK.html",
+  "title": "Kingston FURY Beast DDR4 8GB 2666MHz Black"
+}
+```
+**Семпл #92:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr4-3600-3200-3000-2133mhz-16-8gb-corsair-vengeance-hyperx-komplekti-ta-poshtuchno-ID10l3vS.html",
+  "title": "Оперативна память DDR4- 3600/3200/3000/2133mhZ - 16/8gb Corsair Vengeance / HyperX (Комплекти та поштучно)"
+}
+```
+**Семпл #93:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/crucial-ram-ddr5-pro-64-gb-2-x-32-gb-ID10Sd0o.html",
+  "title": "Crucial RAM DDR5 Pro 64 gb (2 x 32 gb)"
+}
+```
+**Семпл #94:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-crucial-ballistix-tactical-ddr3-8gb-1600mhz-cl8-blt8g3d1608dt1tx0-ID10fpus.html",
+  "title": "Оперативна память Crucial Ballistix Tactical DDR3 8GB 1600MHz CL8 (BLT8G3D1608DT1TX0)"
+}
+```
+**Семпл #95:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-4sht-8gb-ddr3-IDR4RyC.html",
+  "title": "Оперативна пам’ять (4шт) 8gb ddr3"
+}
+```
+**Семпл #96:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/novaoperativna-pamyat-netac-ddr4-32gb-216gb-3200mhz-cl16-ID10YASZ.html",
+  "title": "Нова‼️Оперативна пам’ять Netac DDR4 32GB 2×16GB 3200MHz CL16"
+}
+```
+**Семпл #97:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "Оперативна пам\"ять ddr1234 пк комплекти на всі сокети Левада"
+}
+```
+**Семпл #98:**
+```json
+{
+  "reason": "duplicate_url_already_in_db",
+  "url": "https://www.olx.ua/d/uk/obyavlenie/operativna-pamyat-ddr3-na-4-gb-IDYSUtP.html",
+  "title": "Оперативна память DDR3 на 4 гб"
+}
+```
+**Семпл #99:**
+```json
+{
+  "reason": "no_hardware_target_matched",
+  "title": "G. Skill Trident Z 3600mhz cl16-16-16-36 b-die"
+}
+```
 **Семпл #100:**
 ```json
 {
   "reason": "no_hardware_target_matched",
-  "title": "Оперативная память Kingston HX318C10FBK2/8"
+  "title": "Оперативна память DDR2 mushkin XP-2 8500 4x2Gb"
 }
 ```
 
 #### 📦 Комплекти — Відсіяно (0):
 
 ### 🎯 Успішно розпізнані моделі:
-#### 🎮 Відеокарти (GPU) — Розпізнано (82):
+#### 🎮 Відеокарти (GPU) — Розпізнано (4):
 **Зразок #1:**
 ```json
 {
-  "raw_title": "Відеокарта Inno3D GeForce RTX 2060 Super 8GB GDDR6",
-  "matched_target": "rtx_2060_super",
-  "price_uah": 7000
+  "raw_title": "Відеокарта XFX RX 6600XT Quick 308 Black",
+  "matched_target": "rx_6600_xt",
+  "price_uah": 9000
 }
 ```
 **Зразок #2:**
 ```json
 {
-  "raw_title": "Відеокарта AFOX PCI-E GeForce GT 710 2048 MB DDR3",
-  "matched_target": "gt_710",
-  "price_uah": 805
+  "raw_title": "AORUS GeForce® GTX 1660 Ti 6G",
+  "matched_target": "gtx_1660_ti",
+  "price_uah": 7200
 }
 ```
 **Зразок #3:**
 ```json
 {
-  "raw_title": "Radeon rx580 8gb red devil",
-  "matched_target": "rx_580",
-  "price_uah": 2699
+  "raw_title": "Відеокарта MSI GeForce RTX5080 16GB INSPIRE 3X OC (RTX 5080 16G INSPIRE 3X OC) На Гарантії",
+  "matched_target": "rtx_5080",
+  "price_uah": 68000
 }
 ```
 **Зразок #4:**
 ```json
 {
-  "raw_title": "(НЕ РОБОЧА)Відеокарта hd 7850 2 gb gddr5",
-  "matched_target": "hd_7850",
-  "price_uah": 300
-}
-```
-**Зразок #5:**
-```json
-{
-  "raw_title": "Комплект ASUS 750ti + M5A7BL-M LX3 +AMD FX 4300 под восстановление",
-  "matched_target": "bundle_fx_4300_gtx_750_ti",
-  "price_uah": 444
-}
-```
-**Зразок #6:**
-```json
-{
-  "raw_title": "Видеокарта,Rx5700,ASUS DUAL OC",
-  "matched_target": "rx_5700",
-  "price_uah": 6000
-}
-```
-**Зразок #7:**
-```json
-{
-  "raw_title": "Відеокарта Rx 580",
-  "matched_target": "rx_580",
-  "price_uah": 4000
-}
-```
-**Зразок #8:**
-```json
-{
-  "raw_title": "Видеокарта Rx5700XT,Gigabyte oc",
-  "matched_target": "rx_5700_xt",
-  "price_uah": 6000
-}
-```
-**Зразок #9:**
-```json
-{
-  "raw_title": "Відеокарта GIGABYTE GeForce RTX4060 8Gb EAGLE OC (GV-N4060EAGLE OC-8GD)",
-  "matched_target": "rtx_4060",
-  "price_uah": 14000
-}
-```
-**Зразок #10:**
-```json
-{
-  "raw_title": "Видеокарта XFX PCI-Ex Radeon RX 6600 Speedster SWFT 210 8GB GDDR6 (128bit) (1626/14000) (HDMI, 3 x DisplayPort) (RX-66XL8LFDQ)",
-  "matched_target": "rx_6600",
-  "price_uah": 7500
-}
-```
-**Зразок #11:**
-```json
-{
-  "raw_title": "MSI GTX 1650 SUPER Gaming X 4GB GDDR6 GeForce",
-  "matched_target": "gtx_1650_super",
-  "price_uah": 4499
-}
-```
-**Зразок #12:**
-```json
-{
-  "raw_title": "Видеокарта MSI GeForce GTX 970 Gaming 4GB GDDR5 (256bit) PCI-E 3.0",
-  "matched_target": "gtx_970",
-  "price_uah": 2800
-}
-```
-**Зразок #13:**
-```json
-{
-  "raw_title": "GTX560TI 1GB GDDR5 в хорошому стані",
-  "matched_target": "gtx_560_ti",
-  "price_uah": 550
-}
-```
-**Зразок #14:**
-```json
-{
-  "raw_title": "MSI AMD Radeon RX 5700 MECH OC 8GB GDDR6 Робоча",
-  "matched_target": "rx_5700",
-  "price_uah": 6500
-}
-```
-**Зразок #15:**
-```json
-{
-  "raw_title": "Sapphire Radeon RX 570 8GB",
-  "matched_target": "rx_570",
-  "price_uah": 2550
-}
-```
-**Зразок #16:**
-```json
-{
-  "raw_title": "Видеокарта GeForce GT 1030 2GB MSI Aero ITX OC DDR5",
-  "matched_target": "gt_1030",
-  "price_uah": 1800
-}
-```
-**Зразок #17:**
-```json
-{
-  "raw_title": "Видеокарта NVIDIA MSI GTX 950 2Gb",
-  "matched_target": "gtx_950",
-  "price_uah": 2399
-}
-```
-**Зразок #18:**
-```json
-{
-  "raw_title": "Видеокарта AMD Asus HD 6870 1Gb",
-  "matched_target": "hd_6870",
-  "price_uah": 1299
-}
-```
-**Зразок #19:**
-```json
-{
-  "raw_title": "Видеокарта Asus PCI-Ex Radeon RX550 2GB, рабочая",
-  "matched_target": "rx_550",
-  "price_uah": 1700
-}
-```
-**Зразок #20:**
-```json
-{
-  "raw_title": "запчасти / Донор / Охлаждение GeForce RTX 4090 GAMING X SLIM 24G",
-  "matched_target": "rtx_4090",
-  "price_uah": 8500
-}
-```
-**Зразок #21:**
-```json
-{
-  "raw_title": "Видеокарты Radeon HD7470 2Gb Gigabyte GeForce 8600 GT Inno3D FX5200",
-  "matched_target": "bundle_fx_5200_fx_5200",
-  "price_uah": 200
-}
-```
-**Зразок #22:**
-```json
-{
-  "raw_title": "Відеокарта  gt1030 4GB",
-  "matched_target": "gt_1030",
-  "price_uah": 4500
-}
-```
-**Зразок #23:**
-```json
-{
-  "raw_title": "Відеокарта ASUS PCI-Ex GeForce RTX 5070 Dual OC Edition 12GB GDDR7 (192bit) (2572/28000) (HDMI, 3 x DisplayPort) (DUAL-RTX5070-O12G)",
-  "matched_target": "rtx_5070",
-  "price_uah": 31600
-}
-```
-**Зразок #24:**
-```json
-{
-  "raw_title": "Відеокарта sapphire RX480 8GB",
-  "matched_target": "rx_480",
-  "price_uah": 3000
-}
-```
-**Зразок #25:**
-```json
-{
-  "raw_title": "Asus TUF RTX 3070 Gaming OC",
-  "matched_target": "rtx_3070",
-  "price_uah": 13500
-}
-```
-**Зразок #26:**
-```json
-{
-  "raw_title": "Відеокарта MSI RX 6600 XT",
-  "matched_target": "rx_6600_xt",
-  "price_uah": 9300
-}
-```
-**Зразок #27:**
-```json
-{
-  "raw_title": "Відеокарта MSI GeForce RTX 3090 VENTUS 3X OC 24GB GDDR6X (384bit) (HDMI, 3 x DisplayPort) Магазин CompiC",
-  "matched_target": "rtx_3090",
-  "price_uah": 42000
-}
-```
-**Зразок #28:**
-```json
-{
-  "raw_title": "Видеокарта Gtx 1050Ti",
-  "matched_target": "gtx_1050_ti",
-  "price_uah": 2984
-}
-```
-**Зразок #29:**
-```json
-{
-  "raw_title": "Відеокарта nvidia gtx  670 GIGABYTE",
-  "matched_target": "gtx_670",
-  "price_uah": 600
-}
-```
-**Зразок #30:**
-```json
-{
-  "raw_title": "Видеокарта AURUS GTX 1080 Ti 11 Gb Любые тесты! Магазин COMPiC",
-  "matched_target": "gtx_1080_ti",
-  "price_uah": 7400
-}
-```
-**Зразок #31:**
-```json
-{
-  "raw_title": "RTX 2070 MSI Ventus Несправна",
-  "matched_target": "rtx_2070",
-  "price_uah": 3000
-}
-```
-**Зразок #32:**
-```json
-{
-  "raw_title": "Відеокарта RTX3050 8gb Asus",
-  "matched_target": "rtx_3050",
-  "price_uah": 8500
-}
-```
-**Зразок #33:**
-```json
-{
-  "raw_title": "Відеокарта MSI GeForce GT 740 2GB DDR3 (N740-2GD3) Робоча",
-  "matched_target": "gt_740",
-  "price_uah": 800
-}
-```
-**Зразок #34:**
-```json
-{
-  "raw_title": "Відеокарта R5 230 afox 2gb gddr3 робоча",
-  "matched_target": "r5_230",
+  "raw_title": "видеокарта Gigabyte GeForce GT 730",
+  "matched_target": "gt_730",
   "price_uah": 1000
-}
-```
-**Зразок #35:**
-```json
-{
-  "raw_title": "Відеокарта - NVIDIA GeForce GTX 1070 8 ГБ GDDR5",
-  "matched_target": "gtx_1070",
-  "price_uah": 4899
-}
-```
-**Зразок #36:**
-```json
-{
-  "raw_title": "Продам Rtx 3050 6gb",
-  "matched_target": "rtx_3050",
-  "price_uah": 11000
-}
-```
-**Зразок #37:**
-```json
-{
-  "raw_title": "RTX 3080 TI zotac",
-  "matched_target": "rtx_3080_ti",
-  "price_uah": 19999
-}
-```
-**Зразок #38:**
-```json
-{
-  "raw_title": "Відееарта gtx  1660super 6gb 192bit від PALIT",
-  "matched_target": "gtx_1660_super",
-  "price_uah": 5700
-}
-```
-**Зразок #39:**
-```json
-{
-  "raw_title": "Відеокарта GTX 1650",
-  "matched_target": "gtx_1650",
-  "price_uah": 3500
-}
-```
-**Зразок #40:**
-```json
-{
-  "raw_title": "Відеокарта - AMD Radeon RX 6600 XT 8 ГБ GDDR6",
-  "matched_target": "rx_6600_xt",
-  "price_uah": 7199
-}
-```
-**Зразок #41:**
-```json
-{
-  "raw_title": "Radeon R9 280 3GB GDDR5 — Повний комплект (Box)під відновлення/ремонт",
-  "matched_target": "r9_280",
-  "price_uah": 970
-}
-```
-**Зразок #42:**
-```json
-{
-  "raw_title": "Відеокарта Asus GTX650 2Gb GDDR5",
-  "matched_target": "gtx_650",
-  "price_uah": 1400
-}
-```
-**Зразок #43:**
-```json
-{
-  "raw_title": "Видеокарта Asus Gtx780 3gb",
-  "matched_target": "gtx_780",
-  "price_uah": 1000
-}
-```
-**Зразок #44:**
-```json
-{
-  "raw_title": "Відеокарта Galax GeForce GTX950 2Gb GDDR5 DVI HDMI OEM",
-  "matched_target": "gtx_950",
-  "price_uah": 2300
-}
-```
-**Зразок #45:**
-```json
-{
-  "raw_title": "Відеокарта - AMD Radeon RX 5700 XT 8 ГБ GDDR6",
-  "matched_target": "rx_5700_xt",
-  "price_uah": 6299
-}
-```
-**Зразок #46:**
-```json
-{
-  "raw_title": "ASUS ROG Strix GeForce RTX 3090 24GB",
-  "matched_target": "rtx_3090",
-  "price_uah": 41499
-}
-```
-**Зразок #47:**
-```json
-{
-  "raw_title": "Радиатор с кулером Radeon R9 390 Gigabyte",
-  "matched_target": "r9_390",
-  "price_uah": 531
-}
-```
-**Зразок #48:**
-```json
-{
-  "raw_title": "RTX 6070 видеокарта/відеокарта",
-  "matched_target": "rtx_6070",
-  "price_uah": 67000
-}
-```
-**Зразок #49:**
-```json
-{
-  "raw_title": "Відеокарта HD7750 2048MB, б/у",
-  "matched_target": "hd_7750",
-  "price_uah": 799
-}
-```
-**Зразок #50:**
-```json
-{
-  "raw_title": "Продам коробку от видеокарты MSI RADEON RX 480 4GB",
-  "matched_target": "rx_480",
-  "price_uah": 99
-}
-```
-**Зразок #51:**
-```json
-{
-  "raw_title": "Відеокарта - NVIDIA GeForce RTX 4060 8 ГБ GDDR6",
-  "matched_target": "rtx_4060",
-  "price_uah": 11999
-}
-```
-**Зразок #52:**
-```json
-{
-  "raw_title": "ASUS Rog Strix GTX 1070 8GB",
-  "matched_target": "gtx_1070",
-  "price_uah": 4612
-}
-```
-**Зразок #53:**
-```json
-{
-  "raw_title": "AMD Radeon RX 7900 XTX 24GB GDDR6 — потужна відеокарта для 2K/4K",
-  "matched_target": "rx_7900_xtx",
-  "price_uah": 32500
-}
-```
-**Зразок #54:**
-```json
-{
-  "raw_title": "Palit GeForce RTX 4070 Ti SUPER GamingPro OC",
-  "matched_target": "rtx_4070_ti_super",
-  "price_uah": 23700
-}
-```
-**Зразок #55:**
-```json
-{
-  "raw_title": "Asus GeForce GTX 650",
-  "matched_target": "gtx_650",
-  "price_uah": 400
-}
-```
-**Зразок #56:**
-```json
-{
-  "raw_title": "Видеокарта GTX 1080ti",
-  "matched_target": "gtx_1080_ti",
-  "price_uah": 5500
-}
-```
-**Зразок #57:**
-```json
-{
-  "raw_title": "PowerColor Hellhound AMD Radeon RX 7900 XT 20GB",
-  "matched_target": "rx_7900_xt",
-  "price_uah": 28500
-}
-```
-**Зразок #58:**
-```json
-{
-  "raw_title": "GeForce 960 GTX 4gb",
-  "matched_target": "gtx_960",
-  "price_uah": 2500
-}
-```
-**Зразок #59:**
-```json
-{
-  "raw_title": "Gigabyte RTX 4060 WINDFORCE OC 8G",
-  "matched_target": "rtx_4060",
-  "price_uah": 11700
-}
-```
-**Зразок #60:**
-```json
-{
-  "raw_title": "Видеокарта Radeon Sapphire RX470 8GB Samsung! (Много)",
-  "matched_target": "rx_470",
-  "price_uah": 2999
-}
-```
-**Зразок #61:**
-```json
-{
-  "raw_title": "MSI RTX 5070 Ventus 3X OC",
-  "matched_target": "rtx_5070",
-  "price_uah": 31500
-}
-```
-**Зразок #62:**
-```json
-{
-  "raw_title": "Видеокарта Gtx 760 2g msi рабочая",
-  "matched_target": "gtx_760",
-  "price_uah": 999
-}
-```
-**Зразок #63:**
-```json
-{
-  "raw_title": "Видеокарта Palit GeForce GTS 250 green 512 мб DDR3",
-  "matched_target": "gts_250",
-  "price_uah": 300
-}
-```
-**Зразок #64:**
-```json
-{
-  "raw_title": "Обмен Prime RTX 5080 на ПК",
-  "matched_target": "rtx_5080",
-  "price_uah": 0
-}
-```
-**Зразок #65:**
-```json
-{
-  "raw_title": "RX 570 4 gb Gigabyte",
-  "matched_target": "rx_570",
-  "price_uah": 1780
-}
-```
-**Зразок #66:**
-```json
-{
-  "raw_title": "Nvidia GeForce RTX 2070 8GB GDDR6",
-  "matched_target": "rtx_2070",
-  "price_uah": 15000
-}
-```
-**Зразок #67:**
-```json
-{
-  "raw_title": "Дві карти - ASUS ROG STRIX GTX 1070Ti 8Gb",
-  "matched_target": "gtx_1070_ti",
-  "price_uah": 8500
-}
-```
-**Зразок #68:**
-```json
-{
-  "raw_title": "GeForce GTX 750 Ti 2GB GDDR5 Inno3D",
-  "matched_target": "gtx_750_ti",
-  "price_uah": 900
-}
-```
-**Зразок #69:**
-```json
-{
-  "raw_title": "Продам відеокарту ASUS  Rog-Strix GeForceGTX1070Ті 1070 Ti",
-  "matched_target": "gtx_1070_ti",
-  "price_uah": 5500
-}
-```
-**Зразок #70:**
-```json
-{
-  "raw_title": "Відеокарта MSI Radeon RX 480 GAMING X 8G Б/в + Гарантія 3 місяці!",
-  "matched_target": "rx_480",
-  "price_uah": 3325
-}
-```
-**Зразок #71:**
-```json
-{
-  "raw_title": "Відеокарта GIGABYTE GeForce GTX1050 Ti 4096Mb",
-  "matched_target": "gtx_1050_ti",
-  "price_uah": 3500
-}
-```
-**Зразок #72:**
-```json
-{
-  "raw_title": "Відеокарта Sapphire Pure Radeon RX 9070 XT",
-  "matched_target": "rx_9070_xt",
-  "price_uah": 34000
-}
-```
-**Зразок #73:**
-```json
-{
-  "raw_title": "відеокарта rx 470 4gb",
-  "matched_target": "rx_470",
-  "price_uah": 500
-}
-```
-**Зразок #74:**
-```json
-{
-  "raw_title": "Nvidia GeForce RTX 3070 Founders Edition 8GB",
-  "matched_target": "rtx_3070",
-  "price_uah": 12800
-}
-```
-**Зразок #75:**
-```json
-{
-  "raw_title": "Rx 550 lp  4 gb red dragon",
-  "matched_target": "rx_550",
-  "price_uah": 3000
-}
-```
-**Зразок #76:**
-```json
-{
-  "raw_title": "AMD Radeon 1GB HD8350 64bit активное охлаждение.",
-  "matched_target": "hd_8350",
-  "price_uah": 690
-}
-```
-**Зразок #77:**
-```json
-{
-  "raw_title": "Відеокарта EVGA GeForce GTX 770 SC ACX",
-  "matched_target": "bundle_770_gtx_770",
-  "price_uah": 600
-}
-```
-**Зразок #78:**
-```json
-{
-  "raw_title": "Відеокарта Gainward GeForce GTX 650 Ti GS (Golden Sample) 1GB GDDR5",
-  "matched_target": "gtx_650_ti",
-  "price_uah": 700
-}
-```
-**Зразок #79:**
-```json
-{
-  "raw_title": "Відеокарта ASUS Prime OC RTX 5070 Ti 16GB з коробкою",
-  "matched_target": "rtx_5070_ti",
-  "price_uah": 46000
-}
-```
-**Зразок #80:**
-```json
-{
-  "raw_title": "Rx 550 (2gb) Asus",
-  "matched_target": "rx_550",
-  "price_uah": 1800
-}
-```
-**Зразок #81:**
-```json
-{
-  "raw_title": "Відеокарта ASUS Dual Radeon RX 6750 XT OC 12GB",
-  "matched_target": "rx_6750_xt",
-  "price_uah": 11500
-}
-```
-**Зразок #82:**
-```json
-{
-  "raw_title": "Відеокарта EVGA RTX 3090 24GB FTW3 ultra ТОП Монстр іі та 4К ігор. ТОП виробник EVGA, топ модель.",
-  "matched_target": "rtx_3090",
-  "price_uah": 45000
 }
 ```
 
-#### 🧠 Процесори (CPU) — Розпізнано (62):
+#### 🧠 Процесори (CPU) — Розпізнано (1):
 **Зразок #1:**
 ```json
 {
-  "raw_title": "Комплект: материнська плата Asus ROG Strix Z690-E Gaming WiFi + Intel Core i5-13600K",
-  "matched_target": "bundle_i5_13600k_z690",
-  "price_uah": 15000
-}
-```
-**Зразок #2:**
-```json
-{
-  "raw_title": "Процессор AMD Ryzen 9 9900X 4.4 GHz/64MB Socket AM5",
-  "matched_target": "ryzen_9_9900x",
-  "price_uah": 14000
-}
-```
-**Зразок #3:**
-```json
-{
-  "raw_title": "Игоровой комплет на пк AMD Ryzen 7 5700X3D",
-  "matched_target": "ryzen_7_5700x3d",
-  "price_uah": 23000
-}
-```
-**Зразок #4:**
-```json
-{
-  "raw_title": "Процесор Ryzen 5 5600X 3.7(4.6)GHz 32MB sAM4 tray",
-  "matched_target": "ryzen_5_5600x",
-  "price_uah": 5600
-}
-```
-**Зразок #5:**
-```json
-{
-  "raw_title": "Процесор Ryzen 5 5600",
-  "matched_target": "ryzen_5_5600",
-  "price_uah": 3950
-}
-```
-**Зразок #6:**
-```json
-{
-  "raw_title": "Xeon 2670 v3 + материнка и башня DDR4",
-  "matched_target": "xeon_e5_2670_v3",
-  "price_uah": 3000
-}
-```
-**Зразок #7:**
-```json
-{
-  "raw_title": "Процесор Intel Core i5 3330",
-  "matched_target": "i5_3330",
-  "price_uah": 350
-}
-```
-**Зразок #8:**
-```json
-{
-  "raw_title": "Процессор AMD Ryzen 5 7500F Socket AM5 6 ядрер 5.0 ГГц можно с материнкой",
-  "matched_target": "ryzen_5_7500f",
-  "price_uah": 4700
-}
-```
-**Зразок #9:**
-```json
-{
-  "raw_title": "Процессор Intel Celeron G530 (LGA socket 1155)",
-  "matched_target": "celeron_g530",
-  "price_uah": 70
-}
-```
-**Зразок #10:**
-```json
-{
-  "raw_title": "Процессор Intel Pentium G3460 s1150",
-  "matched_target": "pentium_g3460",
+  "raw_title": "Процесор intel pentium g3220, картридер ST Lab, оперативна память 4 гб",
+  "matched_target": "pentium_g3220",
   "price_uah": 200
 }
 ```
-**Зразок #11:**
+
+#### 🔌 Материнські плати — Розпізнано (0):
+
+#### ⚡ Блоки живлення — Розпізнано (1):
+**Зразок #1:**
 ```json
 {
-  "raw_title": "Процесор AMD Ryzen 7 5800X (AM4)",
-  "matched_target": "ryzen_7_5800x",
-  "price_uah": 6900
+  "raw_title": "Блок живлення Chieftec 700W",
+  "matched_target": "700w",
+  "price_uah": 1100
 }
 ```
-**Зразок #12:**
+
+#### 💾 Накопичувачі — Розпізнано (1):
+**Зразок #1:**
 ```json
 {
-  "raw_title": "Intel Celeron G1840",
-  "matched_target": "celeron_g1840",
-  "price_uah": 120
+  "raw_title": "M.2 SSD диск 256GB Samsung PM991 (PCIe 3.0 x4. NVMe). Trade-in",
+  "matched_target": "ssd_256gb",
+  "price_uah": 2500
 }
 ```
-**Зразок #13:**
+
+#### 📟 Оперативна пам'ять — Розпізнано (3):
+**Зразок #1:**
 ```json
 {
-  "raw_title": "Intel Core i7-870 сокет 1156 процессоры",
-  "matched_target": "bundle_i7_870_870",
+  "raw_title": "Нова оперативна память Patriot DDR4 4GB 2666MHz (PSD44G266682) для ПК",
+  "matched_target": "ram_ddr4_4gb",
   "price_uah": 599
 }
 ```
-**Зразок #14:**
+**Зразок #2:**
 ```json
 {
-  "raw_title": "Продам i3 6100 Б/У",
-  "matched_target": "i3_6100",
-  "price_uah": 200
+  "raw_title": "память DDR5 для ПК 64GB (2x32) 6000MHz PATRIOT Viper RGB. TradeIN",
+  "matched_target": "ssd_64gb",
+  "price_uah": 32500
 }
 ```
-**Зразок #15:**
+**Зразок #3:**
 ```json
 {
-  "raw_title": "Процессор Intel Celeron G1610",
-  "matched_target": "celeron_g1610",
-  "price_uah": 100
-}
-```
-**Зразок #16:**
-```json
-{
-  "raw_title": "Процесор Intel Core i5-11600K 3.9-4.9GHz 12MB LGA1200 (Box)",
-  "matched_target": "i5_11600k",
-  "price_uah": 5799
-}
-```
-**Зразок #17:**
-```json
-{
-  "raw_title": "AMD Ryzen 5 1600 процесор 6 ядер/12 потоків",
-  "matched_target": "ryzen_5_1600",
-  "price_uah": 2100
-}
-```
-**Зразок #18:**
-```json
-{
-  "raw_title": "Intel Xeon E5-2678 v3 SR20Z",
-  "matched_target": "xeon_e5_2678_v3",
-  "price_uah": 1000
-}
-```
-**Зразок #19:**
-```json
-{
-  "raw_title": "Процессор Fx-6300",
-  "matched_target": "bundle_fx_6300_fx_6300",
-  "price_uah": 550
-}
-```
-**Зразок #20:**
-```json
-{
-  "raw_title": "Intel core i5 9400f",
-  "matched_target": "i5_9400f",
-  "price_uah": 1990
-}
-```
-**Зразок #21:**
-```json
-{
-  "raw_title": "Fx4320 ам3+ ам3.",
-  "matched_target": "bundle_fx_4320_fx_4320",
-  "price_uah": 600
-}
-```
-**Зразок #22:**
-```json
-{
-  "raw_title": "Xeon E3 1240 v2 тот же i7 3770 и i7 3770K .Будет мощнее i7 2600K",
-  "matched_target": "i7_3770",
-  "price_uah": 1450
-}
-```
-**Зразок #23:**
-```json
-{
-  "raw_title": "Intel Core i5 7400 4x 3.5Ghz Socket 1151 Kaby Lake",
-  "matched_target": "i5_7400",
-  "price_uah": 850
-}
-```
-**Зразок #24:**
-```json
-{
-  "raw_title": "і5-8500 Intel Core 3.00 ghz процесор",
-  "matched_target": "i5_8500",
-  "price_uah": 1550
-}
-```
-**Зразок #25:**
-```json
-{
-  "raw_title": "Процесор AMD A8-3800 Series",
-  "matched_target": "a8_3800",
-  "price_uah": 1000
-}
-```
-**Зразок #26:**
-```json
-{
-  "raw_title": "Процессор Intel Core i5-14600Kf",
-  "matched_target": "i5_14600kf",
-  "price_uah": 10700
-}
-```
-**Зразок #27:**
-```json
-{
-  "raw_title": "Процесор Intel Core i5-7500 (сокет 1151)",
-  "matched_target": "i5_7500",
-  "price_uah": 1070
-}
-```
-**Зразок #28:**
-```json
-{
-  "raw_title": "Процессор Intel Core i7-8700 3,2GHz (Socket 1151 v2) Гарантия 1 год",
-  "matched_target": "i7_8700",
-  "price_uah": 3400
-}
-```
-**Зразок #29:**
-```json
-{
-  "raw_title": "Ryzen 7 5700x soyo b550 ddr4 16gb",
-  "matched_target": "bundle_ryzen_7_5700x_b550",
-  "price_uah": 11000
-}
-```
-**Зразок #30:**
-```json
-{
-  "raw_title": "Процесор Intel Pentium G4560 + Боксовий кулер",
-  "matched_target": "pentium_g4560",
-  "price_uah": 200
-}
-```
-**Зразок #31:**
-```json
-{
-  "raw_title": "Intel Haswell i7 4790 1150 (4770)",
-  "matched_target": "i7_4790",
-  "price_uah": 2000
-}
-```
-**Зразок #32:**
-```json
-{
-  "raw_title": "Топ Процессор на АМ4 Ryzen 7 5800X3D, рабочий. На гарантии",
-  "matched_target": "ryzen_7_5800x3d",
+  "raw_title": "Оперативна память Kingston FURY Beast DDR5 32GB (2x16GB) 6000MHz CL40",
+  "matched_target": "ram_ddr5_32gb",
   "price_uah": 15000
-}
-```
-**Зразок #33:**
-```json
-{
-  "raw_title": "Процессор - AMD A4-6300",
-  "matched_target": "a4_6300",
-  "price_uah": 350
-}
-```
-**Зразок #34:**
-```json
-{
-  "raw_title": "Продам Pentium G4560",
-  "matched_target": "pentium_g4560",
-  "price_uah": 300
-}
-```
-**Зразок #35:**
-```json
-{
-  "raw_title": "Процессоры:AMD Athlon II x2 250 и fm1-AMD A4-3300",
-  "matched_target": "athlon_ii_x2_250",
-  "price_uah": 130
-}
-```
-**Зразок #36:**
-```json
-{
-  "raw_title": "Intel Core i3-12100F (LGA1700)",
-  "matched_target": "i3_12100f",
-  "price_uah": 3100
-}
-```
-**Зразок #37:**
-```json
-{
-  "raw_title": "Процессор s1150 Intel® Core™ i3-4170 Processor\n3M Cache, 3.70 GHz",
-  "matched_target": "i3_4170",
-  "price_uah": 100
-}
-```
-**Зразок #38:**
-```json
-{
-  "raw_title": "Процесор AMD Ryzen 7 - 9800x3D | Нові",
-  "matched_target": "ryzen_7_9800x3d",
-  "price_uah": 17900
-}
-```
-**Зразок #39:**
-```json
-{
-  "raw_title": "Продам процесор  i7  7700",
-  "matched_target": "i7_7700",
-  "price_uah": 3200
-}
-```
-**Зразок #40:**
-```json
-{
-  "raw_title": "Amd ryzen 3 2200g",
-  "matched_target": "ryzen_3_2200g",
-  "price_uah": 700
-}
-```
-**Зразок #41:**
-```json
-{
-  "raw_title": "Сore i3 10105f - Сore i3 8100",
-  "matched_target": "i3_10105f",
-  "price_uah": 0
-}
-```
-**Зразок #42:**
-```json
-{
-  "raw_title": "Intel  i5-2310\n Процессор",
-  "matched_target": "i5_2310",
-  "price_uah": 600
-}
-```
-**Зразок #43:**
-```json
-{
-  "raw_title": "Процессор Intel Core i5-3470 4ядра 3.2-3.6GHz lga 1155 socket",
-  "matched_target": "i5_3470",
-  "price_uah": 680
-}
-```
-**Зразок #44:**
-```json
-{
-  "raw_title": "Процессор Intel Core i7-4790 (Socket LGA1150)",
-  "matched_target": "i7_4790",
-  "price_uah": 1700
-}
-```
-**Зразок #45:**
-```json
-{
-  "raw_title": "Процесор intel core i5 3470",
-  "matched_target": "i5_3470",
-  "price_uah": 1000
-}
-```
-**Зразок #46:**
-```json
-{
-  "raw_title": "Amd Ryzen 5 1600",
-  "matched_target": "ryzen_5_1600",
-  "price_uah": 1000
-}
-```
-**Зразок #47:**
-```json
-{
-  "raw_title": "Комплект: Intel Core i5-10400F + Asus PRIME H510M-A + Deepcool GAMMAXX 400K",
-  "matched_target": "i5_10400f",
-  "price_uah": 7500
-}
-```
-**Зразок #48:**
-```json
-{
-  "raw_title": "Ryzen 5 5500 використовувався 3 місяці не розганявся",
-  "matched_target": "ryzen_5_5500",
-  "price_uah": 2300
-}
-```
-**Зразок #49:**
-```json
-{
-  "raw_title": "Процессор Intel Celeron G1840 б.у. (Сокет 1150)",
-  "matched_target": "celeron_g1840",
-  "price_uah": 122
-}
-```
-**Зразок #50:**
-```json
-{
-  "raw_title": "Ryzen 3 1200 BOX",
-  "matched_target": "ryzen_3_1200",
-  "price_uah": 500
-}
-```
-**Зразок #51:**
-```json
-{
-  "raw_title": "Процессор Intel Core i7-6700K 4,0GHz (Socket 1151) Гарантия 1 год",
-  "matched_target": "i7_6700k",
-  "price_uah": 2700
-}
-```
-**Зразок #52:**
-```json
-{
-  "raw_title": "Процессор Intel Core i3-3220 3.30GHz  (SR0RG) s1155, сокет 1155",
-  "matched_target": "i3_3220",
-  "price_uah": 240
-}
-```
-**Зразок #53:**
-```json
-{
-  "raw_title": "Продам процесор з кулером AMD Ryzen 7 2700X",
-  "matched_target": "ryzen_7_2700x",
-  "price_uah": 2000
-}
-```
-**Зразок #54:**
-```json
-{
-  "raw_title": "Процесор Ryzen 5 3500x",
-  "matched_target": "ryzen_5_3500x",
-  "price_uah": 2600
-}
-```
-**Зразок #55:**
-```json
-{
-  "raw_title": "Процесор AMD Athlon X4 970 (Socket AM4) 3.8-4.0 GHz",
-  "matched_target": "athlon_x4_970",
-  "price_uah": 300
-}
-```
-**Зразок #56:**
-```json
-{
-  "raw_title": "Процесор Intel i3-4330",
-  "matched_target": "i3_4330",
-  "price_uah": 300
-}
-```
-**Зразок #57:**
-```json
-{
-  "raw_title": "Intel core i5 7600",
-  "matched_target": "i5_7600",
-  "price_uah": 1700
-}
-```
-**Зразок #58:**
-```json
-{
-  "raw_title": "Intel Celeron G1840 SR1VK 2.80GHZ VN",
-  "matched_target": "celeron_g1840",
-  "price_uah": 400
-}
-```
-**Зразок #59:**
-```json
-{
-  "raw_title": "Производительный Процессор AMD A4-3300",
-  "matched_target": "a4_3300",
-  "price_uah": 200
-}
-```
-**Зразок #60:**
-```json
-{
-  "raw_title": "Процесор AMD Ryzen 7 5700G 3.8GHz/16MB sAM4",
-  "matched_target": "ryzen_7_5700g",
-  "price_uah": 6200
-}
-```
-**Зразок #61:**
-```json
-{
-  "raw_title": "Процессор AMD ryzen 5 1600AF (2600)",
-  "matched_target": "ryzen_5_1600af",
-  "price_uah": 1200
-}
-```
-**Зразок #62:**
-```json
-{
-  "raw_title": "Процессор AMD Ryzen 9 7950X3D  sAM5 Box",
-  "matched_target": "ryzen_9_7950x3d",
-  "price_uah": 18300
-}
-```
-
-#### 🔌 Материнські плати — Розпізнано (59):
-**Зразок #1:**
-```json
-{
-  "raw_title": "Комплект материнська плата GIGABYTE B450 GAMING X + RYZEN 5 3600",
-  "matched_target": "bundle_ryzen_5_3600_b450",
-  "price_uah": 9900
-}
-```
-**Зразок #2:**
-```json
-{
-  "raw_title": "Материнская плата MSI X79A-GD45 + Intel Core i7-4930K 3,4GHz + кулер (Socket 2011) Гарантия 1 год",
-  "matched_target": "i7_4930k",
-  "price_uah": 3100
-}
-```
-**Зразок #3:**
-```json
-{
-  "raw_title": "MSI B150M PRO-VH(сокет 1151v1) + Core i5-6500 3.2GHz + кулер",
-  "matched_target": "i5_6500",
-  "price_uah": 1567
-}
-```
-**Зразок #4:**
-```json
-{
-  "raw_title": "Материнська плата ASUS TUF GAMING A620M PLUS WIFI",
-  "matched_target": "a620",
-  "price_uah": 4500
-}
-```
-**Зразок #5:**
-```json
-{
-  "raw_title": "Материнская плата рабочей станции Lenovo ThinkStation S30 + Xeon E5-1650 3,2GHz + кулер (Socket 2011) Гарантия 1 год",
-  "matched_target": "xeon_e5_1650",
-  "price_uah": 3000
-}
-```
-**Зразок #6:**
-```json
-{
-  "raw_title": "Gigabyte B850 AORUS Elite WiFi7",
-  "matched_target": "b850",
-  "price_uah": 8300
-}
-```
-**Зразок #7:**
-```json
-{
-  "raw_title": "Материнка Gigabyte GA-H81M-S2V",
-  "matched_target": "h81_btc",
-  "price_uah": 1000
-}
-```
-**Зразок #8:**
-```json
-{
-  "raw_title": "Материнська плата ASUS m5a78l-m lx3 PLUS Socket am3+ ddr3 OEM Bulk",
-  "matched_target": "760g",
-  "price_uah": 1500
-}
-```
-**Зразок #9:**
-```json
-{
-  "raw_title": "I3 10105f + asus prime H510M-A (Wifi)",
-  "matched_target": "i3_10105f",
-  "price_uah": 5500
-}
-```
-**Зразок #10:**
-```json
-{
-  "raw_title": "Материнка AM5 Gigabyte X870E AORUS ELITE WIFI7",
-  "matched_target": "x870e",
-  "price_uah": 14200
-}
-```
-**Зразок #11:**
-```json
-{
-  "raw_title": "Комплект MSI Z87-G41 + i5-4670 + 4GB DDR3 LGA1150",
-  "matched_target": "bundle_i5_4670_z87",
-  "price_uah": 1999
-}
-```
-**Зразок #12:**
-```json
-{
-  "raw_title": "Gigabyte GA-78LMT-USB3 + AMD FX-6300 + 8 ГБ DDR3 (комплект)",
-  "matched_target": "bundle_fx_6300_fx_6300",
-  "price_uah": 1250
-}
-```
-**Зразок #13:**
-```json
-{
-  "raw_title": "Продам комплект для пк на сокеті LGA 1700 материнська плата b660 + процесор intel core i7 13700f 16/24",
-  "matched_target": "bundle_i7_13700f_b660",
-  "price_uah": 9000
-}
-```
-**Зразок #14:**
-```json
-{
-  "raw_title": "Материнська плата Asus P5KPL-E (Socket LGA775, Intel G31, ATX)",
-  "matched_target": "g31",
-  "price_uah": 300
-}
-```
-**Зразок #15:**
-```json
-{
-  "raw_title": "Персональний Компютер для Ігор Та роботи Core i9 9900k  512 Гб NVME SSD",
-  "matched_target": "i9_9900k",
-  "price_uah": 12500
-}
-```
-**Зразок #16:**
-```json
-{
-  "raw_title": "Продам комплект ASUS M4A78LT LE + AMD Phenom II X2 555 Black Edition + 4 ГБ DDR3 + кулер",
-  "matched_target": "760g",
-  "price_uah": 910
-}
-```
-**Зразок #17:**
-```json
-{
-  "raw_title": "Материнка MSI H61M-P21 s1155 + процессор G620 + 4Gb память",
-  "matched_target": "h61",
-  "price_uah": 950
-}
-```
-**Зразок #18:**
-```json
-{
-  "raw_title": "Комплект s1151, DDR4 8GB, SSD 128GB, HDD 500GB,H110M-K, 400W PSU",
-  "matched_target": "400w",
-  "price_uah": 2500
-}
-```
-**Зразок #19:**
-```json
-{
-  "raw_title": "Gigabyte GA-A320M-S2H V2 материнська плата AMD AM4",
-  "matched_target": "a320",
-  "price_uah": 2600
-}
-```
-**Зразок #20:**
-```json
-{
-  "raw_title": "Продам комплект ga-f2a68hm-s1 cpu a4-4000 box+",
-  "matched_target": "a4_4000",
-  "price_uah": 900
-}
-```
-**Зразок #21:**
-```json
-{
-  "raw_title": "Комплект X99 / Xeon E5-2666 v3 / 32GB DDR4 / Zalman Optima",
-  "matched_target": "bundle_xeon_e5_2666_v3_x99",
-  "price_uah": 7300
-}
-```
-**Зразок #22:**
-```json
-{
-  "raw_title": "B75usb_btc_1.1 + i5 2400 (box) + DDR3 4GB",
-  "matched_target": "i5_2400",
-  "price_uah": 950
-}
-```
-**Зразок #23:**
-```json
-{
-  "raw_title": "материнська плата ASRock h110m dgs",
-  "matched_target": "h110",
-  "price_uah": 200
-}
-```
-**Зразок #24:**
-```json
-{
-  "raw_title": "Комплект MSI Z270-A Pro + i5 7500 (сокет 1151)",
-  "matched_target": "bundle_i5_7500_z270",
-  "price_uah": 2790
-}
-```
-**Зразок #25:**
-```json
-{
-  "raw_title": "asrock b650m-hdv/m.2",
-  "matched_target": "b650e",
-  "price_uah": 3300
-}
-```
-**Зразок #26:**
-```json
-{
-  "raw_title": "Материнська плата MSI Z270-A Pro (сокет 1151), під 6-те та 7-ме покоління intel",
-  "matched_target": "z270",
-  "price_uah": 1960
-}
-```
-**Зразок #27:**
-```json
-{
-  "raw_title": "материнська плата gigabyte h110m s2pv",
-  "matched_target": "h110",
-  "price_uah": 700
-}
-```
-**Зразок #28:**
-```json
-{
-  "raw_title": "материнська плата ASRock b150m pro4s",
-  "matched_target": "b150",
-  "price_uah": 1000
-}
-```
-**Зразок #29:**
-```json
-{
-  "raw_title": "Материнська плата MSI PRO B760M-P DDR4 s1700",
-  "matched_target": "b760",
-  "price_uah": 3400
-}
-```
-**Зразок #30:**
-```json
-{
-  "raw_title": "Комплект s1151 MSI B150M-S01 + i7-6700 материнка і процесор",
-  "matched_target": "i7_6700",
-  "price_uah": 3150
-}
-```
-**Зразок #31:**
-```json
-{
-  "raw_title": "Комплект s1151 Asus Prime B250M-C + i5-7400 материнка і процесор",
-  "matched_target": "i5_7400",
-  "price_uah": 2455
-}
-```
-**Зразок #32:**
-```json
-{
-  "raw_title": "Материнська плата MSI G41M-P33 Combo MS-7592 REV: 7.1, Intel g41",
-  "matched_target": "g41",
-  "price_uah": 300
-}
-```
-**Зразок #33:**
-```json
-{
-  "raw_title": "Материнська плата з процесором gigabyte ga-p55-us3l",
-  "matched_target": "p55",
-  "price_uah": 939
-}
-```
-**Зразок #34:**
-```json
-{
-  "raw_title": "Материнская плата Asrock z77 extreme 3\\под восстановление\\.",
-  "matched_target": "z77",
-  "price_uah": 230
-}
-```
-**Зразок #35:**
-```json
-{
-  "raw_title": "Материнская плата Z87-Pro в комплекте процессор intel I5-4670K , 16 Гб оперативная память.",
-  "matched_target": "bundle_i5_4670k_z87",
-  "price_uah": 4500
-}
-```
-**Зразок #36:**
-```json
-{
-  "raw_title": "msi z97 gaming 3 (MS-7918) 1150 intel haswell",
-  "matched_target": "z97",
-  "price_uah": 2500
-}
-```
-**Зразок #37:**
-```json
-{
-  "raw_title": "Материнська плата asus z270-p",
-  "matched_target": "z270",
-  "price_uah": 1000
-}
-```
-**Зразок #38:**
-```json
-{
-  "raw_title": "Продам материнську Msi Z17O gaming 5m+Процесор I7 6700k +Башня з кулером",
-  "matched_target": "i7_6700k",
-  "price_uah": 4500
-}
-```
-**Зразок #39:**
-```json
-{
-  "raw_title": "Ryzen 5 5500 B450M-A PRO MAX",
-  "matched_target": "ryzen_5_5500",
-  "price_uah": 5100
-}
-```
-**Зразок #40:**
-```json
-{
-  "raw_title": "Комплект i5 2400",
-  "matched_target": "i5_2400",
-  "price_uah": 2000
-}
-```
-**Зразок #41:**
-```json
-{
-  "raw_title": "материнская плата asus LGA 1155 PCIe 3.0 , 16 gb ОЗУ ddr 3 1600 мгг , процессор i5 3570 + кулер intel",
-  "matched_target": "i5_3570",
-  "price_uah": 2200
-}
-```
-**Зразок #42:**
-```json
-{
-  "raw_title": "Материнська плата MSI X570-A Pro (sAM4, AMD X570, PCI-Ex16)",
-  "matched_target": "x570",
-  "price_uah": 3700
-}
-```
-**Зразок #43:**
-```json
-{
-  "raw_title": "Материнська плата комплект MSI H110M PRO-VD + проц Intel Celeron G3930 2.9 Ghz",
-  "matched_target": "celeron_g3930",
-  "price_uah": 947
-}
-```
-**Зразок #44:**
-```json
-{
-  "raw_title": "Комплект ASUS PRIME H310M-R R2.0 + Intel Core i3-9100F + Кулер",
-  "matched_target": "i3_9100f",
-  "price_uah": 2000
-}
-```
-**Зразок #45:**
-```json
-{
-  "raw_title": "Материнська плата Gigabyte x670 aorus elite ax  am5 ddr5 wifi",
-  "matched_target": "x670",
-  "price_uah": 6000
-}
-```
-**Зразок #46:**
-```json
-{
-  "raw_title": "Материнська плата ASROCK X470 MASTER SLI/AC нова",
-  "matched_target": "x470",
-  "price_uah": 4900
-}
-```
-**Зразок #47:**
-```json
-{
-  "raw_title": "Материнська плата Btc H250 + intel i3 6100",
-  "matched_target": "i3_6100",
-  "price_uah": 1100
-}
-```
-**Зразок #48:**
-```json
-{
-  "raw_title": "Материнська плата ASUS P7H55-M LX  + процесор Intel Core i3 - 550",
-  "matched_target": "i3_550",
-  "price_uah": 450
-}
-```
-**Зразок #49:**
-```json
-{
-  "raw_title": "Комплект ASUS H110M-CS + Pentium G4400 + БП Game Max 450W",
-  "matched_target": "pentium_g4400",
-  "price_uah": 1000
-}
-```
-**Зразок #50:**
-```json
-{
-  "raw_title": "Материнська плата MSI H81M-P33",
-  "matched_target": "h81_btc",
-  "price_uah": 250
-}
-```
-**Зразок #51:**
-```json
-{
-  "raw_title": "Maxsun H610 ITX + Wi-Fi материнская плата s1700",
-  "matched_target": "h610",
-  "price_uah": 4200
-}
-```
-**Зразок #52:**
-```json
-{
-  "raw_title": "Комплект i3 12100F + Asus Prime H610M-K D4 +  башта",
-  "matched_target": "i3_12100f",
-  "price_uah": 5800
-}
-```
-**Зразок #53:**
-```json
-{
-  "raw_title": "mb Intel s775 Asus P5KPL-AM SE (G31/DDR2/int. video GMA3100) в ідеальному стані",
-  "matched_target": "g31",
-  "price_uah": 499
-}
-```
-**Зразок #54:**
-```json
-{
-  "raw_title": "Мать A68MDE+ проц А4 4000",
-  "matched_target": "a4_4000",
-  "price_uah": 700
-}
-```
-**Зразок #55:**
-```json
-{
-  "raw_title": "Материнська плата ASUS TUF GAMING A520M-PLUS II AM4",
-  "matched_target": "a520",
-  "price_uah": 2600
-}
-```
-**Зразок #56:**
-```json
-{
-  "raw_title": "Материнская плата s1200 ASUS B460TUF Gaming Plus с i5-10400F DeepCool 300",
-  "matched_target": "i5_10400f",
-  "price_uah": 6500
-}
-```
-**Зразок #57:**
-```json
-{
-  "raw_title": "Комплект intel i5 10400F / H510MХ/E 2.0 / Кулер ZE Gaming",
-  "matched_target": "i5_10400f",
-  "price_uah": 5900
-}
-```
-**Зразок #58:**
-```json
-{
-  "raw_title": "Msi z790 tomahawk max wifi ddr5",
-  "matched_target": "z790",
-  "price_uah": 4300
-}
-```
-**Зразок #59:**
-```json
-{
-  "raw_title": "Материнська плата Asus TUF Gaming X870-PLUS WIFI",
-  "matched_target": "x870",
-  "price_uah": 11000
-}
-```
-
-#### ⚡ Блоки живлення — Розпізнано (44):
-**Зразок #1:**
-```json
-{
-  "raw_title": "Блок живлення 650W модульный Seasonic Core GM-650 gold",
-  "matched_target": "650w",
-  "price_uah": 1200
-}
-```
-**Зразок #2:**
-```json
-{
-  "raw_title": "Блок живлення BTC H450ATX 450W",
-  "matched_target": "450w",
-  "price_uah": 310
-}
-```
-**Зразок #3:**
-```json
-{
-  "raw_title": "DeepCool DQ750ST 750W 80 Plus Gold, хороший стан",
-  "matched_target": "750w",
-  "price_uah": 2000
-}
-```
-**Зразок #4:**
-```json
-{
-  "raw_title": "Блок живлення 400W Golden Field ATX-S460",
-  "matched_target": "400w",
-  "price_uah": 350
-}
-```
-**Зразок #5:**
-```json
-{
-  "raw_title": "Блок живлення Gigabyte P450B 450W 80+ Bronze",
-  "matched_target": "450w",
-  "price_uah": 999
-}
-```
-**Зразок #6:**
-```json
-{
-  "raw_title": "Блок живлення 750W Seasonic Focus PX-750 Platinum SSR-750PX",
-  "matched_target": "750w",
-  "price_uah": 2499
-}
-```
-**Зразок #7:**
-```json
-{
-  "raw_title": "Блок питания Chieftec PowerUP 750w",
-  "matched_target": "750w",
-  "price_uah": 2300
-}
-```
-**Зразок #8:**
-```json
-{
-  "raw_title": "Блок живлення для ПК Cooler Master 460W (RS-460-PCAP-A3)",
-  "matched_target": "460w",
-  "price_uah": 399
-}
-```
-**Зразок #9:**
-```json
-{
-  "raw_title": "Блок  питания Chieftec 500 w",
-  "matched_target": "500w",
-  "price_uah": 530
-}
-```
-**Зразок #10:**
-```json
-{
-  "raw_title": "Продам  компьютерный блок питания  Thermaltake 1500w",
-  "matched_target": "1500w",
-  "price_uah": 5000
-}
-```
-**Зразок #11:**
-```json
-{
-  "raw_title": "be quiet! Dark Power 12 850W Titanium [P12--850W] топовий Ультимативний RTX GTX RX gt  gaming oc блок живлення бж питания MX",
-  "matched_target": "850w",
-  "price_uah": 4999
-}
-```
-**Зразок #12:**
-```json
-{
-  "raw_title": "Блок живлення 700W Chieftec GPC-700S (купувався в  Elmir)",
-  "matched_target": "700w",
-  "price_uah": 1390
-}
-```
-**Зразок #13:**
-```json
-{
-  "raw_title": "Блок живлення Seasonic Prime TX-1000 1000W Titanium (SSR-1000TR) - 5468",
-  "matched_target": "1000w",
-  "price_uah": 7099
-}
-```
-**Зразок #14:**
-```json
-{
-  "raw_title": "Блок живлення Chieftec Chieftronic PowerPlay Platinum GPU-1050FC 1050W",
-  "matched_target": "1050w",
-  "price_uah": 4700
-}
-```
-**Зразок #15:**
-```json
-{
-  "raw_title": "Блоки питания Delux,Fsp,Gembird,microlab 360w,400w",
-  "matched_target": "400w",
-  "price_uah": 250
-}
-```
-**Зразок #16:**
-```json
-{
-  "raw_title": "EVGA SuperNOVA 850 GA 850W 80 Plus Gold 2021 рік  Топовий бж    rtx rx gtx mx gt gaming oc",
-  "matched_target": "850w",
-  "price_uah": 3900
-}
-```
-**Зразок #17:**
-```json
-{
-  "raw_title": "Блок живлення Gigabyte UD850GM PG5 850W Gold (Гарантія Rozetka до 2030)",
-  "matched_target": "850w",
-  "price_uah": 2800
-}
-```
-**Зразок #18:**
-```json
-{
-  "raw_title": "be quiet straight power 11 550w gold",
-  "matched_target": "550w",
-  "price_uah": 3000
-}
-```
-**Зразок #19:**
-```json
-{
-  "raw_title": "Блок питания для ПК MSI MAG 500w полностью рабочий",
-  "matched_target": "500w",
-  "price_uah": 600
-}
-```
-**Зразок #20:**
-```json
-{
-  "raw_title": "Блок питания Thermaltake ATX Smart 650w 80 plus bronze. Полностью рабочий блок",
-  "matched_target": "650w",
-  "price_uah": 1300
-}
-```
-**Зразок #21:**
-```json
-{
-  "raw_title": "Брендовий блок живлення Chieftec APS-700C 700W(модульний) Тест ОК",
-  "matched_target": "700w",
-  "price_uah": 1999
-}
-```
-**Зразок #22:**
-```json
-{
-  "raw_title": "Thermaltake Toughpower GF 550W Gold | Модульний блок живлення",
-  "matched_target": "550w",
-  "price_uah": 1150
-}
-```
-**Зразок #23:**
-```json
-{
-  "raw_title": "Chieftec Nitro 2 850W",
-  "matched_target": "850w",
-  "price_uah": 2499
-}
-```
-**Зразок #24:**
-```json
-{
-  "raw_title": "Блок питания Gamemax 450W (GM-450B) Новый",
-  "matched_target": "450w",
-  "price_uah": 650
-}
-```
-**Зразок #25:**
-```json
-{
-  "raw_title": "Блок живлення для ПК Gamemax ATX 700W 80 plus bronze",
-  "matched_target": "700w",
-  "price_uah": 1600
-}
-```
-**Зразок #26:**
-```json
-{
-  "raw_title": "Блок живлення Corsair CX750 750W (на запчастини / під відновлення)",
-  "matched_target": "750w",
-  "price_uah": 500
-}
-```
-**Зразок #27:**
-```json
-{
-  "raw_title": "Блок живлення HP-D2402E0 240W HP 200 210 220 240 4000 5800 6200 6300 8100 8200 8300",
-  "matched_target": "240w",
-  "price_uah": 650
-}
-```
-**Зразок #28:**
-```json
-{
-  "raw_title": "Блок живлення Thermaltake Toughpower GF1 1000W Modular 80+Gold (PS-TPD-1000FNFAGE-1)",
-  "matched_target": "1000w",
-  "price_uah": 4400
-}
-```
-**Зразок #29:**
-```json
-{
-  "raw_title": "Блок живлення LC-Power Super Silent Modular 1000W 80 PLUS Gold",
-  "matched_target": "1000w",
-  "price_uah": 3900
-}
-```
-**Зразок #30:**
-```json
-{
-  "raw_title": "Блок живленя для пк Chieftec 700w",
-  "matched_target": "700w",
-  "price_uah": 1300
-}
-```
-**Зразок #31:**
-```json
-{
-  "raw_title": "Блок живлення AeroCool Mirage Gold 850W 80 Plus Gold з ефектом Infinity Mirror та RGB",
-  "matched_target": "850w",
-  "price_uah": 2800
-}
-```
-**Зразок #32:**
-```json
-{
-  "raw_title": "Блок Живлення  400 W GAMEMAX для пк",
-  "matched_target": "400w",
-  "price_uah": 600
-}
-```
-**Зразок #33:**
-```json
-{
-  "raw_title": "Блок питания Thermaltake Smart Pro RGB 850W",
-  "matched_target": "850w",
-  "price_uah": 2780
-}
-```
-**Зразок #34:**
-```json
-{
-  "raw_title": "Asus ROG Thor 1200W Platinum",
-  "matched_target": "1200w",
-  "price_uah": 13500
-}
-```
-**Зразок #35:**
-```json
-{
-  "raw_title": "Блок живлення 750W CHIEFTEC ProTon 80 PLUS bronze",
-  "matched_target": "750w",
-  "price_uah": 1700
-}
-```
-**Зразок #36:**
-```json
-{
-  "raw_title": "Блок живлення для ПК MACRON 250W",
-  "matched_target": "250w",
-  "price_uah": 150
-}
-```
-**Зразок #37:**
-```json
-{
-  "raw_title": "Блок питания 400w для пк",
-  "matched_target": "400w",
-  "price_uah": 350
-}
-```
-**Зразок #38:**
-```json
-{
-  "raw_title": "Блок живлення CHIEFTEC Polaris 850W",
-  "matched_target": "850w",
-  "price_uah": 1500
-}
-```
-**Зразок #39:**
-```json
-{
-  "raw_title": "БП Chieftec 600w",
-  "matched_target": "600w",
-  "price_uah": 1500
-}
-```
-**Зразок #40:**
-```json
-{
-  "raw_title": "Блок живлення enermax revolution d.f. 2 1050w 80+ gold",
-  "matched_target": "1050w",
-  "price_uah": 3400
-}
-```
-**Зразок #41:**
-```json
-{
-  "raw_title": "Блок живлення UNYKAch SFX 300 w сріблястий(300 Вт, 100-240 В) GPU-6PIN",
-  "matched_target": "300w",
-  "price_uah": 800
-}
-```
-**Зразок #42:**
-```json
-{
-  "raw_title": "Блок живлення AeroCool KCAS Plus 800W (80 Plus Bronze)",
-  "matched_target": "800w",
-  "price_uah": 1600
-}
-```
-**Зразок #43:**
-```json
-{
-  "raw_title": "Блок живлення Cooler Master RS-460-PCAP-A3 Б/в",
-  "matched_target": "460w",
-  "price_uah": 750
-}
-```
-**Зразок #44:**
-```json
-{
-  "raw_title": "БУ оригинальный блок питания HP 503376-001 240W для системников Pro 6000 6005 6200 Elite 8000 8100 8200 SFF",
-  "matched_target": "240w",
-  "price_uah": 500
-}
-```
-
-#### 💾 Накопичувачі — Розпізнано (96):
-**Зразок #1:**
-```json
-{
-  "raw_title": "Жорсткий диск Iomega Prestige Desktop Hard Drive. 500Гб",
-  "matched_target": "ssd_500gb",
-  "price_uah": 700
-}
-```
-**Зразок #2:**
-```json
-{
-  "raw_title": "Комплект з 4 штук.Топові Швидкі SSD  M.2 NVMe Samsung PM991a 256GB PCIe 3.0 x4 (100% здоровя)",
-  "matched_target": "ssd_256gb",
-  "price_uah": 2061
-}
-```
-**Зразок #3:**
-```json
-{
-  "raw_title": "Жорсткий диск Seagate SkyHawk Surveillance 8TB - ST8000VX0022",
-  "matched_target": "hdd_8tb",
-  "price_uah": 12600
-}
-```
-**Зразок #4:**
-```json
-{
-  "raw_title": "Жесткий диск Seagate 500 Gb SATA",
-  "matched_target": "hdd_500gb",
-  "price_uah": 250
-}
-```
-**Зразок #5:**
-```json
-{
-  "raw_title": "SSD Kingston NV1 1TB NVMe M.2 2280 PCIe 3.0 x4",
-  "matched_target": "ssd_1tb",
-  "price_uah": 5000
-}
-```
-**Зразок #6:**
-```json
-{
-  "raw_title": "SSD-накопичувач Samsung 990 PRO 2 TB",
-  "matched_target": "ssd_2tb",
-  "price_uah": 15900
-}
-```
-**Зразок #7:**
-```json
-{
-  "raw_title": "Kingston A400 SSD SATA (SA400S37) 480 GB",
-  "matched_target": "ssd_480gb",
-  "price_uah": 2500
-}
-```
-**Зразок #8:**
-```json
-{
-  "raw_title": "NVMe 1tb 1024gb Micron SSD M2 накопичувач аналог KC3000 Samsung evo",
-  "matched_target": "ssd_1tb",
-  "price_uah": 6200
-}
-```
-**Зразок #9:**
-```json
-{
-  "raw_title": "M2 nvme SSD 240-512gb !!!",
-  "matched_target": "ssd_512gb",
-  "price_uah": 2980
-}
-```
-**Зразок #10:**
-```json
-{
-  "raw_title": "Жорсткi  диски Western Digital ,  Seagаte , Hitachi - 80GB, 120GB, 160GB, 320GB  до ретро ПК.",
-  "matched_target": "hdd_80gb",
-  "price_uah": 122
-}
-```
-**Зразок #11:**
-```json
-{
-  "raw_title": "Жорсткий диск WD Red Plus NAS  2 TB, 4 TB, 6TB 8TB 10TB 12TB  CMR / SMR",
-  "matched_target": "hdd_2tb",
-  "price_uah": 4999
-}
-```
-**Зразок #12:**
-```json
-{
-  "raw_title": "SSD GOODRAM 256 Gb, б/в.",
-  "matched_target": "ssd_256gb",
-  "price_uah": 960
-}
-```
-**Зразок #13:**
-```json
-{
-  "raw_title": "M2 SSD nvme 1-2tb !!!",
-  "matched_target": "ssd_2tb",
-  "price_uah": 5850
-}
-```
-**Зразок #14:**
-```json
-{
-  "raw_title": "SSD wd_black SN850X 4TB — NVMe SSD",
-  "matched_target": "ssd_4tb",
-  "price_uah": 17999
-}
-```
-**Зразок #15:**
-```json
-{
-  "raw_title": "Ssd Kingcell 240gb",
-  "matched_target": "ssd_240gb",
-  "price_uah": 600
-}
-```
-**Зразок #16:**
-```json
-{
-  "raw_title": "Жесткие диски 3tb",
-  "matched_target": "hdd_3tb",
-  "price_uah": 1500
-}
-```
-**Зразок #17:**
-```json
-{
-  "raw_title": "SSD SK Hynix PC711 1Tb NVMe M.2 Gen3x4",
-  "matched_target": "ssd_1tb",
-  "price_uah": 5000
-}
-```
-**Зразок #18:**
-```json
-{
-  "raw_title": "Western Digital 1TB ідеальний стан",
-  "matched_target": "hdd_1tb",
-  "price_uah": 1499
-}
-```
-**Зразок #19:**
-```json
-{
-  "raw_title": "Продам Жорсткий диск  4TB Seagate",
-  "matched_target": "hdd_4tb",
-  "price_uah": 6700
-}
-```
-**Зразок #20:**
-```json
-{
-  "raw_title": "SSD Samsung 1 TB 990 Pro with HeatSink",
-  "matched_target": "ssd_1tb",
-  "price_uah": 9000
-}
-```
-**Зразок #21:**
-```json
-{
-  "raw_title": "SSD Kingston SQ500S37 480Gb SQ500S37/480G TLC, 87-98%",
-  "matched_target": "ssd_480gb",
-  "price_uah": 1855
-}
-```
-**Зразок #22:**
-```json
-{
-  "raw_title": "Жорсткий Диск Western Digital Black 10TB SATA III (WD102FZBX)",
-  "matched_target": "hdd_10tb",
-  "price_uah": 22399
-}
-```
-**Зразок #23:**
-```json
-{
-  "raw_title": "SSD Samsung 860 evo 250gb 840 pro 256gb",
-  "matched_target": "ssd_250gb",
-  "price_uah": 1500
-}
-```
-**Зразок #24:**
-```json
-{
-  "raw_title": "SSD Kingston 240gb хороший стан",
-  "matched_target": "ssd_240gb",
-  "price_uah": 1150
-}
-```
-**Зразок #25:**
-```json
-{
-  "raw_title": "Жесткий диск HDD 8TB SATA 3.5\" HGST Ultrastar He8 (Dell) 7200RPM Enterprise | 100% Health Гарантия!!!",
-  "matched_target": "hdd_8tb",
-  "price_uah": 4950
-}
-```
-**Зразок #26:**
-```json
-{
-  "raw_title": "HDD 2.5 500gb , 320gb, Seagate, Toshiba",
-  "matched_target": "hdd_500gb",
-  "price_uah": 600
-}
-```
-**Зразок #27:**
-```json
-{
-  "raw_title": "жоский диск hdd seagate barracuda 250GB",
-  "matched_target": "hdd_250gb",
-  "price_uah": 200
-}
-```
-**Зразок #28:**
-```json
-{
-  "raw_title": "SSD Silicon Power A55 2TB SATA III 2.5\" – швидкий, справний",
-  "matched_target": "a55",
-  "price_uah": 5000
-}
-```
-**Зразок #29:**
-```json
-{
-  "raw_title": "Жорсткий диск Toshiba NAS N300 8Tb",
-  "matched_target": "hdd_8tb",
-  "price_uah": 11200
-}
-```
-**Зразок #30:**
-```json
-{
-  "raw_title": "Жёсткий диск 2 TB Toshiba PC P300",
-  "matched_target": "hdd_2tb",
-  "price_uah": 2878
-}
-```
-**Зразок #31:**
-```json
-{
-  "raw_title": "Ssd nvme 2 TB Samsung 990 Pro / Patriot p300 2000 ГБ",
-  "matched_target": "ssd_2tb",
-  "price_uah": 10999
-}
-```
-**Зразок #32:**
-```json
-{
-  "raw_title": "SSD диск Transcend 250S 4TB NVMe M.2 2280 PCIe 4.0 x4 3D NAND TLC",
-  "matched_target": "ssd_4tb",
-  "price_uah": 19400
-}
-```
-**Зразок #33:**
-```json
-{
-  "raw_title": "SSD-диск GoodRAM CX400 Gen.2 3D NAND TLC 512GB 2.5",
-  "matched_target": "ssd_512gb",
-  "price_uah": 2100
-}
-```
-**Зразок #34:**
-```json
-{
-  "raw_title": "Жорсткий диск 2.5\" Seagate Mobile HDD 1TB (ST1000LM035) — стан нового (51 год)",
-  "matched_target": "hdd_1tb",
-  "price_uah": 1100
-}
-```
-**Зразок #35:**
-```json
-{
-  "raw_title": "HDD 250GB Seagate Barracuda 7200.10",
-  "matched_target": "hdd_250gb",
-  "price_uah": 250
-}
-```
-**Зразок #36:**
-```json
-{
-  "raw_title": "Продам SSD Fusion SX300 6.4tb",
-  "matched_target": "ssd_4tb",
-  "price_uah": 23900
-}
-```
-**Зразок #37:**
-```json
-{
-  "raw_title": "SSD диск Samsung 860 Evo-Series 250GB 2.5\" SATA III V-NAND (MLC)",
-  "matched_target": "ssd_250gb",
-  "price_uah": 1551
-}
-```
-**Зразок #38:**
-```json
-{
-  "raw_title": "Жорсткий диск 3.5\" WD Seagate Samsung 160Gb, 80Gb",
-  "matched_target": "hdd_160gb",
-  "price_uah": 122
-}
-```
-**Зразок #39:**
-```json
-{
-  "raw_title": "Жорсткий диск HDD 1TB Toshiba P300 (7200 rpm / 64MB) SATA III",
-  "matched_target": "hdd_1tb",
-  "price_uah": 736
-}
-```
-**Зразок #40:**
-```json
-{
-  "raw_title": "Жесткий диск 160 Гб",
-  "matched_target": "ssd_160gb",
-  "price_uah": 250
-}
-```
-**Зразок #41:**
-```json
-{
-  "raw_title": "Жесткий диск Seagate 10tb",
-  "matched_target": "hdd_10tb",
-  "price_uah": 9000
-}
-```
-**Зразок #42:**
-```json
-{
-  "raw_title": "Жорсткий диск Western Digital на 14 ТВ",
-  "matched_target": "hdd_14tb",
-  "price_uah": 8000
-}
-```
-**Зразок #43:**
-```json
-{
-  "raw_title": "SSD диск KingSpec 128Gb , новий ,2.5\" SATA3",
-  "matched_target": "ssd_128gb",
-  "price_uah": 749
-}
-```
-**Зразок #44:**
-```json
-{
-  "raw_title": "Жорсткий диск Seagate BarraCuda 1 TB ST1000DM010, НОВІ",
-  "matched_target": "hdd_1tb",
-  "price_uah": 2599
-}
-```
-**Зразок #45:**
-```json
-{
-  "raw_title": "Жорсткий диск Samsung 80GB 7200rpm 8MB (HD082GJ) SATA-II",
-  "matched_target": "hdd_80gb",
-  "price_uah": 100
-}
-```
-**Зразок #46:**
-```json
-{
-  "raw_title": "HDD 1Tb, з bed секторами",
-  "matched_target": "hdd_1tb",
-  "price_uah": 327
-}
-```
-**Зразок #47:**
-```json
-{
-  "raw_title": "Жорсткі диски HDD 320GB + 250GB | Ціна ЗА 2 ДИСКИ",
-  "matched_target": "hdd_320gb",
-  "price_uah": 380
-}
-```
-**Зразок #48:**
-```json
-{
-  "raw_title": "SSD накопичувач Lexar NQ790 2Tb M.2 2280 NVMe PCIe Gen4x4 (LNQ790X002T)",
-  "matched_target": "ssd_2tb",
-  "price_uah": 14000
-}
-```
-**Зразок #49:**
-```json
-{
-  "raw_title": "Seagate Barracuda 7200.12 160GB",
-  "matched_target": "hdd_160gb",
-  "price_uah": 250
-}
-```
-**Зразок #50:**
-```json
-{
-  "raw_title": "Жорсткий диск Western Digital WD Red Pro 2TB FFSX NAS",
-  "matched_target": "ssd_2tb",
-  "price_uah": 4100
-}
-```
-**Зразок #51:**
-```json
-{
-  "raw_title": "HDD Samsung SP2504C 250GB",
-  "matched_target": "hdd_250gb",
-  "price_uah": 300
-}
-```
-**Зразок #52:**
-```json
-{
-  "raw_title": "Б\\в 2.5\" ССД 120 ГБ протестований. SSD 120 GB 2.5\" SATA III (6Gb/s) для Пк та Ноутбука",
-  "matched_target": "ssd_120gb",
-  "price_uah": 633
-}
-```
-**Зразок #53:**
-```json
-{
-  "raw_title": "WD Purple 2TB (на фото) - Жорсткий диск!",
-  "matched_target": "hdd_2tb",
-  "price_uah": 4200
-}
-```
-**Зразок #54:**
-```json
-{
-  "raw_title": "Жёсткий диск HDD Seagate 1TB (2.5\")",
-  "matched_target": "hdd_1tb",
-  "price_uah": 900
-}
-```
-**Зразок #55:**
-```json
-{
-  "raw_title": "Жорсткий диск HDD 12TB 7200rpm",
-  "matched_target": "hdd_12tb",
-  "price_uah": 9000
-}
-```
-**Зразок #56:**
-```json
-{
-  "raw_title": "!СРОЧНО! Kingston KC3000 ( 2TB ) M.2 NVMe PCIe 4.0 SSD — до 7000 МБ/с, идеальное состояние",
-  "matched_target": "ssd_2tb",
-  "price_uah": 9800
-}
-```
-**Зразок #57:**
-```json
-{
-  "raw_title": "Продам Жорсткий диск Seagate ST1000DM003 1Tb",
-  "matched_target": "hdd_1tb",
-  "price_uah": 850
-}
-```
-**Зразок #58:**
-```json
-{
-  "raw_title": "Toshiba BG3 (модель KBG30ZMV256G) обємом 256 ГБ стандарту M.2 2280 NVMe PCIe Gen3 x2.",
-  "matched_target": "ssd_256gb",
-  "price_uah": 1350
-}
-```
-**Зразок #59:**
-```json
-{
-  "raw_title": "SSD накопичувач MSI 240 Gb",
-  "matched_target": "ssd_240gb",
-  "price_uah": 1950
-}
-```
-**Зразок #60:**
-```json
-{
-  "raw_title": "Ідеальний HDD_1 TB samsung",
-  "matched_target": "hdd_1tb",
-  "price_uah": 1000
-}
-```
-**Зразок #61:**
-```json
-{
-  "raw_title": "SSD диск Samsung 980 Pro 1TB M.2 PCIe 4.0 x4 V-NAND БУ отличное сост.",
-  "matched_target": "ssd_1tb",
-  "price_uah": 7000
-}
-```
-**Зразок #62:**
-```json
-{
-  "raw_title": "Жесткий диск Toshiba PC P300 2TB НА ГАРАНТИИ",
-  "matched_target": "hdd_2tb",
-  "price_uah": 2500
-}
-```
-**Зразок #63:**
-```json
-{
-  "raw_title": "Жорсткий  диск HDD 2,5\"  Seagate 320Гб",
-  "matched_target": "hdd_320gb",
-  "price_uah": 300
-}
-```
-**Зразок #64:**
-```json
-{
-  "raw_title": "Продам жорсткі диски HDD 500 gb",
-  "matched_target": "hdd_500gb",
-  "price_uah": 350
-}
-```
-**Зразок #65:**
-```json
-{
-  "raw_title": "SSD диск PNY CS900 1TB 6G SATA III 2.5\"",
-  "matched_target": "ssd_1tb",
-  "price_uah": 4500
-}
-```
-**Зразок #66:**
-```json
-{
-  "raw_title": "Диск SSD 128 Samsung 240 Гб HDD 2,5\" Gb: 320 , 500 , 750 Windows",
-  "matched_target": "ssd_240gb",
-  "price_uah": 1650
-}
-```
-**Зразок #67:**
-```json
-{
-  "raw_title": "SSD NVME 1000 gb Kingston / Wibrand 1 TB/ 1 ТБ ССД НВМЕ",
-  "matched_target": "ssd_1tb",
-  "price_uah": 5950
-}
-```
-**Зразок #68:**
-```json
-{
-  "raw_title": "Hdd 8Tb WD85PURZ SATA 6gb/s",
-  "matched_target": "hdd_8tb",
-  "price_uah": 9000
-}
-```
-**Зразок #69:**
-```json
-{
-  "raw_title": "Запаковани Новий SSD на 1tb Goodram CX400 Gen2 1Tb SATA 2.5 (SSDPR-CX400-01T-G2) ССД на 1 тб",
-  "matched_target": "ssd_1tb",
-  "price_uah": 4898
-}
-```
-**Зразок #70:**
-```json
-{
-  "raw_title": "Samsung HD160JJ 160Gb/7200rpm/8Mb",
-  "matched_target": "ssd_160gb",
-  "price_uah": 140
-}
-```
-**Зразок #71:**
-```json
-{
-  "raw_title": "Samsung 990 pro 1tb + зовнішній кейс для нього",
-  "matched_target": "ssd_1tb",
-  "price_uah": 6300
-}
-```
-**Зразок #72:**
-```json
-{
-  "raw_title": "Накопичувач зовнішній USB NVMe NGFF M.2 SSD 2TB",
-  "matched_target": "ssd_2tb",
-  "price_uah": 2370
-}
-```
-**Зразок #73:**
-```json
-{
-  "raw_title": "жёсткий диск Seagate barracuda 500 Gb",
-  "matched_target": "hdd_500gb",
-  "price_uah": 400
-}
-```
-**Зразок #74:**
-```json
-{
-  "raw_title": "Жесткий диск 320 ГБ Samsung HM320JI 2.5 SATA все тесты скину",
-  "matched_target": "ssd_320gb",
-  "price_uah": 200
-}
-```
-**Зразок #75:**
-```json
-{
-  "raw_title": "Продам жорсткий диск hitachi 160 gb",
-  "matched_target": "hdd_160gb",
-  "price_uah": 200
-}
-```
-**Зразок #76:**
-```json
-{
-  "raw_title": "SSD  Kingston  240 Gb  (SUV400S37/240G)",
-  "matched_target": "ssd_240gb",
-  "price_uah": 1300
-}
-```
-**Зразок #77:**
-```json
-{
-  "raw_title": "SSD диск  Crucial T700 2Tb PCIe 5.0 x4 NVMe 2.0 (12400 МБ/с)",
-  "matched_target": "ssd_2tb",
-  "price_uah": 14999
-}
-```
-**Зразок #78:**
-```json
-{
-  "raw_title": "WD My Cloud / Western Digital NAS на 8 TB.",
-  "matched_target": "hdd_8tb",
-  "price_uah": 6000
-}
-```
-**Зразок #79:**
-```json
-{
-  "raw_title": "LaCie 1tb 1000GB Якісні зовнішні ударостійкі диски Мала нароботка майже нові Стан гарний",
-  "matched_target": "ssd_1tb",
-  "price_uah": 2500
-}
-```
-**Зразок #80:**
-```json
-{
-  "raw_title": "Жорсткі диски 80Gb",
-  "matched_target": "hdd_80gb",
-  "price_uah": 90
-}
-```
-**Зразок #81:**
-```json
-{
-  "raw_title": "Жорсткий диск Toshiba 320 Gb",
-  "matched_target": "hdd_320gb",
-  "price_uah": 260
-}
-```
-**Зразок #82:**
-```json
-{
-  "raw_title": "SSD Crucial 240 Gb",
-  "matched_target": "ssd_240gb",
-  "price_uah": 1300
-}
-```
-**Зразок #83:**
-```json
-{
-  "raw_title": "Goodram CX400 Gen.2 512 GB",
-  "matched_target": "ssd_512gb",
-  "price_uah": 2350
-}
-```
-**Зразок #84:**
-```json
-{
-  "raw_title": "Samsung 850 PRO 256GB (Здоровя 93–96%) Відмінний стан",
-  "matched_target": "ssd_256gb",
-  "price_uah": 1500
-}
-```
-**Зразок #85:**
-```json
-{
-  "raw_title": "Накопичувач HDD SATA 500GB Toshiba P300 7200rpm 64MB",
-  "matched_target": "hdd_500gb",
-  "price_uah": 225
-}
-```
-**Зразок #86:**
-```json
-{
-  "raw_title": "Жорстки диск Toshiba PC P300 2TB новий",
-  "matched_target": "hdd_2tb",
-  "price_uah": 4000
-}
-```
-**Зразок #87:**
-```json
-{
-  "raw_title": "SSD 512Gb 2,5\" SATA-3 в ідеальному стані",
-  "matched_target": "ssd_512gb",
-  "price_uah": 2000
-}
-```
-**Зразок #88:**
-```json
-{
-  "raw_title": "Продам Жесткий диск 2.5\" Toshiba 500GB SATAIII (MQ01ABF050) для ноутбука",
-  "matched_target": "hdd_500gb",
-  "price_uah": 400
-}
-```
-**Зразок #89:**
-```json
-{
-  "raw_title": "Жорсткий диск 3.5 6TB WD (WD62PURZ) (WD64PURZ)",
-  "matched_target": "hdd_6tb",
-  "price_uah": 13000
-}
-```
-**Зразок #90:**
-```json
-{
-  "raw_title": "Ssd SATA 2.5” 1 ТБ (1000 ГБ) нова, запакована",
-  "matched_target": "ssd_1tb",
-  "price_uah": 3500
-}
-```
-**Зразок #91:**
-```json
-{
-  "raw_title": "SSD диск Samsung 870 Evo-Series 2TB 2.5",
-  "matched_target": "870",
-  "price_uah": 14000
-}
-```
-**Зразок #92:**
-```json
-{
-  "raw_title": "Серверний Накопичувач SSD Seagate 960GB SATA 6Gbps Haden 2.5",
-  "matched_target": "ssd_960gb",
-  "price_uah": 10000
-}
-```
-**Зразок #93:**
-```json
-{
-  "raw_title": "SSD диск - Apacer AS350X 512GB (Новий)",
-  "matched_target": "ssd_512gb",
-  "price_uah": 3000
-}
-```
-**Зразок #94:**
-```json
-{
-  "raw_title": "ssd 240Gb , 960Gb sata брендові",
-  "matched_target": "ssd_240gb",
-  "price_uah": 999
-}
-```
-**Зразок #95:**
-```json
-{
-  "raw_title": "SSD накопичувач Kingston FURY Renegade 4 TB (SFYRD/4000G)",
-  "matched_target": "ssd_4tb",
-  "price_uah": 29999
-}
-```
-**Зразок #96:**
-```json
-{
-  "raw_title": "Накопичувач 97% SSD 240GB Kingston (ФОТО КРІСТАЛ ДИСК)",
-  "matched_target": "ssd_240gb",
-  "price_uah": 1080
-}
-```
-
-#### 📟 Оперативна пам'ять — Розпізнано (76):
-**Зразок #1:**
-```json
-{
-  "raw_title": "Оперативна памʼять G.Skill DDR5 32GB (2x16GB) 6400Mhz Trident Z5 Neo RGB Black (F5-6400J3239G16GX2-TZ5NR)",
-  "matched_target": "ram_ddr5_32gb",
-  "price_uah": 24500
-}
-```
-**Зразок #2:**
-```json
-{
-  "raw_title": "память DDR5 для ПК 64GB (2x32) 5600MHz Corsair Vengeance RGB. TradeIN",
-  "matched_target": "ssd_64gb",
-  "price_uah": 30500
-}
-```
-**Зразок #3:**
-```json
-{
-  "raw_title": "Оперативная память DDR3 8GB 1600 MHz Dato",
-  "matched_target": "ram_ddr3_8gb",
-  "price_uah": 600
-}
-```
-**Зразок #4:**
-```json
-{
-  "raw_title": "память швидка DDR4 32GB Kit (2x16) 4000MHz Patriot VIPER. Trade-in",
-  "matched_target": "ram_ddr4_32gb",
-  "price_uah": 9200
-}
-```
-**Зразок #5:**
-```json
-{
-  "raw_title": "SSD Kingston NV3 1TB M.2 2280 NVMe PCIe 4.0 x4 3D NAND",
-  "matched_target": "ssd_1tb",
-  "price_uah": 4900
-}
-```
-**Зразок #6:**
-```json
-{
-  "raw_title": "Kingston DDR4 16GB (2х8) 3200Mhz CL22 SO-DIMM Оперативна память",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 2700
-}
-```
-**Зразок #7:**
-```json
-{
-  "raw_title": "Продам планки памяти DDR3 на 4gb",
-  "matched_target": "ram_ddr3_4gb",
-  "price_uah": 130
-}
-```
-**Зразок #8:**
-```json
-{
-  "raw_title": "Комплектуючі для пк, основа для компютера під подальшу збірку + монітор. intel i5-10600KF 32ГБ DDR4 HyperX 3200MHz, ігровий пк, компютер, компютер",
-  "matched_target": "i5_10600kf",
-  "price_uah": 15000
-}
-```
-**Зразок #9:**
-```json
-{
-  "raw_title": "Модуль оперативної памяті Kingston FURY Beast (ex. HyperX) DDR4 16GB (2×8GB) 3200 MHz (KF432C16BBK2/16WP)",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 7350
-}
-```
-**Зразок #10:**
-```json
-{
-  "raw_title": "ОЗП Kingston DDR4 2х8GB 3600Mhz FURY Beast RGB Black",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 6900
-}
-```
-**Зразок #11:**
-```json
-{
-  "raw_title": "Серверна оперативна пам’ять DDR3 ECC Registered 4GB PC3-10600R 1333MHz Samsung / Hynix",
-  "matched_target": "ram_ddr3_4gb",
-  "price_uah": 250
-}
-```
-**Зразок #12:**
-```json
-{
-  "raw_title": "ОЗУ 2 плашки по 8гб ddr3",
-  "matched_target": "ram_ddr3_8gb",
-  "price_uah": 150
-}
-```
-**Зразок #13:**
-```json
-{
-  "raw_title": "Оперативна памʼять Patriot DDR4-2666 2*8GB",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 2400
-}
-```
-**Зразок #14:**
-```json
-{
-  "raw_title": "модулі оперативної памяті INTELIGENTES DDR3 16GB (2 по 8GB)1600 MHz",
-  "matched_target": "ram_ddr3_16gb",
-  "price_uah": 500
-}
-```
-**Зразок #15:**
-```json
-{
-  "raw_title": "DDR3 4 gb оперативная память",
-  "matched_target": "ram_ddr3_4gb",
-  "price_uah": 170
-}
-```
-**Зразок #16:**
-```json
-{
-  "raw_title": "kingston fury ddr4 8gb 2666MHz",
-  "matched_target": "ram_ddr4_8gb",
-  "price_uah": 1199
-}
-```
-**Зразок #17:**
-```json
-{
-  "raw_title": "Память 4Gb DDR4 DIMM разный бренд на выбор",
-  "matched_target": "ram_ddr4_4gb",
-  "price_uah": 750
-}
-```
-**Зразок #18:**
-```json
-{
-  "raw_title": "Серверна оперативна память DDR3 REG ECC 16gb і 32gb частота 1333 1600  1866мгц",
-  "matched_target": "ram_ddr3_16gb",
-  "price_uah": 390
-}
-```
-**Зразок #19:**
-```json
-{
-  "raw_title": "Вживане/ГАРАНТІЯ | Оперативна память DDR5 32GB [2x16GB] 6400/CL44 Kingston FURY Alienware Легко працює на 6000/CL30-36-36-76 (X668G8-HYA-A)",
-  "matched_target": "ram_ddr5_32gb",
-  "price_uah": 22999
-}
-```
-**Зразок #20:**
-```json
-{
-  "raw_title": "SSD диск Apacer 512GB \nh",
-  "matched_target": "ssd_512gb",
-  "price_uah": 2600
-}
-```
-**Зразок #21:**
-```json
-{
-  "raw_title": "Модуль памяті для компютера DDR4 8GB 3200 MHz Goodram",
-  "matched_target": "ram_ddr4_8gb",
-  "price_uah": 1900
-}
-```
-**Зразок #22:**
-```json
-{
-  "raw_title": "Crucial 32 GB (2 по 16gb) DDR4 2666 MHZ CT16G4DFRA266.18FD1 оперативная память ОЗУ",
-  "matched_target": "ram_ddr4_32gb",
-  "price_uah": 4100
-}
-```
-**Зразок #23:**
-```json
-{
-  "raw_title": "Опереативна память 4x2 8 gb ddr3  1600mhz ddr 5 8x2 16 gb 5600",
-  "matched_target": "ram_ddr3_8gb",
-  "price_uah": 5199
-}
-```
-**Зразок #24:**
-```json
-{
-  "raw_title": "G.Skill 16 GB (4x4GB) DDR4 2800 MHz (F4-2800C16Q-16GRK)",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 3850
-}
-```
-**Зразок #25:**
-```json
-{
-  "raw_title": "Оперативна памʼять до ноутбука ddr4 16gb",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 2500
-}
-```
-**Зразок #26:**
-```json
-{
-  "raw_title": "HyperX Fury DDR4 16GB (2×8GB)",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 3000
-}
-```
-**Зразок #27:**
-```json
-{
-  "raw_title": "Оперативная память 32Gb 3200Mhz DDR4 HyperX",
-  "matched_target": "ram_ddr4_32gb",
-  "price_uah": 4900
-}
-```
-**Зразок #28:**
-```json
-{
-  "raw_title": "Оперативка DDR3 16GB (4x4GB) Corsair та TeamGroup Elite+",
-  "matched_target": "ram_ddr3_16gb",
-  "price_uah": 850
-}
-```
-**Зразок #29:**
-```json
-{
-  "raw_title": "Оперативна память SK hynix SO-DIMM DDR5 16GB 5600MHz",
-  "matched_target": "ram_ddr5_16gb",
-  "price_uah": 12000
-}
-```
-**Зразок #30:**
-```json
-{
-  "raw_title": "Оперативна Память Samsung 16GB (2x8GB) DDR4  3200MHz (M378A1G44AB0-CWE)",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 3400
-}
-```
-**Зразок #31:**
-```json
-{
-  "raw_title": "Оперативна память ddr5 sodimm 16gb 1rx16 pc5-4800b-sco-1010 xt",
-  "matched_target": "ram_ddr5_16gb",
-  "price_uah": 6000
-}
-```
-**Зразок #32:**
-```json
-{
-  "raw_title": "Ddr4 16gb kingston",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 4000
-}
-```
-**Зразок #33:**
-```json
-{
-  "raw_title": "Оперативна память 32gb (2x16gb) ddr4",
-  "matched_target": "ram_ddr4_32gb",
-  "price_uah": 8500
-}
-```
-**Зразок #34:**
-```json
-{
-  "raw_title": "Оперативна памʼять Kingston Fury SODIMM DDR5-5600 16ГБ",
-  "matched_target": "ram_ddr5_16gb",
-  "price_uah": 7599
-}
-```
-**Зразок #35:**
-```json
-{
-  "raw_title": "HDD Maxtor DiamondMax 22 500 gb",
-  "matched_target": "hdd_500gb",
-  "price_uah": 200
-}
-```
-**Зразок #36:**
-```json
-{
-  "raw_title": "DDR4 4GB 2666mhz Crucial",
-  "matched_target": "ram_ddr4_4gb",
-  "price_uah": 400
-}
-```
-**Зразок #37:**
-```json
-{
-  "raw_title": "Продам б\\в ОЗП Corsair DDR4 32GB (2x16GB) 3600Mhz Vengeance RGB Pro SL White",
-  "matched_target": "ram_ddr4_32gb",
-  "price_uah": 8600
-}
-```
-**Зразок #38:**
-```json
-{
-  "raw_title": "SSD диск Gigabyte 256GB M.2 2280 NVMe PCIe 3.0 x4 NAND TLC (GP-GSM2NE3",
-  "matched_target": "ssd_256gb",
-  "price_uah": 2200
-}
-```
-**Зразок #39:**
-```json
-{
-  "raw_title": "RAM G.SKILL AEGIS DDR4 2x8gb (16gb) 3000mhz cl16",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 3388
-}
-```
-**Зразок #40:**
-```json
-{
-  "raw_title": "Оперативная память ОЗУ DDR4 16gb 2*8gb",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 2800
-}
-```
-**Зразок #41:**
-```json
-{
-  "raw_title": "Ореративна пам ять ddr4 32 gb 4x8",
-  "matched_target": "ram_ddr4_32gb",
-  "price_uah": 7000
-}
-```
-**Зразок #42:**
-```json
-{
-  "raw_title": "Оперативна пам’ять ОЗУ  DDR4 JAZER 8GB 3200MHz",
-  "matched_target": "ram_ddr4_8gb",
-  "price_uah": 1755
-}
-```
-**Зразок #43:**
-```json
-{
-  "raw_title": "Оперативна пам’ять Kingston FURY (ex. HyperX) Beast Black DDR5 16GB (KF552C36BBEK2)",
-  "matched_target": "ram_ddr5_16gb",
-  "price_uah": 10300
-}
-```
-**Зразок #44:**
-```json
-{
-  "raw_title": "Crucial DDR5 64GB (2x32GB) 5600, CL46,  протестована",
-  "matched_target": "ssd_64gb",
-  "price_uah": 28995
-}
-```
-**Зразок #45:**
-```json
-{
-  "raw_title": "продам оперативную память DDR3 8GB 1600",
-  "matched_target": "ram_ddr3_8gb",
-  "price_uah": 633
-}
-```
-**Зразок #46:**
-```json
-{
-  "raw_title": "Продам оперативку DDR3 4Gb 1333Mhz Patriot",
-  "matched_target": "ram_ddr3_4gb",
-  "price_uah": 400
-}
-```
-**Зразок #47:**
-```json
-{
-  "raw_title": "Оперативна память GEIL 8GB DDR4-2666",
-  "matched_target": "ram_ddr4_8gb",
-  "price_uah": 1100
-}
-```
-**Зразок #48:**
-```json
-{
-  "raw_title": "Продам оперативну память ноутбука ddr4 2x8 3200MHz",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 3000
-}
-```
-**Зразок #49:**
-```json
-{
-  "raw_title": "Оперативна память GOOD RAM   DDR3    4Gb",
-  "matched_target": "ram_ddr3_4gb",
-  "price_uah": 150
-}
-```
-**Зразок #50:**
-```json
-{
-  "raw_title": "Оперативна память 4gb ddr4",
-  "matched_target": "ram_ddr4_4gb",
-  "price_uah": 350
-}
-```
-**Зразок #51:**
-```json
-{
-  "raw_title": "Оперативная Память DDR3 1600 (2x8)",
-  "matched_target": "ram_ddr3_16gb",
-  "price_uah": 1200
-}
-```
-**Зразок #52:**
-```json
-{
-  "raw_title": "RAM DDR4 2666 PATRIOT PVE432G266C6KBL 16gb CL16 1.2V (1х16Gb)",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 2450
-}
-```
-**Зразок #53:**
-```json
-{
-  "raw_title": "Оперативна память Exceleram DDR3 8GB.1600 МГц",
-  "matched_target": "ram_ddr3_8gb",
-  "price_uah": 800
-}
-```
-**Зразок #54:**
-```json
-{
-  "raw_title": "Оперативна пʼмять DDR3 8gb 1600mhz AMD Radeon",
-  "matched_target": "ram_ddr3_8gb",
-  "price_uah": 650
-}
-```
-**Зразок #55:**
-```json
-{
-  "raw_title": "Оперативна память Kingston Fury Beast Black DDR5 2x16GB 4800MHz CL38  - 32GB",
-  "matched_target": "ram_ddr5_32gb",
-  "price_uah": 26999
-}
-```
-**Зразок #56:**
-```json
-{
-  "raw_title": "Оперативна память AORUS 8GB DDR4-3333",
-  "matched_target": "ram_ddr4_8gb",
-  "price_uah": 1650
-}
-```
-**Зразок #57:**
-```json
-{
-  "raw_title": "SSD M.2 Samsung 970 EVO Plus 1TB 1 ТБ NVMe PCIe MZ-V7S1T0BW",
-  "matched_target": "ssd_1tb",
-  "price_uah": 7500
-}
-```
-**Зразок #58:**
-```json
-{
-  "raw_title": "Оперативная память G.Skill DDR4-3000 16gb (2x8)Aegis",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 2950
-}
-```
-**Зразок #59:**
-```json
-{
-  "raw_title": "Оперативна памʼять RAM ОЗУ G.SKILL Trident Z RGB 64GB 2x32 DDR4 3600 CL18",
-  "matched_target": "ssd_64gb",
-  "price_uah": 14999
-}
-```
-**Зразок #60:**
-```json
-{
-  "raw_title": "Оперативная память - HyperX DDR4-3200-CL16/16gb/(8+8)",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 5000
-}
-```
-**Зразок #61:**
-```json
-{
-  "raw_title": "Оперативна памаять(ОЗП): Kingston DDR4 16GB (2x8GB) 3200Mhz FURY Beast Black",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 6000
-}
-```
-**Зразок #62:**
-```json
-{
-  "raw_title": "Оперативна память SK hynix 16GB DDR3 ECC REG 1333MHz сервер Xeon X79",
-  "matched_target": "x79",
-  "price_uah": 645
-}
-```
-**Зразок #63:**
-```json
-{
-  "raw_title": "Оперативная память Samsung 8GB DDR3 1Rx4 PC3L-12800R  M393B1G70BH0-YK0",
-  "matched_target": "ram_ddr3_8gb",
-  "price_uah": 800
-}
-```
-**Зразок #64:**
-```json
-{
-  "raw_title": "Оперативная плашка ddr4 3200mhz g.skill ripjaws 8gb",
-  "matched_target": "ram_ddr4_8gb",
-  "price_uah": 2500
-}
-```
-**Зразок #65:**
-```json
-{
-  "raw_title": "Оперативная память Samsung DDR3 4gb 1333 MHz",
-  "matched_target": "ram_ddr3_4gb",
-  "price_uah": 550
-}
-```
-**Зразок #66:**
-```json
-{
-  "raw_title": "Оперативная память ddr4 kingston fury hyperx  16gb 2 по 8 3200mhz",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 4500
-}
-```
-**Зразок #67:**
-```json
-{
-  "raw_title": "Оперативная память Samsung 96GB RDIMM DDR5 4800 MHz (M321RYGA0BB0-CQK)",
-  "matched_target": "ram_ddr5_96gb",
-  "price_uah": 129900
-}
-```
-**Зразок #68:**
-```json
-{
-  "raw_title": "Kingston Beast Black DDR4 16GB",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 5000
-}
-```
-**Зразок #69:**
-```json
-{
-  "raw_title": "Модуль RAM Kingston DDR4 8GB 3200MT/s SODIMM",
-  "matched_target": "ram_ddr4_8gb",
-  "price_uah": 1500
-}
-```
-**Зразок #70:**
-```json
-{
-  "raw_title": "Оперативная память corsair vengeance ddr4 16gb 2 по 8 3000mhz(3200mhz)",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 4000
-}
-```
-**Зразок #71:**
-```json
-{
-  "raw_title": "Память reg ddr4 64gb 2933 серверна",
-  "matched_target": "ssd_64gb",
-  "price_uah": 6500
-}
-```
-**Зразок #72:**
-```json
-{
-  "raw_title": "KLLISRE DDR4 16гб 2666мгц",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 2750
-}
-```
-**Зразок #73:**
-```json
-{
-  "raw_title": "Нова‼️Оперативна пам’ять Netac DDR4 32GB 2×16GB 3200MHz CL16",
-  "matched_target": "ram_ddr4_32gb",
-  "price_uah": 7499
-}
-```
-**Зразок #74:**
-```json
-{
-  "raw_title": "Goodram DDR3 4gb PC3, 15000 DIMM",
-  "matched_target": "ram_ddr3_4gb",
-  "price_uah": 290
-}
-```
-**Зразок #75:**
-```json
-{
-  "raw_title": "Модуль памяті для компютера DDR4 8GB 3200 MHz Aegis G.Skill",
-  "matched_target": "ram_ddr4_8gb",
-  "price_uah": 2000
-}
-```
-**Зразок #76:**
-```json
-{
-  "raw_title": "Оперативна память в ПК Corsair 16GB (2*8GB) DDR4 2666mhz CL16",
-  "matched_target": "ram_ddr4_16gb",
-  "price_uah": 3500
 }
 ```
 

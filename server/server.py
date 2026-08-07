@@ -70,6 +70,8 @@ class NewAdModel(BaseModel):
     all_photos: str | None = None
     has_defects: int | None = 0
     pc_category: str | None = "uncategorized"
+    
+    # Дані продавця
     seller_id: str | None = None
     seller_name: str | None = None
     seller_created_at: str | None = None
@@ -77,13 +79,29 @@ class NewAdModel(BaseModel):
     seller_rating: str | None = "немає оцінок"
     seller_type: str | None = "private_person"
     seller_risk_score: str | None = "neutral"
+    
+    # Детекція компонентів та ринкова економіка
     gpu_detected: str | None = None
     cpu_detected: str | None = None
+    mb_detected: str | None = None
+    motherboard_detected: str | None = None
+    ram_detected: str | None = None
+    psu_detected: str | None = None
+    storage_detected: str | None = None
+    ssd_detected: str | None = None
+
     gpu_market_price: float | int | None = None
     cpu_market_price: float | int | None = None
+    mb_market_price: float | int | None = None
+    motherboard_market_price: float | int | None = None
+    ram_market_price: float | int | None = None
+    psu_market_price: float | int | None = None
+    storage_market_price: float | int | None = None
+    ssd_market_price: float | int | None = None
+
     estimated_fair_price: float | int | None = None
     competitor_price: float | int | None = None
-    competitors_ids: Any = None  # 👈 Додано масив/JSON ID конкурентів
+    competitors_ids: Any = None
     saving_uah: float | int | None = None
     saving_percent: float | int | None = None
     deal_status: str | None = "regular"

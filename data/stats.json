@@ -401,5 +401,26 @@
       "network_errors": 0,
       "parsing_errors": 0
     }
+  },
+  "07-08-2026": {
+    "parsing": {
+      "parsed_total_new": 3,
+      "duplicates_skipped": 48,
+      "avg_parsing_time_ms": 2042.65,
+      "total_time_seconds": 6.13
+    },
+    "filtering": {
+      "banned_words_triggered": 0,
+      "filtered_total_active": 970
+    },
+    "market_analysis": {
+      "avg_ad_price_uah": 0,
+      "min_price_today": 0,
+      "max_price_today": 0
+    },
+    "system_health": {
+      "network_errors": 0,
+      "parsing_errors": 0
+    }
   }
 }

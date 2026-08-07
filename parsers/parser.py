@@ -163,7 +163,7 @@ def is_real_pc(title: str) -> tuple[bool, str]:
     if not title:
         return False, "empty_title"
     title_lower = title.lower()
-    pc_indicators = ["пк", "комп", "системний блок", "системный блок", "компьютер", "комп’ютер", "системник", "pc", "mac", "блок"]
+    pc_indicators = ["пк", "комп", "системний блок", "системный блок", "компьютер", "комп’ютер", "системник", "pc", "mac", "блок", "сервер", "станці", "workstation", "игров", "ігров", "ноутбук"]
 
     for bad_word in NOT_A_PC_WORDS:
         if bad_word in title_lower:
