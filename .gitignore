@@ -1,2 +1,19 @@
+# Секрети та середовище
 .env
+.venv/
+venv/
+
+# Клінер / Кеш Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Тести та покриття
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Тимчасові файли та кастомні тести
+debug/
 test2208.py
+*.log
