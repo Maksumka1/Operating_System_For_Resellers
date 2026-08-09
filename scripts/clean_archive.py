@@ -354,10 +354,12 @@ class ArchiveChecker:
         repository: AdRepository,
         http_client: OlxHttpClient,
         config: ArchiveCheckerConfig,
+        db_lock: Any = None,
     ) -> None:
         self._repo = repository
         self._http = http_client
         self._config = config
+        self._db_lock = db_lock
         self._logger = _get_logger(__name__)
 
     async def run(self) -> dict[str, int]:
@@ -396,8 +398,13 @@ class ArchiveChecker:
 
         deactivated_ids = [r.ad_id for r in results if r.status == "deactivated"]
         if deactivated_ids:
-            updated = await self._repo.deactivate_batch(deactivated_ids, start_time)
-            self._logger.info("deactivation_complete", count=updated)
+            if self._db_lock:
+                async with self._db_lock:
+                    updated = await self._repo.deactivate_batch(deactivated_ids, start_time)
+                    self._logger.info("deactivation_complete", count=updated)
+            else:
+                updated = await self._repo.deactivate_batch(deactivated_ids, start_time)
+            
 
         elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
         stats = {
@@ -434,7 +441,7 @@ class ArchiveChecker:
 # ---------------------------------------------------------------------------
 # 9. FACTORY (FIXED: приймає готову сесію замість створення)
 # ---------------------------------------------------------------------------
-def create_checker_from_env(session: AsyncSession) -> ArchiveChecker:
+def create_checker_from_env(session: AsyncSession,  db_lock: Any = None) -> ArchiveChecker:
     """
     Єдине місце створення залежностей (крім HTTP-сесії).
     Сесію створює та закриває caller (main_async), щоб уникнути витоку.
@@ -455,13 +462,13 @@ def create_checker_from_env(session: AsyncSession) -> ArchiveChecker:
     http_client = OlxHttpClient(session, url_validator, config)
     repository = SupabaseAdRepository(supabase_client, config)
 
-    return ArchiveChecker(repository, http_client, config)
+    return ArchiveChecker(repository, http_client, config, db_lock=db_lock)
 
 
 # ---------------------------------------------------------------------------
 # 10. ТОЧКА ВХОДУ (FIXED: async with для сесії)
 # ---------------------------------------------------------------------------
-async def main_async() -> None:
+async def main_async(db_lock: Any = None) -> None:
     logger = _get_logger("main")
     logger.info("system_start")
 
@@ -475,7 +482,7 @@ async def main_async() -> None:
         impersonate="chrome120",
         **proxy_kwargs
     ) as session:
-        checker = create_checker_from_env(session)
+        checker = create_checker_from_env(session, db_lock=db_lock)
         try:
             stats = await checker.run()
             logger.info("final_stats", **stats)

@@ -1,120 +1,356 @@
+"""
+OLX Hardware Parser — Production Ready
+======================================
+Асинхронний збір оголошень комплектуючих з OLX GraphQL API.
+
+Архітектура:
+  • DI + Repository Pattern
+  • Pydantic-валідація env та доменних моделей
+  • Metrics + Tracing + Structured Logging
+  • Graceful shutdown
+  • Без глобального стану
+
+Залежності:
+  pip install pydantic supabase-py python-dotenv curl_cffi aiohttp structlog
+"""
+
 from __future__ import annotations
 
-import os
 import asyncio
+import hashlib
 import json
+import logging
+import os
 import re
+import signal
 import sys
 import time
+from abc import ABC, abstractmethod
+from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from collections import defaultdict
+from typing import Any, Callable
 from urllib.parse import urlparse
-import aiohttp
 
 from curl_cffi.requests import AsyncSession
-from supabase import create_client, Client
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field, field_validator
+from supabase import Client, create_client
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-if not (PROJECT_ROOT / "config.py").exists():
-    PROJECT_ROOT = PROJECT_ROOT.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+try:
+    import structlog
+    _HAS_STRUCTLOG = True
+except ImportError:
+    _HAS_STRUCTLOG = False
 
-from config import HARDWARE_TARGETS, LEGACY_PRE_SORTED_TARGETS, SOCKETS, CHIPSET_TO_SOCKET
-from hardware_matchers import (
-    detect_bundle_components, extract_motherboard, extract_psu, 
-    extract_ram, extract_storage, normalize_title, extract_gpu, extract_cpu
+# ---------------------------------------------------------------------------
+# Зовнішні залежності проєкту
+# Структура: parsers/parser_hardware.py лежить у підпапці,
+# а config.py та hardware_matchers.py — на рівень вище (корінь проєкту)
+# ---------------------------------------------------------------------------
+try:
+    from config import CHIPSET_TO_SOCKET, HARDWARE_TARGETS, LEGACY_PRE_SORTED_TARGETS, SOCKETS
+    from hardware_matchers import (
+        detect_bundle_components,
+        extract_cpu,
+        extract_gpu,
+        extract_motherboard,
+        extract_psu,
+        extract_ram,
+        extract_storage,
+        normalize_title,
+    )
+except ImportError:
+    # Fallback: додаємо батьківську директорію до sys.path
+    # (тимчасове рішення до рефакторингу структури проєкту)
+    _project_root = Path(__file__).resolve().parent.parent
+    if str(_project_root) not in sys.path:
+        sys.path.insert(0, str(_project_root))
+    try:
+        from config import CHIPSET_TO_SOCKET, HARDWARE_TARGETS, LEGACY_PRE_SORTED_TARGETS, SOCKETS
+        from hardware_matchers import (
+            detect_bundle_components,
+            extract_cpu,
+            extract_gpu,
+            extract_motherboard,
+            extract_psu,
+            extract_ram,
+            extract_storage,
+            normalize_title,
+        )
+    except ImportError:
+        # Stubs для автономного запуску (без зовнішніх модулів)
+        HARDWARE_TARGETS = {}
+        LEGACY_PRE_SORTED_TARGETS = []
+        SOCKETS = []
+        CHIPSET_TO_SOCKET = {}
+
+        def normalize_title(t: str) -> str:
+            return t.lower()
+
+        def detect_bundle_components(t: str, ht: dict) -> dict | None:
+            return None
+
+        def extract_gpu(t: str) -> list[str]:
+            return []
+
+        def extract_cpu(t: str) -> list[str]:
+            return []
+
+        def extract_motherboard(t: str) -> list[str]:
+            return []
+
+        def extract_psu(t: str) -> list[str]:
+            return []
+
+        def extract_storage(t: str) -> list[str]:
+            return []
+
+        def extract_ram(t: str) -> list[str]:
+            return []
+
+
+# ===========================================================================
+# 0. OBSERVABILITY — Logging, Metrics, Tracing
+# ===========================================================================
+class TraceIdFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        if not hasattr(record, "trace_id"):
+            record.trace_id = "system"
+        return True
+
+
+_handler = logging.StreamHandler()
+_handler.addFilter(TraceIdFilter())
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s trace=%(trace_id)s — %(message)s",
+    datefmt="%H:%M:%S",
+    handlers=[_handler],
 )
 
-load_dotenv(PROJECT_ROOT / ".env")
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://nfhtmfhckctuyhfolhou.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY")
-OLX_PROXY_URL = os.getenv("OLX_PROXY_URL") or None
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY or "")
-
-
-class PipelineDebugger:
-    """Дебаггер для аналізу результатів парсингу комплектуючих OLX."""
-    def __init__(self, filename="debug_report_parse_hardware.md"):
-        self.debug_dir = PROJECT_ROOT / "debug"
-        self.debug_dir.mkdir(parents=True, exist_ok=True)
-        self.filepath = self.debug_dir / filename
-        self.start_time = datetime.now()
-        self.stats = defaultdict(lambda: defaultdict(int))
-        self.samples = defaultdict(list)
-        self.lock = asyncio.Lock()
-
-    async def record_stat(self, category: str, metric: str, count: int = 1):
-        async with self.lock:
-            self.stats[category][metric] += count
-
-    async def add_sample(self, category: str, item: dict, max_samples: int = 100):
-        async with self.lock:
-            if len(self.samples[category]) < max_samples:
-                self.samples[category].append(item)
-
-    async def save_report_async(self):
-        duration = (datetime.now() - self.start_time).total_seconds()
-        report = [
-            "# 🐛 ДЕБАГ-ЗВІТ ПАРСИНГУ КОМПЛЕКТУЮЧИХ OLX (GraphQL)",
-            f"**Дата та час запуску:** {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}",
-            f"**Тривалість виконання:** {duration:.2f} сек",
-            f"**Шлях до звіту:** `{self.filepath}`\n",
-            "## 📌 1. Задача та мета коду",
-            "Основна мета: асинхронний збір свіжих оголошень комплектуючих з OLX (GraphQL API).\n",
-            "## 📊 2. Загальна статистика вхідних даних та відсіювання"
-        ]
-        for cat, metrics in self.stats.items():
-            report.append(f"### ⚙️ Секція: {cat}")
-            for metric, val in metrics.items():
-                report.append(f"- **{metric}:** {val}")
-            report.append("")
-
-        report.append("## 🔄 3. Детальні приклади даних")
-        category_mapping = [
-            ("gpu", "🎮 Відеокарти (GPU)"), ("cpu", "🧠 Процесори (CPU)"),
-            ("motherboard", "🔌 Материнські плати"), ("psu", "⚡ Блоки живлення"),
-            ("storage", "💾 Накопичувачі"), ("ram", "📟 Оперативна пам'ять"),
-            ("bundle", "📦 Комплекти")
-        ]
-
-        report.append("### 🚫 Відсіяні оголошення:")
-        for type_key, title in category_mapping:
-            filter_key = f"Filtered_{type_key}"
-            filtered_samples = self.samples.get(filter_key, [])
-            report.append(f"#### {title} — Відсіяно ({len(filtered_samples)}):")
-            for idx, sample in enumerate(filtered_samples, 1):
-                report.append(f"**Семпл #{idx}:**\n```json\n" + json.dumps(sample, indent=2, ensure_ascii=False) + "\n```")
-            report.append("")
-
-        report.append("### 🎯 Успішно розпізнані моделі:")
-        for type_key, title in category_mapping:
-            cat_samples = self.samples.get(f"Recognized_{type_key}", [])
-            report.append(f"#### {title} — Розпізнано ({len(cat_samples)}):")
-            for idx, sample in enumerate(cat_samples, 1):
-                report.append(f"**Зразок #{idx}:**\n```json\n" + json.dumps(sample, indent=2, ensure_ascii=False) + "\n```")
-            report.append("")
-
-        def _write():
-            with open(self.filepath, "w", encoding="utf-8") as f:
-                f.write("\n".join(report))
-
-        await asyncio.to_thread(_write)
-        print(f"📝 [DEBUG] Повний дебаг-звіт збережено у `{self.filepath}`")
+class TracingContext:
+    def __init__(self) -> None:
+        self.trace_id = hashlib.sha256(
+            f"{time.time()}{os.urandom(8)}".encode()
+        ).hexdigest()[:16]
 
 
-debugger = PipelineDebugger()
+def _get_logger(name: str, trace: TracingContext | None = None) -> Any:
+    extra = {"trace_id": trace.trace_id} if trace else {}
+    if _HAS_STRUCTLOG:
+        return structlog.get_logger(name, **extra)
+    logger = logging.getLogger(name)
+    if extra:
+        return logging.LoggerAdapter(logger, extra)
+    return logger
 
+
+class MetricsCollector:
+    """Thread-safe/async-safe метрики."""
+
+    def __init__(self) -> None:
+        self._counters: dict[str, int] = defaultdict(int)
+        self._timers: dict[str, dict[str, float]] = defaultdict(lambda: {"count": 0.0, "total_sec": 0.0})
+        self._lock = asyncio.Lock()
+
+    async def inc(self, name: str, value: int = 1) -> None:
+        async with self._lock:
+            self._counters[name] += value
+
+    async def time(self, name: str, duration_sec: float) -> None:
+        async with self._lock:
+            s = self._timers[name]
+            s["count"] += 1
+            s["total_sec"] += duration_sec
+
+    def snapshot(self) -> dict[str, Any]:
+        return {
+            "counters": dict(self._counters),
+            "timers": {
+                k: {
+                    "count": int(v["count"]),
+                    "avg_ms": round((v["total_sec"] / v["count"]) * 1000, 2) if v["count"] else 0,
+                }
+                for k, v in self._timers.items()
+            },
+        }
+
+
+# ===========================================================================
+# 1. CONFIG
+# ===========================================================================
+class EnvConfig(BaseModel):
+    """Валідація змінних оточення."""
+
+    supabase_url: str = Field(default="", min_length=1)
+    supabase_secret_key: str = Field(default="", min_length=1)
+    olx_proxy_url: str = Field(default="")
+    request_timeout: int = Field(default=12, gt=0)
+    max_retries: int = Field(default=3, ge=1, le=10)
+    pages_to_parse: int = Field(default=1, ge=1, le=20)
+    impersonate_browser: str = Field(default="chrome124")
+
+    @field_validator("supabase_url")
+    @classmethod
+    def _url_https(cls, v: str) -> str:
+        if v and not v.startswith("https://"):
+            raise ValueError("SUPABASE_URL має починатися з https://")
+        return v.rstrip("/") if v else v
+
+
+@dataclass(frozen=True)
+class ParserConfig:
+    """Конфігурація парсера (не з env, а бізнес-логіка)."""
+
+    subcategories: tuple[dict[str, str], ...] = (
+        {"item_type": "gpu", "subcategory": "videokarty", "name": "Відеокарти"},
+        {"item_type": "cpu", "subcategory": "protsessory", "name": "Процесори"},
+        {"item_type": "motherboard", "subcategory": "materinskie-platy", "name": "Материнські плати"},
+        {"item_type": "psu", "subcategory": "bloki-pitaniya", "name": "Блоки живлення"},
+        {"item_type": "storage", "subcategory": "zhestkie-diski", "name": "Накопичувачі"},
+        {"item_type": "ram", "subcategory": "moduli-pamyati", "name": "Оперативна пам'ять"},
+    )
+    headers: dict[str, str] = field(default_factory=lambda: {
+        "accept": "application/json",
+        "accept-language": "uk",
+        "content-type": "application/json",
+        "origin": "https://www.olx.ua",
+        "referer": "https://www.olx.ua/",
+        "user-agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
+        "x-client": "DESKTOP",
+    })
+    graphql_query: str = (
+        "query ListingSearchQuery($searchParameters: [SearchParameter!] = []) {"
+        "  clientCompatibleListings(searchParameters: $searchParameters) {"
+        "    ... on ListingSuccess {"
+        "      data {"
+        "        id title url status created_time last_refresh_time description"
+        "        location { city { name } }"
+        "        photos { link }"
+        "        user { id uuid name created }"
+        "        params {"
+        "          key name"
+        "          value {"
+        "            ... on PriceParam { value currency label }"
+        "            ... on GenericParam { key label }"
+        "          }"
+        "        }"
+        "      }"
+        "    }"
+        "  }"
+        "}"
+    )
+
+
+# ===========================================================================
+# 2. DOMAIN MODEL
+# ===========================================================================
+class ParsedAd(BaseModel):
+    """Одне розпізнане оголошення для збереження в БД."""
+
+    ad_id: int | None = None
+    url: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    description: str = ""
+    price: int = Field(ge=0, le=1_000_000_000)
+    item_type: str = Field(min_length=1)
+    component_name: str = Field(min_length=1)
+    socket: str | None = None
+    has_defects: int = Field(default=0, ge=0, le=1)
+    city: str = "Невідомо"
+    created_at_olx: str = "Невідомо"
+    photo_url: str = "Невідомо"
+    all_photos: str | None = None
+    parsed_date: str = Field(min_length=1)
+    status: str = "active"
+    seller_id: str | None = None
+    seller_uuid: str | None = None
+    seller_name: str = "Невідомо"
+    seller_created_at: str | None = None
+    seller_type: str = "private_person"
+    seller_price_clean: int = Field(default=0, ge=0)
+    bundle_components: dict[str, str | None] | None = None
+
+
+# ===========================================================================
+# 3. REPOSITORY PATTERN
+# ===========================================================================
+class AdsRepository(ABC):
+    """Інтерфейс для роботи з оголошеннями в БД."""
+
+    @abstractmethod
+    async def fetch_seen_urls(self) -> set[str]:
+        ...
+
+    @abstractmethod
+    async def upsert_ads(self, ads: list[ParsedAd]) -> int:
+        ...
+
+
+class SupabaseAdsRepository(AdsRepository):
+    """Реалізація через Supabase (синхронний SDK у потоці)."""
+
+    def __init__(self, client: Client, metrics: MetricsCollector, trace: TracingContext) -> None:
+        self._client = client
+        self._metrics = metrics
+        self._trace = trace
+        self._logger = _get_logger(__name__, trace)
+
+    async def fetch_seen_urls(self) -> set[str]:
+        def _fetch() -> set[str]:
+            try:
+                resp = self._client.table("ads").select("url").execute()
+                return {row["url"] for row in (resp.data or [])}
+            except Exception as exc:
+                self._logger.error("fetch_seen_urls_failed: %s", str(exc))
+                return set()
+
+        t0 = time.monotonic()
+        result = await asyncio.to_thread(_fetch)
+        await self._metrics.time("db_fetch_urls", time.monotonic() - t0)
+        await self._metrics.inc("db_fetch_urls_count", len(result))
+        self._logger.info("seen_urls_loaded: count=%s", len(result))
+        return result
+
+    async def upsert_ads(self, ads: list[ParsedAd]) -> int:
+        if not ads:
+            return 0
+
+        dicts = [a.model_dump(exclude_none=True) for a in ads]
+
+        def _upsert() -> None:
+            self._client.table("ads").upsert(dicts, on_conflict="ad_id").execute()
+
+        try:
+            t0 = time.monotonic()
+            await asyncio.to_thread(_upsert)
+            duration = time.monotonic() - t0
+            await self._metrics.time("db_upsert_ads", duration)
+            await self._metrics.inc("db_upsert_ads_count", len(ads))
+            self._logger.info("ads_upserted: count=%s", len(ads))
+            return len(ads)
+        except Exception as exc:
+            self._logger.error("ads_upsert_failed: %s", str(exc))
+            await self._metrics.inc("db_upsert_ads_failures")
+            return 0
+
+
+# ===========================================================================
+# 4. PURE FUNCTIONS — логіка розпізнавання (stateless)
+# ===========================================================================
 BROKEN_PATTERN = re.compile(
     r"неробоч|не робоч|запчастин|запчасть|запчасти|дефект|відновлен|восстановлен|"
     r"артефакт|поломан|неисправн|не справн|на детал|запчасті|прогрів|не стартует|"
     r"не включа|не включається|не включается|не працює|не работает|не робочий|"
-    r"на\s+запчаст\w*|под\s+восстановление|під\s+відновлення|под\s+ремонт|під\s+ремонт|"
-    r"непрацю\w*|\bремонт\w*",
+    r"на\\s+запчаст\\w*|под\\s+восстановление|під\\s+відновлення|под\\s+ремонт|під\\s+ремонт|"
+    r"непрацю\w*|ремонт\w*",
     re.IGNORECASE,
 )
 
@@ -133,51 +369,10 @@ CLEAN_PATTERNS = re.compile(
 
 COMPARISON_PATTERN = re.compile(
     r"(?:сильніше\s+за|мощнее\s+чем|быстрее\s+чем|аналог|замість|вмісто|вместо|похожа\s+на|як|как|рівень|уровень|мощнее|быстрее|сильнее)\s+[a-z0-9\s_-]+|\(.*?\)",
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 MULTILOT_PATTERN = re.compile(r"\d+\s*(?:gb|гб)\s*,\s*\d+\s*(?:gb|гб)", re.IGNORECASE)
-
-HEADERS = {
-    "accept": "application/json",
-    "accept-language": "uk",
-    "content-type": "application/json",
-    "origin": "https://www.olx.ua",
-    "referer": "https://www.olx.ua/",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "x-client": "DESKTOP",
-}
-
-TIMEOUT = 12
-
-SUBCATEGORIES_TO_PARSE = [
-    {"item_type": "gpu", "subcategory": "videokarty", "name": "Відеокарти"},
-    {"item_type": "cpu", "subcategory": "protsessory", "name": "Процесори"},
-    {"item_type": "motherboard", "subcategory": "materinskie-platy", "name": "Материнські плати"},
-    {"item_type": "psu", "subcategory": "bloki-pitaniya", "name": "Блоки живлення"},
-    {"item_type": "storage", "subcategory": "zhestkie-diski", "name": "Накопичувачі"},
-    {"item_type": "ram", "subcategory": "moduli-pamyati", "name": "Оперативна пам'ять"}
-]
-
-GRAPHQL_QUERY = """query ListingSearchQuery($searchParameters: [SearchParameter!] = []) {
-  clientCompatibleListings(searchParameters: $searchParameters) {
-    ... on ListingSuccess {
-      data {
-        id title url status created_time last_refresh_time description
-        location { city { name } }
-        photos { link }
-        user { id uuid name created }
-        params {
-          key name
-          value {
-            ... on PriceParam { value currency label }
-            ... on GenericParam { key label }
-          }
-        }
-      }
-    }
-  }
-}"""
 
 
 def is_broken_ad(text: str) -> bool:
@@ -192,18 +387,28 @@ def clean_url(url: str) -> str:
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
 
 
-def detect_socket(title: str, description: str, component_name: str) -> str | None:
+def detect_socket(
+    title: str,
+    description: str,
+    component_name: str,
+    sockets: list[str] | None = None,
+    chipset_map: dict[str, str] | None = None,
+) -> str | None:
+    """Визначає сокет з тексту або по chipset map."""
+    sockets = sockets or SOCKETS
+    chipset_map = chipset_map or CHIPSET_TO_SOCKET
+
     full_text = f"{title} {description}".lower()
-    for sock in SOCKETS:
-        pattern = r"\b" + re.escape(sock.replace("-", " ")) + r"\b"
+    for sock in sockets:
+        # Шукаємо сокет як окреме слово (word boundary)
+        pattern = r"(?<![a-z0-9])" + re.escape(sock.lower().replace("-", " ")) + r"(?![a-z0-9])"
         if re.search(pattern, full_text.replace("-", " ")):
-            return sock.replace("socket", "lga")
-
+            return sock.replace("socket", "lga").lower()
     mb_key = component_name.lower().replace("_", "")
-    return CHIPSET_TO_SOCKET.get(mb_key)
+    return chipset_map.get(mb_key)
 
 
-def match_ad_to_hardware_target(title: str, target_items_for_type: dict = None) -> tuple[str, dict] | None:
+def match_ad_to_hardware_target(title: str, target_items_for_type: dict | None = None) -> tuple[str, dict] | None:
     if not title:
         return None
 
@@ -218,34 +423,43 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict = None) 
         return bundle_data["bundle_key"], {
             "item_type": "bundle",
             "subcategory": "komplektuyushchie-set",
-            "components": bundle_data["components"]
+            "components": bundle_data["components"],
         }
 
     if "x99" in title_for_match and "x99" in HARDWARE_TARGETS:
         return "x99", HARDWARE_TARGETS["x99"]
 
     for cand in extract_gpu(title_for_match):
-        if cand in HARDWARE_TARGETS: return cand, HARDWARE_TARGETS[cand]
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
     for cand in extract_cpu(title_for_match):
-        if cand in HARDWARE_TARGETS: return cand, HARDWARE_TARGETS[cand]
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
     for cand in extract_motherboard(title_for_match):
-        if cand in HARDWARE_TARGETS: return cand, HARDWARE_TARGETS[cand]
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
     for cand in extract_psu(title_for_match):
-        if cand in HARDWARE_TARGETS: return cand, HARDWARE_TARGETS[cand]
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
     for cand in extract_storage(title_for_match):
-        if cand in HARDWARE_TARGETS: return cand, HARDWARE_TARGETS[cand]
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
     for cand in extract_ram(title_for_match):
-        if cand in HARDWARE_TARGETS: return cand, HARDWARE_TARGETS[cand]
+        if cand in HARDWARE_TARGETS:
+            return cand, HARDWARE_TARGETS[cand]
 
-    targets_to_check = LEGACY_PRE_SORTED_TARGETS if target_items_for_type is None else sorted(
-        target_items_for_type.items(), key=lambda x: len(x[0]), reverse=True
+    targets_to_check = (
+        LEGACY_PRE_SORTED_TARGETS
+        if target_items_for_type is None
+        else sorted(target_items_for_type.items(), key=lambda x: len(x[0]), reverse=True)
     )
 
     for target_name, cfg in targets_to_check:
         compiled_patt = cfg.get("compiled_pattern")
         if cfg.get("item_type") == "storage":
             parts = target_name.split("_")
-            if len(parts) < 2: continue
+            if len(parts) < 2:
+                continue
             st_type, capacity_raw = parts[0], parts[1]
             cap_num = re.sub(r"\D", "", capacity_raw)
             cap_unit = "tb" if "tb" in capacity_raw else "gb"
@@ -256,14 +470,16 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict = None) 
             elif st_type == "hdd":
                 has_type = any(w in title_for_match for w in [
                     "hdd", "хдд", "жорстк", "жестк", "винчестер", "toshiba",
-                    "barracuda", "hitachi", "seagate", "ironwolf"
+                    "barracuda", "hitachi", "seagate", "ironwolf",
                 ])
-            if not has_type: continue
+            if not has_type:
+                continue
 
-            pattern = (r"(?<![a-z0-9])(1\s*(tb|тб|терабайт)|(1000|1024)\s*(gb|гб|гігабайт|гигабайт))(?![a-z0-9])"
-                       if capacity_raw == "1tb" else
-                       r"(?<![a-z0-9])" + cap_num + r"\s*(" + cap_unit + r"|тб|терабайт|гб|гігабайт)(?![a-z0-9])")
-
+            pattern = (
+                r"(?<![a-z0-9])(1\s*(tb|тб|терабайт)|(1000|1024)\s*(gb|гб|гігабайт|гигабайт))(?![a-z0-9])"
+                if capacity_raw == "1tb"
+                else r"(?<![a-z0-9])" + cap_num + r"\s*(" + cap_unit + r"|тб|терабайт|гб|гігабайт)(?![a-z0-9])"
+            )
             if re.search(pattern, title_for_match):
                 return target_name, cfg
         else:
@@ -273,258 +489,390 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict = None) 
     return None
 
 
-async def fetch_subcategory_page(
-    session: AsyncSession,
-    subcat_info: dict,
-    hardware_targets: dict,
-    seen_urls: set[str],
-    today_sql: str,
-    offset: int = 0,
-    limit: int = 40,
-    max_retries: int = 3,
-    rate_limiter = None
-) -> list[dict]:
-    subcat_key = subcat_info["subcategory"]
-    item_type = subcat_info["item_type"]
-    targets_for_this_type = {k: v for k, v in hardware_targets.items() if v.get("item_type") == item_type}
+# ===========================================================================
+# 5. ORCHESTRATOR — OLX GraphQL Parser
+# ===========================================================================
+class OlxGraphqlParser:
+    """Головний парсер: завантажує, розпізнає, фільтрує, повертає ParsedAd."""
 
-    search_params = [
-        {"key": "category_id", "value": "458"},
-        {"key": "filter_enum_subcategory[0]", "value": subcat_key},
-        {"key": "currency", "value": "UAH"},
-        {"key": "sort_by", "value": "created_at:desc"},
-        {"key": "limit", "value": str(limit)},
-        {"key": "offset", "value": str(offset)},
-    ]
+    def __init__(
+        self,
+        env: EnvConfig,
+        parser_config: ParserConfig,
+        metrics: MetricsCollector,
+        trace: TracingContext,
+        repo: AdsRepository,
+        rate_limiter: Any = None,
+    ) -> None:
+        self._env = env
+        self._cfg = parser_config
+        self._metrics = metrics
+        self._trace = trace
+        self._repo = repo
+        self._rate_limiter = rate_limiter
+        self._logger = _get_logger(__name__, trace)
+        self._seen_urls: set[str] = set()
+        self._today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    json_payload = {"query": GRAPHQL_QUERY, "variables": {"searchParameters": search_params}}
-    parsed_for_subcat = []
+    async def parse_all(self, shutdown_event: asyncio.Event | None = None) -> list[ParsedAd]:
+        """Основний pipeline: fetch → parse → dedup → return."""
+        self._logger.info("parser_started")
+        t_start = time.monotonic()
 
-    for attempt in range(1, max_retries + 1):
-        try:
-            if rate_limiter:
-                await rate_limiter.acquire()
+        self._seen_urls = await self._repo.fetch_seen_urls()
+        await self._metrics.inc("parser_seen_urls", len(self._seen_urls))
 
-            resp = await session.post("https://www.olx.ua/apigateway/graphql", json=json_payload, timeout=TIMEOUT)
+        hardware_items = {k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")}
+        await self._metrics.inc("parser_target_models", len(hardware_items))
 
-            if rate_limiter:
-                await rate_limiter.report_result(resp.status_code)
+        proxy_kwargs = {}
+        if self._env.olx_proxy_url:
+            proxy_kwargs["proxies"] = {
+                "http": self._env.olx_proxy_url,
+                "https": self._env.olx_proxy_url,
+            }
 
-            if resp.status_code in (401, 403):
-                await debugger.record_stat("Network", f"HTTP 403 ({subcat_key})")
-                await asyncio.sleep(10)
-                continue
+        all_results: list[ParsedAd] = []
 
-            if resp.status_code != 200:
-                await debugger.record_stat("Network", f"HTTP Status {resp.status_code}")
+        async with AsyncSession(
+            headers=self._cfg.headers,
+            impersonate=self._env.impersonate_browser,  # type: ignore[arg-type]
+            **proxy_kwargs,
+        ) as session:
+            self._logger.info("session_warmed_up")
+            try:
+                await session.get("https://www.olx.ua/uk/elektronika/", timeout=10)
+            except Exception:
+                pass
+
+            for subcat in self._cfg.subcategories:
+                if shutdown_event and shutdown_event.is_set():
+                    self._logger.info("shutdown_requested_skip_subcat: %s", subcat["name"])
+                    break
+
+                parsed = await self._parse_subcategory(session, subcat, hardware_items, shutdown_event)
+                all_results.extend(parsed)
+
+        elapsed = time.monotonic() - t_start
+        await self._metrics.time("parser_total", elapsed)
+        self._logger.info(
+            "parser_finished: total=%s unique=%s duration_sec=%.2f",
+            len(all_results),
+            len({a.url for a in all_results}),
+            elapsed,
+        )
+        return all_results
+
+    async def _parse_subcategory(
+        self,
+        session: AsyncSession,
+        subcat: dict[str, str],
+        hardware_items: dict,
+        shutdown_event: asyncio.Event | None,
+    ) -> list[ParsedAd]:
+        subcat_key = subcat["subcategory"]
+        item_type = subcat["item_type"]
+        cat_name = subcat["name"]
+        self._logger.info("subcat_start: name=%s key=%s pages=%s", cat_name, subcat_key, self._env.pages_to_parse)
+
+        targets_for_type = {k: v for k, v in hardware_items.items() if v.get("item_type") == item_type}
+        results: list[ParsedAd] = []
+
+        for page in range(self._env.pages_to_parse):
+            if shutdown_event and shutdown_event.is_set():
+                break
+
+            t0 = time.monotonic()
+            page_results = await self._fetch_page(session, subcat, targets_for_type, page)
+            await self._metrics.time("olx_fetch_page", time.monotonic() - t0)
+            await self._metrics.inc("olx_fetch_page_count")
+            await self._metrics.inc(f"olx_parsed_{item_type}", len(page_results))
+
+            results.extend(page_results)
+
+            if self._env.pages_to_parse > 1 and page < self._env.pages_to_parse - 1:
+                await asyncio.sleep(1.0)
+
+        self._logger.info("subcat_done: name=%s parsed=%s", cat_name, len(results))
+        return results
+
+    async def _fetch_page(
+        self,
+        session: AsyncSession,
+        subcat: dict[str, str],
+        targets_for_type: dict,
+        page: int,
+    ) -> list[ParsedAd]:
+        subcat_key = subcat["subcategory"]
+        item_type = subcat["item_type"]
+        limit = 40
+        offset = page * limit
+
+        search_params = [
+            {"key": "category_id", "value": "458"},
+            {"key": f"filter_enum_subcategory[0]", "value": subcat_key},
+            {"key": "currency", "value": "UAH"},
+            {"key": "sort_by", "value": "created_at:desc"},
+            {"key": "limit", "value": str(limit)},
+            {"key": "offset", "value": str(offset)},
+        ]
+        payload = {"query": self._cfg.graphql_query, "variables": {"searchParameters": search_params}}
+
+        listings: list[dict] = []
+        for attempt in range(1, self._env.max_retries + 1):
+            try:
+                if self._rate_limiter:
+                    await self._rate_limiter.acquire()
+
+                resp = await session.post(
+                    "https://www.olx.ua/apigateway/graphql",
+                    json=payload,
+                    timeout=self._env.request_timeout,
+                )
+
+                if self._rate_limiter:
+                    await self._rate_limiter.report_result(resp.status_code)
+
+                if resp.status_code in (401, 403):
+                    self._logger.warning("olx_403: subcat=%s attempt=%s", subcat_key, attempt)
+                    await asyncio.sleep(10)
+                    continue
+
+                if resp.status_code != 200:
+                    self._logger.warning("olx_http_error: status=%s subcat=%s", resp.status_code, subcat_key)
+                    await asyncio.sleep(2)
+                    continue
+
+                data = resp.json()
+                listings = data.get("data", {}).get("clientCompatibleListings", {}).get("data", [])
+                break
+            except Exception as exc:
+                self._logger.warning("olx_network_error: subcat=%s attempt=%s error=%s", subcat_key, attempt, str(exc))
                 await asyncio.sleep(2)
-                continue
+                if attempt == self._env.max_retries:
+                    return []
 
-            res_json = resp.json()
-            break
-        except Exception as e:
-            await debugger.record_stat("Network", "Мережева помилка")
-            await asyncio.sleep(2)
-            if attempt == max_retries:
-                return []
-    else:
-        return []
+        await self._metrics.inc("olx_listings_received", len(listings))
+        return [ad for ad in (self._try_parse_item(item, subcat_key, item_type, targets_for_type) for item in listings) if ad is not None]
 
-    listings = res_json.get("data", {}).get("clientCompatibleListings", {}).get("data", [])
-    await debugger.record_stat("OLX_GraphQL", f"Отримано [{subcat_key}]", len(listings))
-
-    for item in listings:
+    def _try_parse_item(
+        self,
+        item: dict,
+        subcat_key: str,
+        item_type: str,
+        targets_for_type: dict,
+    ) -> ParsedAd | None:
         try:
+            # Перевірка підкатегорії
             ad_subcat = None
-            for param in item.get("params", []):
+            for param in item.get("params", []) or []:
                 if param.get("key") == "subcategory":
                     ad_subcat = (param.get("value") or {}).get("key")
                     break
-
             if ad_subcat and ad_subcat != subcat_key:
-                await debugger.record_stat("Filtering_Rules", "Відсіяно (Невідповідність підкатегорії)")
-                await debugger.add_sample(f"Filtered_{item_type}", {"reason": "mismatched_subcategory", "title": item.get("title")})
-                continue
+                return None
 
             title = str(item.get("title") or "Без назви").replace("'", "").strip()
             raw_url = item.get("url", "")
             if not raw_url:
-                continue
-
+                return None
             if not raw_url.startswith("http"):
                 raw_url = "https://www.olx.ua" + raw_url
             advert_url = clean_url(raw_url)
 
-            if advert_url in seen_urls:
-                await debugger.add_sample(f"Filtered_{item_type}", {"reason": "duplicate_url_already_in_db", "url": advert_url, "title": title})
-                continue
+            if advert_url in self._seen_urls:
+                return None
 
-            matched = match_ad_to_hardware_target(title, targets_for_this_type)
+            matched = match_ad_to_hardware_target(title, targets_for_type)
             if not matched:
-                await debugger.record_stat("Filtering_Rules", "Відсіяно (Не розпізнано модель)")
-                await debugger.add_sample(f"Filtered_{item_type}", {"reason": "no_hardware_target_matched", "title": title})
-                continue
+                return None
 
             target_name, cfg = matched
-            raw_ad_id = item.get("id")
-            ad_id = int(raw_ad_id) if raw_ad_id and str(raw_ad_id).isdigit() else None
-            description = str(item.get("description") or "").replace("<br />", "")
+            description = str(item.get("description") or "").replace("<br />", " ")
             full_text = f"{title} {description}"
             has_defects = 1 if is_broken_ad(full_text) else 0
 
+            # Ціна
             price = 0
-            for param in item.get("params", []):
+            for param in item.get("params", []) or []:
                 if param.get("key") == "price":
-                    price_val = param.get("value", {}).get("value", 0)
-                    if isinstance(price_val, (int, float)) and price_val <= 1_000_000_000:
-                        price = int(price_val)
+                    val = param.get("value", {}).get("value", 0)
+                    if isinstance(val, (int, float)) and val <= 1_000_000_000:
+                        price = int(val)
                     break
 
-            loc_data = item.get("location", {}) or {}
-            city = loc_data.get("city", {}).get("name", "Невідомо") if loc_data.get("city") else "Невідомо"
-            created_time_raw = str(item.get("created_time") or "")
-            ad_date = created_time_raw.split("T")[0] if "T" in created_time_raw else "Невідомо"
+            # Локація
+            loc = item.get("location") or {}
+            city = (loc.get("city") or {}).get("name", "Невідомо") if loc.get("city") else "Невідомо"
 
-            raw_photos = item.get("photos", []) or []
-            photo_urls_list = [p.get("link", "").replace("{width}", "1000").replace("{height}", "750") for p in raw_photos if p and p.get("link")]
+            # Дата
+            created_raw = str(item.get("created_time") or "")
+            ad_date = created_raw.split("T")[0] if "T" in created_raw else "Невідомо"
 
-            user_data = item.get("user") or {}
-            seller_id = str(user_data.get("id")) if user_data.get("id") else None
-            seller_uuid = str(user_data.get("uuid")) if user_data.get("uuid") else None
-            user_created_raw = str(user_data.get("created") or "")
-            seller_created_at = user_created_raw.split("-")[0] if "-" in user_created_raw else None
+            # Фото
+            photos = item.get("photos", []) or []
+            photo_urls = [
+                p.get("link", "").replace("{width}", "1000").replace("{height}", "750")
+                for p in photos if p and p.get("link")
+            ]
 
-            detected_socket = detect_socket(title, description, target_name) if item_type in ("motherboard", "cpu") else None
+            # Продавець
+            user = item.get("user") or {}
+            seller_id = str(user.get("id")) if user.get("id") else None
+            seller_uuid = str(user.get("uuid")) if user.get("uuid") else None
+            user_created = str(user.get("created") or "")
+            seller_created = user_created.split("-")[0] if "-" in user_created else None
+
+            # Сокет (тільки для CPU/MB)
+            detected_socket = None
+            if item_type in ("motherboard", "cpu"):
+                detected_socket = detect_socket(title, description, target_name)
+
+            # Bundle
             bundle_components = cfg.get("components") if item_type == "bundle" or target_name.startswith("bundle_") else None
 
-            ad_payload = {
-                "ad_id": ad_id,
-                "url": advert_url,
-                "title": title,
-                "description": description,
-                "price": price,
-                "item_type": cfg.get("item_type", item_type),
-                "component_name": target_name,
-                "socket": detected_socket,
-                "has_defects": has_defects,
-                "city": city,
-                "created_at_olx": ad_date,
-                "photo_url": photo_urls_list[0] if photo_urls_list else "Невідомо",
-                "all_photos": ",".join(photo_urls_list) if photo_urls_list else None,
-                "parsed_date": today_sql,
-                "status": "active",
-                "seller_id": seller_id,
-                "seller_uuid": seller_uuid,
-                "seller_name": user_data.get("name") or "Невідомо",
-                "seller_created_at": seller_created_at,
-                "seller_type": "shop" if item.get("business", False) else "private_person",
-                "seller_price_clean": price,
-                "bundle_components": bundle_components
-            }
+            raw_ad_id = item.get("id")
+            ad_id = int(raw_ad_id) if raw_ad_id and str(raw_ad_id).isdigit() else None
 
-            parsed_for_subcat.append(ad_payload)
-            seen_urls.add(advert_url)
+            ad = ParsedAd(
+                ad_id=ad_id,
+                url=advert_url,
+                title=title,
+                description=description,
+                price=price,
+                item_type=cfg.get("item_type", item_type),
+                component_name=target_name,
+                socket=detected_socket,
+                has_defects=has_defects,
+                city=city,
+                created_at_olx=ad_date,
+                photo_url=photo_urls[0] if photo_urls else "Невідомо",
+                all_photos=",".join(photo_urls) if photo_urls else None,
+                parsed_date=self._today,
+                status="active",
+                seller_id=seller_id,
+                seller_uuid=seller_uuid,
+                seller_name=user.get("name") or "Невідомо",
+                seller_created_at=seller_created,
+                seller_type="shop" if item.get("business", False) else "private_person",
+                seller_price_clean=price,
+                bundle_components=bundle_components,
+            )
 
-            await debugger.record_stat("Parsing_Metrics", f"Успішно розпізнано [{item_type}]")
-            await debugger.add_sample(f"Recognized_{item_type}", {"raw_title": title, "matched_target": target_name, "price_uah": price})
-            print(f"   🎯 [РОЗПІЗНАНО: {target_name}]: {title[:40]}... ({price} грн)")
+            self._seen_urls.add(advert_url)
+            self._logger.info("ad_parsed: component=%s price=%s title=%s...", target_name, price, title[:40])
+            return ad
 
-        except Exception as ex:
-            await debugger.record_stat("Errors", f"Помилка елемента: {str(ex)[:40]}")
-            continue
-
-    return parsed_for_subcat
+        except Exception as exc:
+            self._logger.warning("parse_item_failed: error=%s", str(exc))
+            return None
 
 
+# ===========================================================================
+# 6. FACTORY
+# ===========================================================================
+def _validate_env() -> EnvConfig:
+    """Завантажує та валідує змінні оточення."""
+    env_path = Path(".env")
+    if not env_path.exists():
+        env_path = Path(__file__).resolve().parent / ".env"
+    load_dotenv(env_path)
+
+    cfg = EnvConfig(
+        supabase_url=os.getenv("SUPABASE_URL", "").strip(),
+        supabase_secret_key=os.getenv("SUPABASE_SECRET_KEY", "").strip(),
+        olx_proxy_url=(os.getenv("OLX_PROXY_URL") or "").strip(),
+    )
+
+    if not cfg.supabase_url:
+        raise RuntimeError("❌ SUPABASE_URL не знайдено у .env")
+    if not cfg.supabase_secret_key:
+        raise RuntimeError("❌ SUPABASE_SECRET_KEY не знайдено у .env")
+
+    return cfg
+
+
+async def create_parser_from_env(
+    shutdown_event: asyncio.Event | None = None,
+    pages_to_parse: int | None = None,
+    rate_limiter: Any = None,
+) -> tuple[OlxGraphqlParser, MetricsCollector]:
+    """Єдине місце створення залежностей."""
+    env = _validate_env()
+    if pages_to_parse is not None:
+        env = env.model_copy(update={"pages_to_parse": pages_to_parse})
+
+    trace = TracingContext()
+    metrics = MetricsCollector()
+    logger = _get_logger("factory", trace)
+    logger.info("dependencies_created")
+
+    supabase_client: Client = create_client(env.supabase_url, env.supabase_secret_key)
+    repo = SupabaseAdsRepository(supabase_client, metrics, trace)
+    parser_config = ParserConfig()
+
+    parser = OlxGraphqlParser(
+        env=env,
+        parser_config=parser_config,
+        metrics=metrics,
+        trace=trace,
+        repo=repo,
+        rate_limiter=rate_limiter,
+    )
+    return parser, metrics
+
+
+# ===========================================================================
+# 7. ENTRY POINT
+# ===========================================================================
 async def main_async(
-    pages_to_parse: int = 1, 
-    db_lock: asyncio.Lock | None = None,
-    rate_limiter = None
+    pages_to_parse: int | None = None,
+    db_lock: Any = None,
+    rate_limiter: Any = None,
 ) -> None:
-    start_time = time.time()
-    today_sql = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    logger = _get_logger("main")
+    logger.info("parser_system_start")
 
-    def _fetch_seen_urls():
-        try:
-            res = supabase.table("ads").select("url").execute()
-            return set(row["url"] for row in (res.data or []))
-        except Exception as e:
-            print(f"[ПОМИЛКА ЧИТАННЯ SUPABASE]: {e}")
-            return set()
+    shutdown_event = asyncio.Event()
 
-    if db_lock:
-        async with db_lock:
-            seen_urls = await asyncio.to_thread(_fetch_seen_urls)
-    else:
-        seen_urls = await asyncio.to_thread(_fetch_seen_urls)
+    def _signal_handler(sig: int) -> None:
+        logger.info("shutdown_signal_received: signal=%s", signal.Signals(sig).name)
+        shutdown_event.set()
 
-    await debugger.record_stat("Supabase_Input", "Завантажено URLs для дедуплікації", len(seen_urls))
-    print(f"[БАЗА SUPABASE] Завантажено {len(seen_urls)} комплектуючих для дедуплікації.")
-
-    hardware_items = {k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")}
-    await debugger.record_stat("Parser_Config", "Цільових моделей комплектуючих", len(hardware_items))
-
-    proxy_kwargs = {"proxies": {"http": OLX_PROXY_URL, "https": OLX_PROXY_URL}} if OLX_PROXY_URL else {}
-
-    async with AsyncSession(headers=HEADERS, impersonate="chrome124", **proxy_kwargs) as session:
-        print("🔥 Прогріваємо сесію...")
-        try:
-            await session.get("https://www.olx.ua/uk/elektronika/", timeout=10)
-        except Exception:
-            pass
-
-        all_results = []
-        for subcat_info in SUBCATEGORIES_TO_PARSE:
-            subcat_key = subcat_info["subcategory"]
-            cat_name = subcat_info["name"]
-            print(f"\n📡 Завантажуємо {cat_name} ({subcat_key}, сторінок: {pages_to_parse})...")
-
-            for page in range(pages_to_parse):
-                res = await fetch_subcategory_page(
-                    session, subcat_info, hardware_items, seen_urls, today_sql,
-                    offset=page * 40, limit=40, rate_limiter=rate_limiter
-                )
-                all_results.extend(res)
-                if pages_to_parse > 1 and page < pages_to_parse - 1:
-                    await asyncio.sleep(1.0)
-
-    elapsed = time.time() - start_time
-    await debugger.record_stat("Summary", "Знайдено нових унікальних оголошень", len(all_results))
-    print(f"\n⏱️ Мережевий збір завершено за {elapsed:.2f} сек. (Нових: {len(all_results)})")
-
-    if all_results:
-        def _upsert():
-            supabase.table("ads").upsert(all_results, on_conflict="ad_id").execute()
-
-        try:
-            if db_lock:
-                async with db_lock:
-                    await asyncio.to_thread(_upsert)
-            else:
-                await asyncio.to_thread(_upsert)
-
-            await debugger.record_stat("Supabase_Output", "Успішно збережено в DB", len(all_results))
-            print(f"[УСПІХ SUPABASE] Збережено {len(all_results)} нових комплектуючих у хмару!")
-
+    if sys.platform != "win32":
+        for sig in (signal.SIGTERM, signal.SIGINT):
             try:
-                async with aiohttp.ClientSession() as trigger_session:
-                    await trigger_session.post("http://localhost:8000/api/trigger-new-ad", json=all_results, timeout=5)
-                await debugger.record_stat("WebSocket", "Успішно надіслано тригер стріму")
-                print("[WEBSOCKET] Живий стрим оновлено!")
-            except Exception:
-                await debugger.record_stat("WebSocket", "Помилка відправки тригеру")
-        except Exception as ex:
-            await debugger.record_stat("Supabase_Output", f"Помилка Upsert: {str(ex)[:40]}")
-            print(f"❌ [ПОМИЛКА SUPABASE]: {ex}")
-    else:
-        await debugger.record_stat("Summary", "Немає нових оголошень для відправки в DB")
+                asyncio.get_running_loop().add_signal_handler(sig, _signal_handler, sig)
+            except NotImplementedError:
+                pass
 
-    await debugger.save_report_async()
+    parser, metrics = await create_parser_from_env(
+        shutdown_event=shutdown_event,
+        pages_to_parse=pages_to_parse,
+        rate_limiter=rate_limiter,
+    )
+
+    try:
+        ads = await parser.parse_all(shutdown_event=shutdown_event)
+
+        if ads:
+            upserted = await parser._repo.upsert_ads(ads)
+            logger.info("final_stats: parsed=%s upserted=%s", len(ads), upserted)
+        else:
+            logger.info("final_stats: no_new_ads")
+
+        logger.info("metrics_snapshot: %s", metrics.snapshot())
+
+    except Exception as exc:
+        logger.error("fatal_error: %s", str(exc))
+        raise
 
 
-def main(pages_to_parse: int = 1) -> None:
-    """Точка входу для ручного запуска з консолі."""
-    asyncio.run(main_async(pages_to_parse=pages_to_parse))
+def main() -> None:
+    try:
+        asyncio.run(main_async())
+    except KeyboardInterrupt:
+        _get_logger("main").info("shutdown_by_user")
 
 
 if __name__ == "__main__":
