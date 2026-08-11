@@ -9,9 +9,6 @@ OLX Hardware Parser — Production Ready
   • Metrics + Tracing + Structured Logging
   • Graceful shutdown
   • Без глобального стану
-
-Залежності:
-  pip install pydantic supabase-py python-dotenv curl_cffi aiohttp structlog
 """
 
 from __future__ import annotations
@@ -30,9 +27,10 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 from urllib.parse import urlparse
 
+import aiohttp
 from curl_cffi.requests import AsyncSession
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
@@ -45,12 +43,14 @@ except ImportError:
     _HAS_STRUCTLOG = False
 
 # ---------------------------------------------------------------------------
-# Зовнішні залежності проєкту
-# Структура: parsers/parser_hardware.py лежить у підпапці,
-# а config.py та hardware_matchers.py — на рівень вище (корінь проєкту)
+# Зовнішні залежності проєкту (Гарантований імпорт)
 # ---------------------------------------------------------------------------
+_project_root = Path(__file__).resolve().parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
 try:
-    from config import CHIPSET_TO_SOCKET, HARDWARE_TARGETS, LEGACY_PRE_SORTED_TARGETS, SOCKETS
+    from config import CHIPSET_TO_SOCKET, HARDWARE_TARGETS, LEGACY_PRE_SORTED_TARGETS, SOCKETS, STATS_FILE
     from hardware_matchers import (
         detect_bundle_components,
         extract_cpu,
@@ -61,54 +61,37 @@ try:
         extract_storage,
         normalize_title,
     )
-except ImportError:
-    # Fallback: додаємо батьківську директорію до sys.path
-    # (тимчасове рішення до рефакторингу структури проєкту)
-    _project_root = Path(__file__).resolve().parent.parent
-    if str(_project_root) not in sys.path:
-        sys.path.insert(0, str(_project_root))
-    try:
-        from config import CHIPSET_TO_SOCKET, HARDWARE_TARGETS, LEGACY_PRE_SORTED_TARGETS, SOCKETS
-        from hardware_matchers import (
-            detect_bundle_components,
-            extract_cpu,
-            extract_gpu,
-            extract_motherboard,
-            extract_psu,
-            extract_ram,
-            extract_storage,
-            normalize_title,
-        )
-    except ImportError:
-        # Stubs для автономного запуску (без зовнішніх модулів)
-        HARDWARE_TARGETS = {}
-        LEGACY_PRE_SORTED_TARGETS = []
-        SOCKETS = []
-        CHIPSET_TO_SOCKET = {}
+except ImportError as e:
+    logging.error(f"❌ [CRITICAL IMPORT ERROR in parser_hardware]: {e}")
+    HARDWARE_TARGETS = getattr(sys.modules.get("config"), "HARDWARE_TARGETS", {})
+    LEGACY_PRE_SORTED_TARGETS = getattr(sys.modules.get("config"), "LEGACY_PRE_SORTED_TARGETS", [])
+    SOCKETS = getattr(sys.modules.get("config"), "SOCKETS", [])
+    CHIPSET_TO_SOCKET = getattr(sys.modules.get("config"), "CHIPSET_TO_SOCKET", {})
+    STATS_FILE = Path("stats.json")
 
-        def normalize_title(t: str) -> str:
-            return t.lower()
+    def normalize_title(t: str) -> str:
+        return t.lower()
 
-        def detect_bundle_components(t: str, ht: dict) -> dict | None:
-            return None
+    def detect_bundle_components(t: str, ht: dict | None = None) -> dict | None:
+        return None
 
-        def extract_gpu(t: str) -> list[str]:
-            return []
+    def extract_gpu(t: str) -> list[str]:
+        return []
 
-        def extract_cpu(t: str) -> list[str]:
-            return []
+    def extract_cpu(t: str) -> list[str]:
+        return []
 
-        def extract_motherboard(t: str) -> list[str]:
-            return []
+    def extract_motherboard(t: str) -> list[str]:
+        return []
 
-        def extract_psu(t: str) -> list[str]:
-            return []
+    def extract_psu(t: str) -> list[str]:
+        return []
 
-        def extract_storage(t: str) -> list[str]:
-            return []
+    def extract_storage(t: str) -> list[str]:
+        return []
 
-        def extract_ram(t: str) -> list[str]:
-            return []
+    def extract_ram(t: str) -> list[str]:
+        return []
 
 
 # ===========================================================================
@@ -188,11 +171,13 @@ class EnvConfig(BaseModel):
 
     supabase_url: str = Field(default="", min_length=1)
     supabase_secret_key: str = Field(default="", min_length=1)
+    internal_secret_key: str = Field(default="")
     olx_proxy_url: str = Field(default="")
     request_timeout: int = Field(default=12, gt=0)
     max_retries: int = Field(default=3, ge=1, le=10)
     pages_to_parse: int = Field(default=1, ge=1, le=20)
     impersonate_browser: str = Field(default="chrome124")
+    websocket_trigger_url: str = Field(default="http://localhost:8000/api/trigger-new-ad")
 
     @field_validator("supabase_url")
     @classmethod
@@ -204,7 +189,7 @@ class EnvConfig(BaseModel):
 
 @dataclass(frozen=True)
 class ParserConfig:
-    """Конфігурація парсера (не з env, а бізнес-логіка)."""
+    """Конфігурація бізнес-логіки парсера."""
 
     subcategories: tuple[dict[str, str], ...] = (
         {"item_type": "gpu", "subcategory": "videokarty", "name": "Відеокарти"},
@@ -283,8 +268,6 @@ class ParsedAd(BaseModel):
 # 3. REPOSITORY PATTERN
 # ===========================================================================
 class AdsRepository(ABC):
-    """Інтерфейс для роботи з оголошеннями в БД."""
-
     @abstractmethod
     async def fetch_seen_urls(self) -> set[str]:
         ...
@@ -295,8 +278,6 @@ class AdsRepository(ABC):
 
 
 class SupabaseAdsRepository(AdsRepository):
-    """Реалізація через Supabase (синхронний SDK у потоці)."""
-
     def __init__(self, client: Client, metrics: MetricsCollector, trace: TracingContext) -> None:
         self._client = client
         self._metrics = metrics
@@ -343,14 +324,14 @@ class SupabaseAdsRepository(AdsRepository):
 
 
 # ===========================================================================
-# 4. PURE FUNCTIONS — логіка розпізнавання (stateless)
+# 4. PURE FUNCTIONS
 # ===========================================================================
 BROKEN_PATTERN = re.compile(
     r"неробоч|не робоч|запчастин|запчасть|запчасти|дефект|відновлен|восстановлен|"
     r"артефакт|поломан|неисправн|не справн|на детал|запчасті|прогрів|не стартует|"
     r"не включа|не включається|не включается|не працює|не работает|не робочий|"
-    r"на\\s+запчаст\\w*|под\\s+восстановление|під\\s+відновлення|под\\s+ремонт|під\\s+ремонт|"
-    r"непрацю\w*|ремонт\w*",
+    r"на\s+запчаст\w*|под\s+восстановление|під\s+відновлення|под\s+ремонт|під\s+ремонт|"
+    r"непрацю\w*|\bремонт\w*",
     re.IGNORECASE,
 )
 
@@ -394,13 +375,11 @@ def detect_socket(
     sockets: list[str] | None = None,
     chipset_map: dict[str, str] | None = None,
 ) -> str | None:
-    """Визначає сокет з тексту або по chipset map."""
     sockets = sockets or SOCKETS
     chipset_map = chipset_map or CHIPSET_TO_SOCKET
 
     full_text = f"{title} {description}".lower()
     for sock in sockets:
-        # Шукаємо сокет як окреме слово (word boundary)
         pattern = r"(?<![a-z0-9])" + re.escape(sock.lower().replace("-", " ")) + r"(?![a-z0-9])"
         if re.search(pattern, full_text.replace("-", " ")):
             return sock.replace("socket", "lga").lower()
@@ -409,7 +388,7 @@ def detect_socket(
 
 
 def match_ad_to_hardware_target(title: str, target_items_for_type: dict | None = None) -> tuple[str, dict] | None:
-    if not title:
+    if not title or not HARDWARE_TARGETS:
         return None
 
     title_clean = normalize_title(title)
@@ -450,7 +429,7 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict | None =
 
     targets_to_check = (
         LEGACY_PRE_SORTED_TARGETS
-        if target_items_for_type is None
+        if target_items_for_type is None or not target_items_for_type
         else sorted(target_items_for_type.items(), key=lambda x: len(x[0]), reverse=True)
     )
 
@@ -493,7 +472,7 @@ def match_ad_to_hardware_target(title: str, target_items_for_type: dict | None =
 # 5. ORCHESTRATOR — OLX GraphQL Parser
 # ===========================================================================
 class OlxGraphqlParser:
-    """Головний парсер: завантажує, розпізнає, фільтрує, повертає ParsedAd."""
+    """Головний парсер комплектуючих."""
 
     def __init__(
         self,
@@ -515,7 +494,6 @@ class OlxGraphqlParser:
         self._today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     async def parse_all(self, shutdown_event: asyncio.Event | None = None) -> list[ParsedAd]:
-        """Основний pipeline: fetch → parse → dedup → return."""
         self._logger.info("parser_started")
         t_start = time.monotonic()
 
@@ -524,6 +502,9 @@ class OlxGraphqlParser:
 
         hardware_items = {k: v for k, v in HARDWARE_TARGETS.items() if not k.startswith("pc_")}
         await self._metrics.inc("parser_target_models", len(hardware_items))
+
+        if not hardware_items:
+            self._logger.error("❌ [CRITICAL] HARDWARE_TARGETS порожній! Перевірте імпорти з config.py")
 
         proxy_kwargs = {}
         if self._env.olx_proxy_url:
@@ -610,7 +591,7 @@ class OlxGraphqlParser:
 
         search_params = [
             {"key": "category_id", "value": "458"},
-            {"key": f"filter_enum_subcategory[0]", "value": subcat_key},
+            {"key": "filter_enum_subcategory[0]", "value": subcat_key},
             {"key": "currency", "value": "UAH"},
             {"key": "sort_by", "value": "created_at:desc"},
             {"key": "limit", "value": str(limit)},
@@ -653,46 +634,75 @@ class OlxGraphqlParser:
                     return []
 
         await self._metrics.inc("olx_listings_received", len(listings))
-        return [ad for ad in (self._try_parse_item(item, subcat_key, item_type, targets_for_type) for item in listings) if ad is not None]
 
-    def _try_parse_item(
+        parsed_page: list[ParsedAd] = []
+        stats = {
+            "received": len(listings),
+            "skipped_duplicate": 0,
+            "skipped_subcat_mismatch": 0,
+            "skipped_no_target_match": 0,
+            "parse_errors": 0,
+        }
+
+        for item in listings:
+            ad, reason = self._try_parse_item_with_reason(item, subcat_key, item_type, targets_for_type)
+            if ad:
+                parsed_page.append(ad)
+            else:
+                if reason in stats:
+                    stats[reason] += 1
+
+        self._logger.info(
+            "page_parse_stats: subcat=%s page=%s | received=%s parsed=%s (dups=%s, subcat_mismatch=%s, no_target_match=%s, errs=%s)",
+            subcat_key,
+            page + 1,
+            stats["received"],
+            len(parsed_page),
+            stats["skipped_duplicate"],
+            stats["skipped_subcat_mismatch"],
+            stats["skipped_no_target_match"],
+            stats["parse_errors"],
+        )
+
+        return parsed_page
+
+    def _try_parse_item_with_reason(
         self,
         item: dict,
         subcat_key: str,
         item_type: str,
         targets_for_type: dict,
-    ) -> ParsedAd | None:
+    ) -> tuple[ParsedAd | None, str]:
         try:
-            # Перевірка підкатегорії
             ad_subcat = None
             for param in item.get("params", []) or []:
                 if param.get("key") == "subcategory":
                     ad_subcat = (param.get("value") or {}).get("key")
                     break
-            if ad_subcat and ad_subcat != subcat_key:
-                return None
+
+            if ad_subcat and ad_subcat != subcat_key and ad_subcat not in (subcat_key, "komplektuyushchie-set"):
+                return None, "skipped_subcat_mismatch"
 
             title = str(item.get("title") or "Без назви").replace("'", "").strip()
             raw_url = item.get("url", "")
             if not raw_url:
-                return None
+                return None, "parse_errors"
             if not raw_url.startswith("http"):
                 raw_url = "https://www.olx.ua" + raw_url
             advert_url = clean_url(raw_url)
 
             if advert_url in self._seen_urls:
-                return None
+                return None, "skipped_duplicate"
 
             matched = match_ad_to_hardware_target(title, targets_for_type)
             if not matched:
-                return None
+                return None, "skipped_no_target_match"
 
             target_name, cfg = matched
             description = str(item.get("description") or "").replace("<br />", " ")
             full_text = f"{title} {description}"
             has_defects = 1 if is_broken_ad(full_text) else 0
 
-            # Ціна
             price = 0
             for param in item.get("params", []) or []:
                 if param.get("key") == "price":
@@ -701,36 +711,33 @@ class OlxGraphqlParser:
                         price = int(val)
                     break
 
-            # Локація
             loc = item.get("location") or {}
             city = (loc.get("city") or {}).get("name", "Невідомо") if loc.get("city") else "Невідомо"
-
-            # Дата
             created_raw = str(item.get("created_time") or "")
-            ad_date = created_raw.split("T")[0] if "T" in created_raw else "Невідомо"
+            ad_date = created_raw if created_raw else "Невідомо"
 
-            # Фото
             photos = item.get("photos", []) or []
-            photo_urls = [
-                p.get("link", "").replace("{width}", "1000").replace("{height}", "750")
-                for p in photos if p and p.get("link")
-            ]
+            photo_urls = []
+            for p in photos:
+                if p and isinstance(p, dict) and p.get("link"):
+                    clean_link = p.get("link", "").replace("{width}", "1000").replace("{height}", "750")
+                    if clean_link.startswith("//"):
+                        clean_link = "https:" + clean_link
+                    elif not clean_link.startswith("http"):
+                        clean_link = "https://www.olx.ua" + clean_link
+                    photo_urls.append(clean_link)
 
-            # Продавець
             user = item.get("user") or {}
             seller_id = str(user.get("id")) if user.get("id") else None
             seller_uuid = str(user.get("uuid")) if user.get("uuid") else None
             user_created = str(user.get("created") or "")
             seller_created = user_created.split("-")[0] if "-" in user_created else None
 
-            # Сокет (тільки для CPU/MB)
             detected_socket = None
             if item_type in ("motherboard", "cpu"):
                 detected_socket = detect_socket(title, description, target_name)
 
-            # Bundle
             bundle_components = cfg.get("components") if item_type == "bundle" or target_name.startswith("bundle_") else None
-
             raw_ad_id = item.get("id")
             ad_id = int(raw_ad_id) if raw_ad_id and str(raw_ad_id).isdigit() else None
 
@@ -761,18 +768,42 @@ class OlxGraphqlParser:
 
             self._seen_urls.add(advert_url)
             self._logger.info("ad_parsed: component=%s price=%s title=%s...", target_name, price, title[:40])
-            return ad
+            return ad, "ok"
 
         except Exception as exc:
             self._logger.warning("parse_item_failed: error=%s", str(exc))
-            return None
+            return None, "parse_errors"
+
+    async def trigger_websocket(self, ads: list[ParsedAd]) -> bool:
+        if not ads:
+            return False
+
+        try:
+            secret_key = self._env.internal_secret_key
+            headers = {"X-Internal-Secret": secret_key} if secret_key else {}
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    self._env.websocket_trigger_url,
+                    json=[a.model_dump(exclude_none=True) for a in ads],
+                    headers=headers,
+                    timeout=5,
+                ) as resp:
+                    if resp.status == 200:
+                        self._logger.info("websocket_triggered: count=%s", len(ads))
+                        return True
+                    else:
+                        self._logger.warning("websocket_trigger_failed: status=%s", resp.status)
+                        return False
+        except Exception as exc:
+            self._logger.warning("websocket_trigger_failed: %s", str(exc))
+            return False
 
 
 # ===========================================================================
 # 6. FACTORY
 # ===========================================================================
 def _validate_env() -> EnvConfig:
-    """Завантажує та валідує змінні оточення."""
     env_path = Path(".env")
     if not env_path.exists():
         env_path = Path(__file__).resolve().parent / ".env"
@@ -781,6 +812,7 @@ def _validate_env() -> EnvConfig:
     cfg = EnvConfig(
         supabase_url=os.getenv("SUPABASE_URL", "").strip(),
         supabase_secret_key=os.getenv("SUPABASE_SECRET_KEY", "").strip(),
+        internal_secret_key=os.getenv("INTERNAL_SECRET_KEY", "").strip(),
         olx_proxy_url=(os.getenv("OLX_PROXY_URL") or "").strip(),
     )
 
@@ -797,7 +829,6 @@ async def create_parser_from_env(
     pages_to_parse: int | None = None,
     rate_limiter: Any = None,
 ) -> tuple[OlxGraphqlParser, MetricsCollector]:
-    """Єдине місце створення залежностей."""
     env = _validate_env()
     if pages_to_parse is not None:
         env = env.model_copy(update={"pages_to_parse": pages_to_parse})
@@ -857,6 +888,7 @@ async def main_async(
 
         if ads:
             upserted = await parser._repo.upsert_ads(ads)
+            await parser.trigger_websocket(ads)
             logger.info("final_stats: parsed=%s upserted=%s", len(ads), upserted)
         else:
             logger.info("final_stats: no_new_ads")

@@ -203,6 +203,7 @@ class EnvConfig(BaseModel):
 
     supabase_url: str = Field(default="", min_length=1)
     supabase_secret_key: str = Field(default="", min_length=1)
+    internal_secret_key: str = Field(default="")
     olx_proxy_url: str = Field(default="")
     request_timeout: int = Field(default=15, gt=0)
     max_retries: int = Field(default=5, ge=1, le=10)
@@ -630,14 +631,24 @@ class OlxPcParser:
             city = (loc.get("city") or {}).get("name", "Невідомо") if loc.get("city") else "Невідомо"
 
             created_raw = str(item.get("created_time") or "")
-            created_at = created_raw.split("T")[0] if "T" in created_raw else "Невідомо"
+            created_at = created_raw if created_raw else "Невідомо"
             last_refresh = str(item.get("last_refresh_time") or "Невідомо")
 
+            # 🛠️ Виправлення формування посилань на фотографії
             photos = item.get("photos", []) or []
-            formatted = [
-                p.get("link", "").replace("{width}", "1000").replace("{height}", "750")
-                for p in photos if p and p.get("link")
-            ]
+            formatted: list[str] = []
+
+            for p in photos:
+                if not p or not isinstance(p, dict):
+                    continue
+                link = p.get("link")
+                if link and isinstance(link, str):
+                    clean_link = link.replace("{width}", "1000").replace("{height}", "750")
+                    if clean_link.startswith("//"):
+                        clean_link = "https:" + clean_link
+                    elif not clean_link.startswith("http"):
+                        clean_link = "https://www.olx.ua" + clean_link
+                    formatted.append(clean_link)
 
             user = item.get("user") or {}
             seller_id = str(user.get("id")) if user.get("id") else None
@@ -680,19 +691,28 @@ class OlxPcParser:
             return None
 
     async def trigger_websocket(self, pcs: list[ParsedPc]) -> bool:
-        """Надсилає тригер на WebSocket-сервер."""
+        """Надсилає тригер на WebSocket-сервер із заголовком авторизації X-Internal-Secret."""
         if not pcs:
             return False
 
         try:
+            # 🛠️ Передаємо внутрішній заголовок секретного ключа для проходження авторизації
+            secret_key = self._env.internal_secret_key
+            headers = {"X-Internal-Secret": secret_key} if secret_key else {}
+
             async with aiohttp.ClientSession() as session:
-                await session.post(
+                async with session.post(
                     self._env.websocket_trigger_url,
                     json=[p.model_dump(exclude_none=True) for p in pcs],
+                    headers=headers,
                     timeout=5,
-                )
-            self._logger.info("websocket_triggered: count=%s", len(pcs))
-            return True
+                ) as resp:
+                    if resp.status == 200:
+                        self._logger.info("websocket_triggered: count=%s", len(pcs))
+                        return True
+                    else:
+                        self._logger.warning("websocket_trigger_failed: status=%s", resp.status)
+                        return False
         except Exception as exc:
             self._logger.warning("websocket_trigger_failed: %s", str(exc))
             return False
@@ -710,6 +730,7 @@ def _validate_env() -> EnvConfig:
     cfg = EnvConfig(
         supabase_url=os.getenv("SUPABASE_URL", "").strip(),
         supabase_secret_key=os.getenv("SUPABASE_SECRET_KEY", "").strip(),
+        internal_secret_key=os.getenv("INTERNAL_SECRET_KEY", "").strip(),
         olx_proxy_url=(os.getenv("OLX_PROXY_URL") or "").strip(),
         stats_file=STATS_FILE,
     )

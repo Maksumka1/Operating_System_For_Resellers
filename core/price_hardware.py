@@ -645,9 +645,12 @@ async def create_service_from_env(
 
 
 # ---------------------------------------------------------------------------
-# 8. ENTRY POINT
+# 8. ENTRY POINT — Підтримка db_lock та **kwargs
 # ---------------------------------------------------------------------------
-async def main_async() -> list[PercentileResult]:
+async def main_async(
+    db_lock: asyncio.Lock | None = None,
+    **kwargs: Any,
+) -> list[PercentileResult]:
     logger = _get_logger("main")
     logger.info("system_start")
 
@@ -668,7 +671,13 @@ async def main_async() -> list[PercentileResult]:
     service, metrics, client = await create_service_from_env(shutdown_event=shutdown_event)
 
     try:
-        results = await service.run()
+        # 🔐 Якщо оркестратор передав db_lock — використовуємо його для синхронізації
+        if db_lock:
+            async with db_lock:
+                results = await service.run()
+        else:
+            results = await service.run()
+
         logger.info("final_stats: calculated_count=%s", len(results))
         logger.info("metrics_snapshot: %s", metrics.snapshot())
         return results

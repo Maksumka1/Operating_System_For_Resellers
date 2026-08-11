@@ -48,19 +48,15 @@ def _validate_title(title: Optional[str]) -> str:
 
 @dataclass(frozen=True)
 class NormalizationConfig:
-    """Конфігурація нормалізації тексту."""
     cyrillic_map: Dict[str, str] = field(default_factory=lambda: {
-        'х': 'x', 'Х': 'x', 'с': 'c', 'С': 'c', 'а': 'a', 'А': 'a',
-        'е': 'e', 'Е': 'e', 'о': 'o', 'О': 'o', 'р': 'p', 'Р': 'p',
-        'і': 'i', 'І': 'i', 'в': 'b', 'В': 'b', 'м': 'm', 'М': 'm',
-        'т': 't', 'Т': 't', 'у': 'y', 'У': 'y', 'к': 'k', 'К': 'k',
-        'н': 'h', 'Н': 'h',
+        'а': 'a', 'е': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 
+        'х': 'x', 'і': 'i', 'у': 'y', 'к': 'k',
     })
     noise_chars: Pattern[str] = field(
         default_factory=lambda: re.compile(r"[®™©]", re.IGNORECASE)
     )
     separators: Pattern[str] = field(
-        default_factory=lambda: re.compile(r"[-/\\(),.;:+_]")
+        default_factory=lambda: re.compile(r"[-/\\(),.;:_]")
     )
     multi_space: Pattern[str] = field(
         default_factory=lambda: re.compile(r"\s+")
@@ -75,31 +71,25 @@ class TextNormalizer:
         self._trans_table = str.maketrans(self.cfg.cyrillic_map)
 
     def normalize(self, raw_title: str) -> str:
-        """Повертає очищену нижньорегістрову строку."""
         text = raw_title.lower()
+        
+        text = re.sub(r"[`'’ʼ]", "'", text)
+        text = text.translate(self._trans_table)
 
-        # 1. Одиниці виміру та префікси (ДО омогліфів)
         text = re.sub(r"(\d+)\s*(?:вт|ват|ватт|wt)\b", r"\1w", text)
         text = re.sub(r"\bна\s*(\d+)\s*w\b", r"\1w", text)
-        text = re.sub(r"\bрх\b|\bрх(?=\d)", "rx ", text)
-        text = re.sub(r"\bгтх\b|\bгтх(?=\d)", "gtx ", text)
-        text = re.sub(r"\bртх\b|\bртх(?=\d)", "rtx ", text)
-        text = re.sub(r"(\d+)\s*(гб|г)\b", r"\1gb", text)
+        text = re.sub(r"\b(rx|gtx|rtx)(?=\d)", r"\1 ", text)
+        text = re.sub(r"(\d+)\s*(гб|г|gb)\b", r"\1gb", text)
 
-        # 2. Виправлення типових описок
         text = re.sub(
             r"\bgt\s*(10[5-8]0|16[56]0|20[6-8]0|30[5-9]0|40[5-9]0|50[5-9]0)\b",
             r"gtx \1", text
         )
-        text = re.sub(r"\br([79])(\d{3}\w*)\b", r"r\1 \2", text)
+        text = re.sub(r"\br([3579])\s*(\d{4}\w*)\b", r"ryzen \1 \2", text)
 
-        # 3. Омогліфи, шум, роздільники
-        text = text.translate(self._trans_table)
         text = self.cfg.noise_chars.sub("", text)
         text = self.cfg.separators.sub(" ", text)
-        text = self.cfg.multi_space.sub(" ", text).strip()
-
-        return text
+        return self.cfg.multi_space.sub(" ", text).strip()
 
 
 # ---------------------------------------------------------------------------
@@ -612,10 +602,11 @@ class BundleResult:
 class BundleDetector:
     """Визначає, чи є товар комплектом (bundle) кількох компонентів."""
 
+    # Прибрано \b перед \+
     _BUNDLE_KEYWORDS = re.compile(
         r"\b(?:комплект|сет|set|збірка|сборка|мать\s*\+\s*проц|плата\s*\+\s*проц|проц\s*\+\s*мать|комплектом)\b"
         r"|"
-        r"\b(?:\+\s*(?:озу|ram|кулер|охлад|водянка|память|памяттю|оператива|бж|видеокарта|відеокарта))\b",
+        r"(?:\+\s*(?:озу|ram|кулер|охлад|водянка|память|пам'ять|памяттю|оператива|бж|видеокарта|відеокарта))\b",
         re.IGNORECASE,
     )
 
@@ -629,16 +620,15 @@ class BundleDetector:
         self.cpu_ex = cpu_extractor or CpuExtractor()
         self.mb_ex = mb_extractor or MotherboardExtractor()
 
-    def detect(
-        self, normalized_title: str, hardware_targets: Optional[Dict[str, Set[str]]] = None
+    def detect_from_extracted(
+        self,
+        normalized_title: str,
+        gpus: List[str],
+        cpus: List[str],
+        mbs: List[str],
+        hardware_targets: Optional[Dict[str, Set[str]]] = None,
     ) -> Optional[BundleResult]:
-        """
-        Якщо hardware_targets передано — фільтрує результати за дозволеними ключами.
-        """
-        gpus = self.gpu_ex.extract(normalized_title)
-        cpus = self.cpu_ex.extract(normalized_title)
-        mbs = self.mb_ex.extract(normalized_title)
-
+        """Приймає вже витягнуті списки комплектуючих, уникаючи повторного парсингу."""
         if hardware_targets:
             gpus = [c for c in gpus if c in hardware_targets.get("gpu", set())]
             cpus = [c for c in cpus if c in hardware_targets.get("cpu", set())]
@@ -664,6 +654,17 @@ class BundleDetector:
                 },
             )
         return None
+
+    def detect(
+        self, normalized_title: str, hardware_targets: Optional[Dict[str, Set[str]]] = None
+    ) -> Optional[BundleResult]:
+        """Окремий виклики детектора з витягуванням компонентів «на льоту»."""
+        gpus = self.gpu_ex.extract(normalized_title)
+        cpus = self.cpu_ex.extract(normalized_title)
+        mbs = self.mb_ex.extract(normalized_title)
+        return self.detect_from_extracted(
+            normalized_title, gpus, cpus, mbs, hardware_targets
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -698,18 +699,24 @@ class HardwareMatcher:
         )
 
     def match(self, title: str) -> HardwareProfile:
-        """Публічний API."""
         validated = _validate_title(title)
         clean = self.normalizer.normalize(validated)
 
+        gpus = self.gpu_ex.extract(clean)
+        cpus = self.cpu_ex.extract(clean)
+        mbs = self.mb_ex.extract(clean)
+
+        # Детектор використовує вже готові результати
+        bundle = self.bundle_detector.detect_from_extracted(clean, gpus=gpus, cpus=cpus, mbs=mbs)
+
         return HardwareProfile(
-            gpu=self.gpu_ex.extract(clean),
-            cpu=self.cpu_ex.extract(clean),
-            motherboard=self.mb_ex.extract(clean),
+            gpu=gpus,
+            cpu=cpus,
+            motherboard=mbs,
             psu=self.psu_ex.extract(clean),
             storage=self.storage_ex.extract(clean),
             ram=self.ram_ex.extract(clean),
-            bundle=self.bundle_detector.detect(clean),
+            bundle=bundle,
         )
 
 
@@ -782,3 +789,20 @@ def extract_ram(title: str) -> List[str]:
     """Витягує ОЗП з назви."""
     clean = _safe_normalize(title)
     return _default_ram_ex.extract(clean) if clean else []
+
+
+
+_default_bundle_detector = BundleDetector()
+
+def detect_bundle_components(title: str, hardware_targets: dict | None = None) -> dict | None:
+    """Сумісний аліас для витягування комплектів (bundle)."""
+    clean = _safe_normalize(title)
+    if not clean:
+        return None
+    res = _default_bundle_detector.detect(clean, hardware_targets)
+    if res:
+        return {
+            "bundle_key": res.bundle_key,
+            "components": res.components
+        }
+    return None

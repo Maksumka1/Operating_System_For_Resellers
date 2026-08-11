@@ -49,6 +49,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY", "")
 OLX_PROXY_URL = os.getenv("OLX_PROXY_URL", "") or None
+INTERNAL_SECRET_KEY = os.getenv("INTERNAL_SECRET_KEY", "").strip()
 
 # ---------------------------------------------------------------------------
 # 1. MODULE IMPORTS (як в оригіналі — з fallback)
@@ -80,6 +81,7 @@ class AppConfig:
     supabase_url: str = SUPABASE_URL
     supabase_key: str = SUPABASE_KEY or ""
     olx_proxy_url: Optional[str] = OLX_PROXY_URL
+    internal_secret_key: str = INTERNAL_SECRET_KEY or ""
 
     debug_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "debug")
     log_file: Path = field(default_factory=lambda: PROJECT_ROOT / "debug" / "main-debug.md")
@@ -352,6 +354,7 @@ class BroadcastService:
     def __init__(self, config: AppConfig, logger: DebugLogger) -> None:
         self._url = config.websocket_url
         self._logger = logger
+        self._secret = config.internal_secret_key
 
     async def send(self, rows: List[dict[str, Any]]) -> None:
         if not rows:
@@ -359,7 +362,8 @@ class BroadcastService:
 
         def _post() -> None:
             try:
-                requests.post(self._url, json=rows, timeout=5)
+                headers = {"X-Internal-Secret": self._secret}
+                requests.post(self._url, json=rows, headers=headers, timeout=5)
             except Exception as e:
                 self._logger.log(f"Broadcast failed: {e}", "WARN")
 
