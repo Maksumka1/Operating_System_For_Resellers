@@ -18,3 +18,5 @@ debug/
 test2208.py
 *.log
 logs/
+
+.md

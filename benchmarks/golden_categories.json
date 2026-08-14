@@ -1,0 +1,802 @@
+{
+  "736398785": {
+    "ad_id": 736398785,
+    "title": "Продам компьютер",
+    "description": "Писать по поводу пк по этому номеру телефона на Вайбер или телеграмм. С Новым Годом!",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "928789243": {
+    "ad_id": 928789243,
+    "title": "Автентичний ПК на Pentium",
+    "description": "Автентичний ПК з кінця 1990х. Ідеальний для відтворення атмосфери MS DOS, Windows 9x/2000/ХР.\nУ складі:\nМатеринська плата J-Mark JT-586TS5 (Intel 430VX, Socket 7)\nПроцесор Pentium з радіатором\n32 MB SDRAM\nВідеокарта S3 Trio64V+ ExpertColor DSV6422 PCI\nHDD Seagate 4.3 GB робочий\nCDD Yamaha робочий\nFDD Samsung робочий\nБЖ під ремонт\nКорпус класичний АТ",
+    "db_category": "home_office",
+    "expected_category": "obsolete",
+    "is_match": false
+  },
+  "925521562": {
+    "ad_id": 925521562,
+    "title": "Циклоп! 24 ядра+RTX 3060 Ti+DDR4 32GB+M.2 SSD 500GB –  Робоча станція ігровий компютер игровой ПК рабочая станция",
+    "description": "Бачить ціль. Не бачить перешкод.\n\nТМ AGABIT:\n• Працюємо з 2017 року: Зібрали понад 10 000 систем.\n• Власний сервіс центр: Повна технічна підтримка та гарантійне обслуговування наших клієнтів.\n• Локація: Магазин у центрі Києва (Межигірська, 25) – приїжджай, тестуй, забирай.\n• Trade-In: Твоє старе залізо стає частиною оплати за новий ПК.\n• Завжди актуальні ціни\n\nХарактеристики:\n-Процесор: Intel E5-2690v3 (12 ядер/24 потоки, 3.2–3.5 ГГц)\n-Відеокарта: Nvidia GeForce RTX 3060 Ti 8GB\n-Оперативна пам'ять: Samsung DDR4 32GB\n-M.2 SSD накопичувач: Kingston NV3 500GB\n-Материнська плата: Huanan X99\n-Блок живлення на 600W",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931742437": {
+    "ad_id": 931742437,
+    "title": "Ігровий ПК + Мишка + Клавіатура + Монітор (RTX 4060 Ti 16gb / Ryzen 5 7600X / 32GB DDR5)",
+    "description": "Потужний ігровий ПК на сучасній платформі AM5 (RTX 4060 Ti / Ryzen 5 7600X / 32GB DDR5)\nПродам чудовий продуктивний ігровий комп'ютер. Зібраний на найсучаснішому сокеті AM5.\nВідеокарта: NVIDIA GeForce RTX 4060 Ti 16gb\nПроцесор: AMD Ryzen 5 7600X\nМатеринська плата: Asus TUF Gaming B650M-E WIFI\nОперативна пам'ять: 32 GB (2x16 GB) IRDM DDR5",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "871860550": {
+    "ad_id": 871860550,
+    "title": "Продам компьютер Intel® Core ™ i5-3330",
+    "description": "Продам компьютер Intel® Core ™ i5-3330.\nХарактеристики:\n- Процессор - Intel® Core ™ i5-3330\n- Материнская плата - ASUS P8H61-MX\n- Память - 4 Gb DDR3\n- Жесткий диск - Western Digital 250Gb\n- Видео - Встроенное Intel HD Graphics\n- Блок питания - 400 W",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "927304893": {
+    "ad_id": 927304893,
+    "title": "Компютер rx 550",
+    "description": "Персональний комп'ютер windows 11 повністю укомплектований, ідеально підійде як бюджетний варіант для навчання та онлайн ігр. Відеокарта RX 550, ssd 128gb, hdd 1tb.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "931742943": {
+    "ad_id": 931742943,
+    "title": "Продам системний блок",
+    "description": "Потужний ігровий ПК\n- Процесор: Intel Xeon E5-2667 v4 — 8 ядер / 16 потоків, до 4.0 ГГц\n- Відеокарта: AMD Radeon RX 6800 XT — 16 GB GDDR6\n- Материнська плата: SZMZ X99-S3, LGA 2011-3\n- Оперативна пам’ять: 32 GB SK hynix DDR4 ECC REG\n- SSD: M.2 NVMe 256 GB + SATA 500 GB\n- Блок живлення: Chieftec 1250W",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "828878495": {
+    "ad_id": 828878495,
+    "title": "Компьютер ігровий бюджетний Intel i5+16ddr+ssd+ AMD GIGABYTE AORUS RX570",
+    "description": "Процессор Intel i5 3470\nDdr 16 gb двоканал\nSsd 256 гб та додатковий 500 gb\nВiдеокарта надпотужний топ від Gigabyte Rx 570 AORUS ELITE",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "827833846": {
+    "ad_id": 827833846,
+    "title": "Продам  компьютер",
+    "description": "Продам системный блок. Мат.плата asus p5g41t-mlx3. Проц xeon e5450-4ядра 3000 mhz. Память: ddr3 8gb. Диски: ssd 120gb, hdd 320gb. Видеокарта Asus Gtx 750 Ti 2gb. Блок питания на 500 Вт.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "928542552": {
+    "ad_id": 928542552,
+    "title": "Системний блок gamemax",
+    "description": "Системний блок\nRAM: 16 GB DDR4\nCPU: i5-9400f (2.9 GHz)\nGraphics: G210 1GB 64bit DDR3\nDisk Capacity: 521 GB",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "894121641": {
+    "ad_id": 894121641,
+    "title": "Компютер ,стан робочий ,не був у використанні .",
+    "description": "Новий куплений лежить без діла, не був у використання. Комп'ютер + екран + колонки.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "927345777": {
+    "ad_id": 927345777,
+    "title": "Продам Ігрову зборку.В ідеально стані все нове.Є гарантія на все.",
+    "description": "Процесор AMD Ryzen 5 Socket AM4 6 ядер 12 потоків. Графічний чип RX 6500 XT 4 ГБ GDDR6. БП 500 Вт.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "928193254": {
+    "ad_id": 928193254,
+    "title": "Системник неробочий",
+    "description": "Intel Pentium G2020 2,9 Ghz (2 core 2 threads), Ram 4 Gb ddr3. Згорівший блок живлення, а усе інше застаріле.",
+    "db_category": "home_office",
+    "expected_category": "obsolete",
+    "is_match": false
+  },
+  "745409933": {
+    "ad_id": 745409933,
+    "title": "Antminer Z15 440k Київ / велика кількість в наявності",
+    "description": "Antminer Z15 440k. Асик Z15, в работе около года, в отличном состоянии.",
+    "db_category": "mining",
+    "expected_category": "mining",
+    "is_match": true
+  },
+  "931743309": {
+    "ad_id": 931743309,
+    "title": "Компютер (rx6700xt 12 GB Asus, ryzen 5600, DDR4 32 GB, SSD 1TB)",
+    "description": "Видеокарта — ASUS Radeon RX 6700 XT 12 GB\nПроцессор — AMD Ryzen 5 5600\nОперативная память — DDR4 32 GB\nSSD — Kingston 1 TB\nМатеринская плата — Gigabyte B550 X V2\nБлок питания — MSI MAG 650W",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "900404431": {
+    "ad_id": 900404431,
+    "title": "Продам игровой ПК с монитором",
+    "description": "Процессор: i5 11400f - 6 ядер\nВидеокарта: RX560 4gb\nОперативка: Kingston Fury 16gb\nМатеринская плата: Gigabyte B560 HD3\nБлок питания: CoolerMaster MWE 750W",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931743727": {
+    "ad_id": 931743727,
+    "title": "Mac mini Late 2018 i7 3.2Ghz 16Gb RAM 500Gb SSD Sequoia",
+    "description": "Процессор i7 3.2Ghz, Накопитель 250GB SSD, Память 16GB RAM, Графический адаптер Intel UHD Graphics 630, macOS Sequoia.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "782128334": {
+    "ad_id": 782128334,
+    "title": "Dell Optiplex 3050 AiO 19.5\" i5-6500t/8GDDR4/128G NVMe/WIN/моноблок ПК",
+    "description": "Універсальний компютер все в одному Dell Optiplex 3050 AiO. Процесор I5-6500T, Оперативна память 8 ГБ DDR4, Intel HD 530, NVMe 128Gb.",
+    "db_category": "brand_office",
+    "expected_category": "brand_office",
+    "is_match": true
+  },
+  "930557982": {
+    "ad_id": 930557982,
+    "title": "Ігровий ПК Ryzen 7 5700X / RX 6700 10GB / 16GB / SSD 500GB (Майже все НОВЕ)",
+    "description": "Процесор: AMD Ryzen 7 5700X\nМатеринська плата: Gigabyte B450M S2H\nВідеокарта: AMD Radeon RX 6700 10GB\nОперативна пам'ять: 16 GB DDR4 3200 MHz\nНакопичувач: Netac NV3000 M.2 NVMe SSD 500GB\nБлок живлення: Gigabyte P650SS 650W",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931744012": {
+    "ad_id": 931744012,
+    "title": "ПК - AMD Ryzen 5 5500 | GTX 1660 SUPER | DDR4-3200 | 16 GB ОЗУ",
+    "description": "ПК: AMD Ryzen 5 5500 | GTX 1660 SUPER | DDR4-3200 | 16 GB ОЗУ.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931744022": {
+    "ad_id": 931744022,
+    "title": "Продам системний блок комп’ютер / компьютер Intel Core i3-4130 3.4GHz",
+    "description": "Процесор: Intel Core i3-4130 3.4GHz, Оперативна пам’ять: 8ГБ, Відеоадаптер: NVIDIA GeForce GT 630 1ГБ, SSD 60ГБ, Блок живлення: 400W.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "907554303": {
+    "ad_id": 907554303,
+    "title": "Гурт! Fujitsu Esprimo P557 MT | Pentium 6Gen | Barebone від 10 шт 0 1350 грн/шт!",
+    "description": "Barebone-система Fujitsu Esprimo P557. 1 шт — 1618 грн, від 10 шт — 1348 грн, від 20 шт — 1260 грн. Процесор: Intel Pentium 6-го покоління.",
+    "db_category": "brand_office",
+    "expected_category": "wholesale",
+    "is_match": false
+  },
+  "926080507": {
+    "ad_id": 926080507,
+    "title": "СТОНІК! RX 5700 XT+Ryzen 5 5500X3D+DDR4 16GB+SSD 240GB –  Ігровий компютер ПК для ігор геймерський игровой компьютер",
+    "description": "Процесор: AMD Ryzen 5 5500X3D\nВідеокарта: AMD Radeon RX5700XT 8GB\nОперативна пам'ять: Kingston Hyper X DDR4 16GB 3200MHz\nSSD 240GB + HDD 500GB\nМатеринська плата: MSI B550M PRO-VDH\nБлок живлення на 600W",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "859404761": {
+    "ad_id": 859404761,
+    "title": "Игровой компьютер / ПК  AMD Ryzen 5 5600 + 16Gb + SSD 500Gb + RTX 5060",
+    "description": "Процессор Ryzen 5 5600, Материнская плата AMD B550, Оперативная память 16Gb DDR4 3200 Mhz, SSD NVMe 500 Gb, Видеокарта GeForce RTX 5060 8Gb GDDR7, Блок питания 600W 80 Plus.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "929036113": {
+    "ad_id": 929036113,
+    "title": "HP Prodesk 400 G6 i7-10700T 16/512gb m.2 оригінальний блок живлення",
+    "description": "Міні ПК HP Prodesk 400 G6 mini PC, Процесор і7-10700T, Оперативна пам'ять 16гб, Ссд m.2 512гб.",
+    "db_category": "brand_office",
+    "expected_category": "brand_office",
+    "is_match": true
+  },
+  "907555009": {
+    "ad_id": 907555009,
+    "title": "Гурт! Dell Optiplex 5050 MT | i3 6Gen | Barebone | Тушка",
+    "description": "Barebone-система Dell Optiplex 5050. 1 шт — 2120 грн, від 2 шт — 1890 грн. Процесор: Intel Core i3 6-го покоління.",
+    "db_category": "brand_office",
+    "expected_category": "wholesale",
+    "is_match": false
+  },
+  "921453866": {
+    "ad_id": 921453866,
+    "title": "Новий моноблок Lenovo IdeaCentre 3 24IAP7·i5-12450H·16GB·512·Гарантія",
+    "description": "Моноблок Lenovo IdeaCentre 3 24IAP7. Процесор: Intel Core i5-12450H, 16 GB DDR4, SSD 512 GB, 24\" Full HD, Intel UHD Graphics.",
+    "db_category": "brand_office",
+    "expected_category": "brand_office",
+    "is_match": true
+  },
+  "930508317": {
+    "ad_id": 930508317,
+    "title": "Продам мощный игровой ПК в идеальном состоянии",
+    "description": "Процессор: AMD Ryzen 7 7800X3D, Видеокарта: Palit GeForce RTX 4070 Ti SUPER GamingPro 16GB, Материнская плата: MSI B650 GAMING PLUS WIFI, Оперативная память: 32 ГБ Kingston FURY Beast RGB DDR5, SSD 1 ТБ, Блок питания: be quiet! 850W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "880554784": {
+    "ad_id": 880554784,
+    "title": "Гурт! Barebone/тушка HP Prodesk 600 G3 MT i5-7500/s1151/4*DDR4",
+    "description": "Barebone HP Prodesk 600 G3 MT. 1 шт - 3020 грн, від 2 шт - 2800 грн, від 10 шт - 2570 грн. Процесор: Intel Core i5-7500.",
+    "db_category": "brand_office",
+    "expected_category": "wholesale",
+    "is_match": false
+  },
+  "906885300": {
+    "ad_id": 906885300,
+    "title": "Гурт! Mac Mini A1347 (Late 2014) i5-4308U | 16GB | NVMe 256GB | WiFi",
+    "description": "МініПК Apple Mac Mini (Late 2014), Процесор: Intel Core i5-4308U, ОЗП: 16GB, NVMe 256GB, Intel Iris 5100. Є кількість — можливий гурт.",
+    "db_category": "wholesale",
+    "expected_category": "wholesale",
+    "is_match": true
+  },
+  "925805528": {
+    "ad_id": 925805528,
+    "title": "АРГУМЕНТ! P106-100 6GB+i7-4770+16GB RAM+SSD 120GB –  Ігровий компютер ПК для ігор геймерський игровой компьютер",
+    "description": "Процесор: Intel Core i7-4770, Відеокарта: GeForce GTX 1060 6GB (P106100), Оперативна пам'ять: DDR3 16GB, SSD 120GB + HDD 500GB, Блок живлення на 500W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "928651819": {
+    "ad_id": 928651819,
+    "title": "ПК. Ігровий. Компютери",
+    "description": "Процесор: AMD Ryzen 5 5600X, Відеокарта: Aorus RX 5700XT 8GB, ОЗП: Kingston Fury DDR4 16GB 3200MHz, SSD 256GB M.2 + HDD 1TB, Материнська плата: MSI B450-A PRO MAX, БЖ: Hyper 80+ Pro 650W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "820647766": {
+    "ad_id": 820647766,
+    "title": "Ігровий компютер / AMD Ryzen 9 5950X / RTX 3090 / RAM 96",
+    "description": "Процесор AMD Ryzen 9 5950X, Системна плата Asus TUF Gaming X570-Plus, Відеокарта Palit GeForce RTX 3090 GamingPro 24 GB, RAM 96 GB DDR4, SSD Kingston KC3000 NVMe 1TB + HDD 2TB, БП 850W Gold.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "927603655": {
+    "ad_id": 927603655,
+    "title": "Отличный игровой Acer Nitro GTX 1660 6gb Core i5 16gb",
+    "description": "Ноутбук Core i5-9300h, 16gb ddr4, 128gb ssd + 1tb hdd, Gtx 1660 6gb + Intel uhd, 15.6 дюйма.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931736278": {
+    "ad_id": 931736278,
+    "title": "Системничек мини",
+    "description": "Материнская плата Pegatron H81-X1 соккет 1150, процессор I5-4570TE, оперативка - 8Gb, SSD Intel 80Gb, HDD 320 Gb, видеокарта Radeon HD7570 1Gb DDR5.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "894115689": {
+    "ad_id": 894115689,
+    "title": "Компьютер игровой Ryzen 5 3600 / RTX 4060 / 16GB",
+    "description": "Процессор Ryzen 5 3600, Видеокарта ASUS RTX 4060, ОЗУ 16GB DDR4, Материнская плата MSI BAZOOKA B450M, SSD 512GB + M.2 256GB, Блок питания 700W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931736464": {
+    "ad_id": 931736464,
+    "title": "Ігровий ПК — Ryzen 7 2700X / RTX 2060 Super / 32 ГБ RAM",
+    "description": "Процесор: AMD Ryzen 7 2700X, Відеокарта: NVIDIA GeForce RTX 2060 Super, Оперативна пам’ять: 32 ГБ DDR4, SSD M2 240GB + SSD 240GB + HDD 500GB, Блок живлення Cougar 650W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "926073321": {
+    "ad_id": 926073321,
+    "title": "Спартанець! 24 ядра+GTX 1070+DDR4 16GB+M.2 SSD 500GB –  Робоча станція ігровий компютер игровой ПК рабочая станция",
+    "description": "Процесор: Intel E5-2690v3, Відеокарта: Nvidia GeForce GTX1070 8GB, Оперативна пам'ять: Samsung DDR4 16GB, M.2 NVME SSD 500GB, Материнська плата: Huanan X99, Блок живлення на 600W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": false
+  },
+  "765199560": {
+    "ad_id": 765199560,
+    "title": "Компьютер для разработки игр",
+    "description": "Процессор Ryzen 3 3100, видеокарты AMD RX 570-580 4-8 GB, оперативная память 16 ГБ DDR4, SSD 240 GB, материнская плата ASRock A320M-HDV, блок питания Deepcool 600W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "912419986": {
+    "ad_id": 912419986,
+    "title": "Компьютер системный блок на Core i5-12400F RTX 3050 озу 16 gb DDR4",
+    "description": "Процессор Intel Core i5-12400F, Материнская плата MSI Pro B760M-P DDR4, Видеокарта NVIDIA GeForce RTX 3050 8 ГБ, ОЗУ 16 GB DDR4, HDD 500 GB, Блок питания Chieftec 600W Gold.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "877090588": {
+    "ad_id": 877090588,
+    "title": "Домашній компютер в зборі, платформа на Skylake 6 покоління.",
+    "description": "Процесор G4400, DDR4-4Gb, H110 cs, HDD 500gb, 440w bp.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "764918965": {
+    "ad_id": 764918965,
+    "title": "Системный блок IntelCore 2 Duo + NVIDIA GeForce 8600 GT",
+    "description": "Материнка: Gigabyte GA-P35-S3G, Процессор: IntelCore 2 Duo E 6550 2.33 GHz, ОЗУ 4 Гб, Видео: NVIDIA GeForce 8600 GT 256 DDR3.",
+    "db_category": "home_office",
+    "expected_category": "obsolete",
+    "is_match": false
+  },
+  "931737242": {
+    "ad_id": 931737242,
+    "title": "игровой пк на райзене",
+    "description": "1. Видеокарта rtx 4060 8gb\n2. Процессор AMD Ryzen 5 5700x3d\n3. Материнская плата Gigabyte B450M-S2H\n4. Память ОЗУ 32gb DDR4\n5. SSD KINGSTON 350gb\n6. Блок питания AeroCool 600W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931737538": {
+    "ad_id": 931737538,
+    "title": "Компьютер, системный блок с RTX 3070",
+    "description": "SSD 1 TB, Видеокарта GEFORCE RTX3070 AORUS, БП 750 вт.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "907923430": {
+    "ad_id": 907923430,
+    "title": "Продам ПК Samsung",
+    "description": "Продам ПК, в рабочем состоянии. Все идет в сборе: клавиатура, колонки, беспроводная мышь, видеокамера.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "931614001": {
+    "ad_id": 931614001,
+    "title": "Ігровий ПК Ryzen 5 2600 / RX 580 Nitro+ / 16GB RAM / SSD+HDD / Гарантія 3 міс",
+    "description": "Процесор: AMD Ryzen 5 2600, Материнська плата: Asrock B450M Pro4, Відеокарта: Sapphire RX 580 Nitro+ 4GB, Оперативна пам'ять: 16GB DDR4 3200MHz, SSD 240GB + HDD 500GB, Блок живлення: Vinga 600W Bronze.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "832485694": {
+    "ad_id": 832485694,
+    "title": "GTX 1080, 12 Ядер, 16 ГБ DDR4 | Игровой компьютер Ігровий Компютер ПК",
+    "description": "Видеокарта: NVIDIA GeForce GTX 1080 8 ГБ, Процессор: Intel Xeon 2670 v3 12 ядер 24 потока, ОЗУ: 16 ГБ DDR4 RAM, SSD 256-512 ГБ.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "794036959": {
+    "ad_id": 794036959,
+    "title": "Нудний ПК :(! RX 5700+i3-10100f+DDR4 16GB+M.2 SSD 240GB – ігровий ПК компютер для ігор",
+    "description": "Процесор: Intel Core i3-10100, Відеокарта: AMD Radeon RX5700 8GB, Оперативна пам'ять: Samsung DDR4 16GB, M.2 SSD 256GB + HDD 500GB, Материнська плата: MSI H510M, Блок живлення на 600W.",
+    "db_category": "mining",
+    "expected_category": "gaming",
+    "is_match": false
+  },
+  "793990700": {
+    "ad_id": 793990700,
+    "title": "РАБОТЯГА 1500! e5-2690v3(12C/24H)+DDR4 32GB+Quadro K2200 – робоча станція ПК компютер для роботи в проф софті",
+    "description": "Процесор: Intel E5-2690v3 (12 ядер/24 потоки), Відеокарта: Nvidia Quadro K2200 4GB, Оперативна пам'ять: Samsung DDR4 32GB, M.2 SSD 256GB, Материнська плата: Huanan X99, Блок живлення на 600W.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": false
+  },
+  "925517657": {
+    "ad_id": 925517657,
+    "title": "Біла Бебра! RTX 5060 Ti 8GB+Ryzen 5 8400F+DDR5 16GB+M.2 SSD 500GB –  Ігровий компютер ПК для ігор геймерський игровой компьютер",
+    "description": "Процесор: AMD Ryzen 5 8400, Відеокарта: Nvidia GeForce RTX 5060 Ti 8GB, Оперативна пам'ять: Kingston HyperX 16GB DDR5 5200MHz, M.2 NVME SSD 500GB, Материнська плата: Maxsun B650 Wi-Fi, Блок живлення на 700W.",
+    "db_category": "mining",
+    "expected_category": "gaming",
+    "is_match": false
+  },
+  "926341534": {
+    "ad_id": 926341534,
+    "title": "Игровой ПК Intel i5/DDR4 8Gb/GTX 1060 6/SSD250+320 компьютер системный блок",
+    "description": "Процессор Intel i5 6500, Материнская плата HP H170, Память 8 Гб DDR4, Видеокарта Gigabyte Nvidia P106-100 6Гб (аналог GTX 1060 6Гб), SSD Crucial 250 Гб + HDD 320 Гб.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "917606536": {
+    "ad_id": 917606536,
+    "title": "ПК під заказ  для ігр",
+    "description": "На фото все видно. Можу поміняти комплектующі в дорогу або дешевше сторону!",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "794185510": {
+    "ad_id": 794185510,
+    "title": "AMD Boy:D! RX 5700 XT+Ryzen 5 5600+DDR4 16GB+M.2 SSD 500GB – ігровий ПК компютер для ігор",
+    "description": "Процесор: AMD Ryzen 5 5600, Відеокарта: AMD Radeon RX5700XT 8GB, Оперативна пам'ять: Kingston Hyper X DDR4 16GB 3600MHz, M.2 NVME SSD 500GB, Материнська плата: ASRock A520M, Блок живлення на 600W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "926802981": {
+    "ad_id": 926802981,
+    "title": "GTX 1080 TI 11GB/Ryzen 3600/A320/DDR4 16GB/SSD ПК ігровий",
+    "description": "Процесор: AMD Ryzen 5 3600, Материнська плата: MSI A320M PRO-E, Оперативна пам'ять: Kingston DDR4 16GB 3000MHz, Відеокарта: Nvidia GTX 1080 TI 11G, SSD 120gb + HDD 500gb, Блок живлення: Zalman 700W Bronze.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931545977": {
+    "ad_id": 931545977,
+    "title": "Компʼютер в зборі",
+    "description": "Процесор: Intel i5 12400f, Оперативна памʼять: kingston fury DDR4-3200 16GB, SSD kingstone NV2 1Tb, Блок живлення: be quiet 650W, Відеокарта: rtx 4060 dual 8gb, Материнська плата: Asus tuf gaming B760-plus wifi.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "930914274": {
+    "ad_id": 930914274,
+    "title": "Ігровий ПК AMD Rizen 7-3800XT, 16Gb DDR4, 512Gb SSD+2Tb HDD, RTX 2080Super",
+    "description": "Процесор: AMD Ryzen 7 3800XT, Відеокарта: NVIDIA GeForce RTX 2080 Super 8GB GDDR6, Оперативна пам'ять: 16 GB DDR4, SSD 512 GB + HDD 2 TB, Блок живлення: 850W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "888341823": {
+    "ad_id": 888341823,
+    "title": "Системний блок на запчастини",
+    "description": "Продаю системний блок на запчастини. Комп не вмикаєтья. Замінена відеокарта та докуплені плати операційної пам'яті на 2гіга. Без вінчестера.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "900036215": {
+    "ad_id": 900036215,
+    "title": "Продам справний комп’ютер (системний блок + монітор + клавіатура + мишка+мікрофон+камера+вайфай)",
+    "description": "Процесор: AMD A4-5300 APU with Radeon HD Graphics, Оперативна пам’ять: 8 ГБ, Відео: інтегроване Radeon HD Graphics.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "909573908": {
+    "ad_id": 909573908,
+    "title": "Робоча станція DELL Precision 3630 з рідким та потужним процесором E2186G",
+    "description": "Робоча станція dell precision 3630, Процесор e2186g, DDR4 16Gb 2666Mhz, SSD 256Gb, HDD 1000Gb.",
+    "db_category": "home_office",
+    "expected_category": "brand_office",
+    "is_match": false
+  },
+  "928808691": {
+    "ad_id": 928808691,
+    "title": "Непоганий комп віндоус 10",
+    "description": "Продам комп віндоус 10 оперативки 4 жосткий діск 500г блок 400 відюха 512.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "828879530": {
+    "ad_id": 828879530,
+    "title": "Системні блоки для Танкистів AMD або інтел i5+8ddr+Nvidia або AMD 2 gb",
+    "description": "Процессор AMD або Intel 4 ядра, Ddr 8 гб, Накопичувач 500ГБ, Вiдеокарта GTX 650 ti або r7 250x.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "909573995": {
+    "ad_id": 909573995,
+    "title": "Продам системний .",
+    "description": "2ядра 4 потока з частотою 3 герца, 4 гіг оперативки, відеокарта 2 гігова, Жорсткий на терабайт.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "851163031": {
+    "ad_id": 851163031,
+    "title": "Офисный компьютер HP",
+    "description": "ОЗУ - 16 ГБ DDR3, ССД на 120 ГБ, Видеокарта - GT210 на 1 ГБ, Процессор - i5-2400 4 ядра, Материнская плата - Z210.",
+    "db_category": "brand_office",
+    "expected_category": "brand_office",
+    "is_match": true
+  },
+  "929192307": {
+    "ad_id": 929192307,
+    "title": "Системний блок Lenovo Legion T7 34IMZ5 i7-11700KF 32GB 1TB SSD RTX 3070 Ti",
+    "description": "Lenovo Legion T7 34IMZ5, i7-11700KF / 32GB / ssd 1TB / RTX 3070 Ti 8 ГБ.",
+    "db_category": "gaming",
+    "expected_category": "brand_office",
+    "is_match": false
+  },
+  "926075667": {
+    "ad_id": 926075667,
+    "title": "Гідра! RTX 3070+Ryzen 5 7500F+DDR5 16GB+M.2 SSD 500GB –  Ігровий компютер ПК для ігор геймерський игровой компьютер",
+    "description": "Процесор: AMD Ryzen 5 7500F, Відеокарта: Nvidia GeForce RTX3070 8GB, Оперативна пам'ять: Kingston HyperX 16GB DDR5 5200MHz, M.2 SSD 500GB, Материнська плата: ASRock A620M-HDV/M.2+, Блок живлення на 700W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "923542652": {
+    "ad_id": 923542652,
+    "title": "Продам компьютер",
+    "description": "Продам ПК на половину в сборе, корпус, материнская плата на сокете 1700, блок питания, кулер. Без видеокарты, процессора и озу.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "931738946": {
+    "ad_id": 931738946,
+    "title": "Настольный компьютер",
+    "description": "Компьютер в рабочем состоянии. Два накопителя, видеокарта Radeon, сетевая карта. Компьютер для решения офисных задач.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "931738982": {
+    "ad_id": 931738982,
+    "title": "игровой компьютер",
+    "description": "рх580 сапфир пульс, райзен 5 1600, 16 ОЗУ ддр 4, ssd 512 + m2 256, Бп 600ватт.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "925915670": {
+    "ad_id": 925915670,
+    "title": "HexaCore xeon E5-1650V3/ddr4 32gb/ssd500gb+hdd1tb/Відеокарта 8gb/700W Мощний системний блок робоча станція",
+    "description": "Hewlett-Packard HP Z440 Workstation, HexaCore intel xeon e5-1650 v3, ddr4 32gb, ssd500gb+hdd1tb, NVIDIA Quadro M4000 8gb, БП 700W.",
+    "db_category": "brand_office",
+    "expected_category": "brand_office",
+    "is_match": true
+  },
+  "931739050": {
+    "ad_id": 931739050,
+    "title": "Продам ПК! 4 ЯДРА. Q6600, NVIDIA GT220 1GB,  2gb ddr2,  HDD 580GB.",
+    "description": "Процесор 4 ядра інтел Q6600, 2gb ddr2, NVIDIA GT220 1GB, HDD 580GB, Блок живлення 400 ватт.",
+    "db_category": "obsolete",
+    "expected_category": "obsolete",
+    "is_match": true
+  },
+  "923543004": {
+    "ad_id": 923543004,
+    "title": "Продам компютер",
+    "description": "Комп'ютер в робочому стані продаю по ненадобності",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "931311467": {
+    "ad_id": 931311467,
+    "title": "Компьютер. Пк. Ігровий ПК. Rtx 3060 + i5 12400f + 32Gb",
+    "description": "MSI Geforce Rtx 3060 12GB, Intel Core i5-12400F, HyperX Fury 32Gb DDR4, Asus Prime B660M-A D4, Be Quiet 700W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "928774658": {
+    "ad_id": 928774658,
+    "title": "Продаю пк intel (R) core (TM) i5-4570 cpu 3.20GHz",
+    "description": "Intel Core i5-4570 3.20 GHz, 16 ГБ DDR3, NVIDIA GeForce GTX 1060 3 GB, SSD 120 ГБ + HDD 500 ГБ.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "868508184": {
+    "ad_id": 868508184,
+    "title": "Компьюьер стационарний",
+    "description": "Новий блок живлення 500ват, 8гіг оперативки, 250 hdd, Відео Radeon rx460.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "916494117": {
+    "ad_id": 916494117,
+    "title": "HexaCore i7-8700 4.6ghz/16gb ddr4/ssd256gb Мощний міні системний блок 6ядер 12потоків",
+    "description": "HexaCore intel core i7-8700, ddr4 16gb, Ssd Samsung 256gb, Блок живлення в комплекті.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "913890363": {
+    "ad_id": 913890363,
+    "title": "Продам компютер 3060 12gb i5 11400f ddr4 32gb есть небольшой торг",
+    "description": "Intel i5-11400F, 32GB DDR4 3200MHz, GeForce 3060 12gb, Asus Prime H510M-E, Chieftec 700W, SSD M2 1TB.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931739629": {
+    "ad_id": 931739629,
+    "title": "Игровой ПК - Fx-4100/Gtx 950/8gb Ddr3",
+    "description": "AMD FX-4100, NVIDIA GeForce GTX 950 2GB, 8GB DDR3, SSD 256GB + HDD 600GB.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": false
+  },
+  "922669798": {
+    "ad_id": 922669798,
+    "title": "Системний блок intel core i5 9400",
+    "description": "Процесор i5 9400, оперативна памʼять ddr4 16Гб, ssd 240+hdd 1Tb, відеокарта GTX 1070 8Gb.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931739708": {
+    "ad_id": 931739708,
+    "title": "Ігровий ПК — GTX 1060 6GB / i5-4670K / 16GB RAM",
+    "description": "Intel Core i5-4670K 4.5 ГГц, MSI GeForce GTX 1060 6GB, 16GB DDR3 2000 МГц, Gigabyte GA-Z87X-UD4H, SSD 120GB + HDD 320GB, Corsair CX600M.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931739727": {
+    "ad_id": 931739727,
+    "title": "Комлеткиуючі до ПК H310m+g5400",
+    "description": "Gigabyte H 310M S2H 2.0+G5400, DDR4 Crucial 8GB 2666, SSD Crucial 500GB, БП Delux 400W.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "931739830": {
+    "ad_id": 931739830,
+    "title": "Продам системний блок",
+    "description": "Asus M5A78L LE, Team 1600 8 gb, HDD 320 gb, GTX 750 TI 2 gb, Блок живлення 400вт.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "931213236": {
+    "ad_id": 931213236,
+    "title": "Ігровий ПК Ryzen 5 2600 + GTX 1060 6GB",
+    "description": "MSI B350M PRO-VDH, AMD Ryzen 5 2600, 16GB RAM, MSI GeForce GTX 1060 6GB, 256GB SSD m2 + 500GB HDD, Corsair CX430.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931689629": {
+    "ad_id": 931689629,
+    "title": "Зберу індивідуальй пк для ігор/навчання/офісу",
+    "description": "Збірка ПК під замовлення: підбір комплектуючих, встановлення Windows, тестування.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "861009701": {
+    "ad_id": 861009701,
+    "title": "Продам домашній ПК",
+    "description": "Продам компьютер, монитор LG LED 22MP55, клавиатура, колонки.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "925799305": {
+    "ad_id": 925799305,
+    "title": "Офісник! i3-14100+DDR4 16GB+SSD 240GB –  Офісний ПК компютер для роботи навчання",
+    "description": "Intel Core i3-14100, Intel UHD Graphics 730, Kingston Hyper X DDR4 16GB 3200MHz, SSD 240GB + HDD 500GB, Gigabyte H610M, БЖ 500W.",
+    "db_category": "gaming",
+    "expected_category": "home_office",
+    "is_match": false
+  },
+  "705859218": {
+    "ad_id": 705859218,
+    "title": "Продам Компьютер",
+    "description": "ПК в сборе: монитор, мышь, клава, системник, UPS, ОЗУ 2Gb, видео 512Mb, HDD 500Gb.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "925799733": {
+    "ad_id": 925799733,
+    "title": "СЕНСЕЙ! RTX 3070+Ryzen 5 5600+DDR4 32GB+SSD 480GB –  Ігровий компютер ПК для ігор геймерський игровой компьютер",
+    "description": "AMD Ryzen 5 5600, Nvidia GeForce RTX3070 8GB, Kingston Hyper X DDR4 32GB 3600MHz, SSD 512GB + HDD 1TB, ASRock B550M, БЖ 600W.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "917609294": {
+    "ad_id": 917609294,
+    "title": "Ігровий ПК Intel i7-6700K + GTX 1060 6GB + 16GB RAM + RGB",
+    "description": "Intel i7-6700K 4.0-4.2 GHz, MSI PC Mate B150, 16 GB RAM, Gigabyte GTX 1060 6GB, SSD 128 GB + HDD 1 TB, Gigabit Ethernet.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "831575497": {
+    "ad_id": 831575497,
+    "title": "Кейс для майнінгу DONNAGER на 8 карт",
+    "description": "Новий кейс від Donnager на 8 відео карт. В коробці, не розпаковувався.\nТакож є такий саме, але зібраний, який використовувався\nЄ 4 кулера Дельта з регулятором\nДва віддам за 7000",
+    "db_category": "home_office",
+    "expected_category": "mining",
+    "is_match": false
+  },
+  "917689378": {
+    "ad_id": 917689378,
+    "title": "Домашний  ПК для ігр/навчання 8GB RAM | SSD",
+    "description": "Комп більше підходить для офісних задач, ігри такі як: Dota 2, CS:GO(не кс2),the forest, Minecraft, Roblox,GTA 4, metro redux, metro last light, the wicher, stalker(старі версії),left 4 dead , тяне спокійно\nХарактеристики\nОЗУ-8 Гб ДДР 2(4 плашки по 2гб)\nПроцессор- AMD Athlon X3 450,3.20 GHz\nВідео карта-NVIDIA GeForse GT 440, 1 Гб\nЗагальна пам'ять- 246 Гб(є диск на 200 Гб але він іноді відключаеться можу положити) \nСистема- Windows 10 про  не ліцензіона, стоїть на ссд 60гб \nМатеринська плата- Biostar TA790GX XE.",
+    "db_category": "obsolete",
+    "expected_category": "obsolete",
+    "is_match": true
+  },
+  "923832409": {
+    "ad_id": 923832409,
+    "title": "Компютер Intel Core i3 +12Gb +SSD +FSP Power Noise Killer - Asus Робочий ПК Системний блок з Windows 10 компактний Домашній Офісний",
+    "description": "Продам системний блок комп'ютерний (ПК) - ASUS в гарному - робочому стані зі встановленою операційною системою Windows 10\nПрацює тихо - якісні та надійні комплектуючі!\nПідійде для роботи, або можете на його базі побудувати медіацентр (є HDMI, VGA, оптичний звук - що рідкість для материнських плат), або ігровий ПК - докупите зовнішню відеокарту за бажанням\nХарактеристики системного блоку:\n- процесор - Intel Core i3 - 3.3Ghz (можете поставити Core i5, Core i7 - материнська плата підтримує)\n- материнська плата - Dell XPS 8300-Pro - дуже якісна та дорога\n- оперативна пам'ять - 12Gb (можете збільшити до 32b, 4 роз'єми)\n- SSD-диск - 128Gb\n- відеокарта - вбудована Intel HD + є слот для зовнішньої відеокарти (ігрової, графічного процесору)\n- блок живлення - ТИХИЙ і надійний - FSP Group 400W з технологією Noise Killer\n- корпус - ASUS - дуже компактний та з товстого металу\n- вбудований карт-рідер флеш-пам'яті\n\nСистемний блок можете придбати самовивозом або можу відправити ОЛХ Доставкою\n\nДивіться інші мої оголошення",
+    "db_category": "brand_office",
+    "expected_category": "brand_office",
+    "is_match": true
+  },
+  "911933217": {
+    "ad_id": 911933217,
+    "title": "Ігровий пк з Geforce 1660 Super",
+    "description": "Продаю особистий пк, купував у інстаграм магазині користувався меньше року, 10 місяців після за час користування пк показував себе чудово коли мені його складали я брав більш упор на продуктивність а не на зовнішність по комлектуючим відеокарта 1660 супер 6 гб процесор xeon e5 2680 v4 чудовий аналог інтел І7 7600 16 гб оперативи DDR4 512 SSD  в цілму пк ідеально підходить під середньо-требуватільні ігри деьальніше про яку саме гру вам потрібна інформація в продуктивеості пишіть в особисті",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931613722": {
+    "ad_id": 931613722,
+    "title": "Компютер ігровий. Монстр! і5-13600к,RTX2060 SUPER,NVME M2 512 Gb. 32 DDR4 650 Б\\Ж",
+    "description": "Ігровий монстр! Продаю свій системний блок. Все скурпульозно підбирав. Багато комплектуючих нові. Я не форкав середину, якщо треба - можу онлайн показати його роботу. На фото - характеристики. Все супер класно і швидко працює. Пам'ять з  дуже малими таймінгами \"взуває\" пам'ять з більшою частотою. А проц сильніший за і9 12 покоління. І тільки на 3% відстає від найновішого і5 14600к. Ігри, робота з відео, кодування - ВСЕ ЛІТАЄ! Продаю, бо треба гроші. Не пожалієте, якщо купите. Дзвоніть, пишіть. Торг!",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "931801930": {
+    "ad_id": 931801930,
+    "title": "Мини-компьютер ODROID-HC4 Amlogic S905X3 1.8Ghz 4GB RAM",
+    "description": "Мини-компьютер ODROID-HC4 на 12nm Cortex-A55 4-х ядерном процессоре Amlogic S905X3 1.8Ghz и с 4GB DDR4 RAM.\n\nВ нем есть 2 SATA отсека для жестких дисков, подходил для домашнего облачного хранилища.\n\nПокупал для изучения линукса, пользовался от силы неделю, так что продаю как новый.\n\n* Блок питання 15V/4A продается отдельно за 1200 грн. Изменю цену перед покупкой.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "837555968": {
+    "ad_id": 837555968,
+    "title": "Продам компьютер (системник)",
+    "description": "Продам компьютер (системник) ,в рабочем состоянии,установлен виндовс 10, \n \n   Мать Fujitsu D3161-A1\n   ЦП IntelCore i5-2400 , 3300 MHg (33x100)\n   Винчестер WD 320 Gb, sata-II\n   Память  2Гб DDR3\n   Видео встроенное\n\nЦена без учета олх доставки",
+    "db_category": "brand_office",
+    "expected_category": "brand_office",
+    "is_match": true
+  },
+  "920726792": {
+    "ad_id": 920726792,
+    "title": "Продам компьютер",
+    "description": "Характеристики на фото \nТанки тянет \nЗа свои деньги очень хороший вариант \nОтправка новой почтой по предоплате",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "923601675": {
+    "ad_id": 923601675,
+    "title": "Компьютер|Комплект|в Зборі",
+    "description": "Продаю повний ігровий набір — «сідай і працюй/грай». Комп'ютер повністю налаштований, обслужений, замінена термопаста процесора, та на відеокарті, готовий до будь-яких завдань.\n\n Ідеальний варіант для тих, хто шукає рішення для ігор, навчання або роботи з графікою.\nЧудово тягне сучасні ігри.\n​ На цьому ПК реально грати в S.T.A.L.K.E.R. 2: Heart of Chornobyl! Завдяки оптимізації через моди (Engine.ini) гра видає стабільний результат. \n\n​Основні характеристики:\n\n​Процесор: Потужний 8-ядерний AMD FX-8120 (3.10 GHz) — чудово справляється з багатозадачністю.\n\n​Оперативна пам'ять: 16 GB DDR3 — достатній обсяг для сучасних програм та ігор.\n\n​Відеокарта: Radeon RX 560 (4 GB) — надійна карта, яка дозволяє грати в популярні тайтли.\n\n​Накопичувачі: * SSD 128 GB (PRO128GS360) — для швидкого завантаження Windows та програм.\n​HDD 500 GB (Hitachi) — для зберігання ігор та файлів.\n\n​Зв'язок: Встановлено модуль Wi-Fi (інтернет працює без зайвих дротів).\n\n​Корпус: Стильний білий кейс із підсвіткою та прозорою бічною панеллю — виглядає дуже ефектно.\n\n​Що входить у повний комплект:\n\n​Системний блок у сучасному білому корпусі.\n\n​Монітор BenQ (якісна картинка, перевірена часом).\n\n​Ігрова клавіатура Maxxter з RGB-підсвіткою.\n\n​Ігрова бездротова миша з ергономічним дизайном.\n\n​Ігровий коврик для точного позиціювання.\n\n​Колонки з підсвіткою (хороший стереозвук).\n\n​Конденсаторний мікрофон із поп-фільтром на тринозі — ідеально для Discord, стрімів або навчання.\n\n​Стан: Усе працює ідеально, будь-які перевірки. Зовнішній вигляд — на 5+.\n​Доставка: Бажано самовивіз або відправка Новою Поштою через OLX Доставку.\n​Пишіть або телефонуйте, відповім на всі запитання!\nПричина продажу: немає часу грати, майже не користуюсь\nМожливий обмін, пропонуйте варіанти",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "929716715": {
+    "ad_id": 929716715,
+    "title": "Продам власний компютер Intel core I5 10400, RX 580 8Gb, 32 Gb ddr4",
+    "description": "Продам збалансований ігровий ПК. Підійде як для кіберспортивних дисциплін так і для сюжетних новинок з гарною графікою у розширенні 1080р.\n\n- процесор І5 10400 (12 потоків)\n- відеокарта Radeon RX 580 8Gb\n- оперативна пам'ять - 32 gb DDR4 \n- мат. плата Asrock h 510 з М.2\n- ssd Kingston A400 240gb\n- Hdd Toshiba 1Tb\n- Блок живлення 650 Вт.\n- корпус з регулюванням обертів кулерів.\n\nВсі комплектуючі у відмінному стані. Будь-які перевірки.\nOlx доставка присутня, але з доплатою 2%+20грн до ціни.",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  },
+  "725659631": {
+    "ad_id": 725659631,
+    "title": "Двухядерный компьютер c 19 дюймовым жидкокристалическим монитором",
+    "description": "Продаю двухядерный ПК и 19 дюймовый жидкокристалический монитор. Характеристики на фото.",
+    "db_category": "home_office",
+    "expected_category": "home_office",
+    "is_match": true
+  },
+  "931493881": {
+    "ad_id": 931493881,
+    "title": "системний блок бу",
+    "description": "Користувався бережно,термопасту недавно поміняв продаю бо поступив і треба ноут\n\nпо характеристикам:\n\nпроц ryzen 5 5500\nвідеокарта rx 6600 8gb\nssd диск на 500 гб\nвіндовс 11про\n16гб оперативи",
+    "db_category": "gaming",
+    "expected_category": "gaming",
+    "is_match": true
+  }
+}

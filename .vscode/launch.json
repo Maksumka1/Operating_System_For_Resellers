@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Benchmark in External Terminal",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/benchmarks/benchmark_cli.py",
+      "console": "externalTerminal"
+    }
+  ]
+}

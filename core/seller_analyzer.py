@@ -169,8 +169,8 @@ class RiskClassifier:
 
     def classify(self, deals: int, stars: float, has_rating: bool, age_years: int | None) -> str:
         """
-        safe:   deals >= 20 AND stars >= 4.0 AND age > 2
-        neutral: deals >= 10 AND stars > 3.0 AND age >= 2
+        safe:       deals >= 20 AND stars >= 4.0 AND age > 2 (з наявним рейтингом)
+        neutral:    (deals >= 10 AND stars > 3.0 AND age >= 2) АБО (НЕМАЄ рейтингу AND deals >= 20 AND age >= 2)
         suspicious: everything else
         """
         age = age_years if age_years is not None else 0
@@ -178,8 +178,13 @@ class RiskClassifier:
 
         if deals >= self._config.safe_deals_threshold and stars_val >= self._config.safe_stars_threshold and age > self._config.safe_age_threshold:
             return "safe"
+
         if deals >= self._config.neutral_deals_threshold and stars_val > self._config.neutral_stars_threshold and age >= self._config.neutral_age_threshold:
             return "neutral"
+
+        if not has_rating and deals >= 20 and age >= 2:
+            return "neutral"
+
         return "suspicious"
 
 
@@ -219,7 +224,7 @@ class OlxSellerApiClient(ABC):
 
 
 class CurlCffiOlxApiClient(OlxSellerApiClient):
-    """Реалізація через curl_cffi."""
+    """Реалізація через curl_cffi із захистом від блокувань."""
 
     def __init__(self, session: AsyncSession, config: SellerAnalyzerConfig) -> None:
         self._session = session
@@ -238,11 +243,21 @@ class CurlCffiOlxApiClient(OlxSellerApiClient):
         url = self._config.delivery_api_template.format(seller_id=seller_id)
         try:
             resp = await self._session.get(url, timeout=self._config.request_timeout)
+            
             if resp.status_code == 200:
-                data = resp.json()
-                for badge in data.get("body", []):
-                    if badge.get("name") == "delivery":
-                        return int(badge.get("data", {}).get("amount", 0))
+                try:
+                    data = resp.json()
+                    for badge in data.get("body", []):
+                        if badge.get("name") == "delivery":
+                            return int(badge.get("data", {}).get("amount", 0))
+                except Exception:
+                    self._logger.warning("delivery_json_parse_error", seller_id=seller_id)
+                    return 0
+            elif resp.status_code in (403, 429):
+                self._logger.error("olx_rate_limit_or_blocked", status_code=resp.status_code, seller_id=seller_id)
+            else:
+                self._logger.warning("delivery_non_200", status_code=resp.status_code, seller_id=seller_id)
+
         except Exception as exc:
             self._logger.warning("delivery_fetch_failed", seller_id=seller_id, error=type(exc).__name__)
         return 0
@@ -254,15 +269,25 @@ class CurlCffiOlxApiClient(OlxSellerApiClient):
         url = self._config.rating_api_template.format(seller_uuid=seller_uuid)
         try:
             resp = await self._session.get(url, timeout=self._config.request_timeout)
+            
             if resp.status_code == 200:
-                data = resp.json()
-                clusters = data.get("clusters", [])
-                if clusters:
-                    score_details = clusters[0].get("scoreDetails", {})
-                    score = score_details.get("value")
-                    total_ratings = score_details.get("ratings", {}).get("totalCount", 0)
-                    if score is not None and total_ratings > 0:
-                        return f"{score}/5.0 ({total_ratings} оцінок)"
+                try:
+                    data = resp.json()
+                    clusters = data.get("clusters", [])
+                    if clusters:
+                        score_details = clusters[0].get("scoreDetails", {})
+                        score = score_details.get("value")
+                        total_ratings = score_details.get("ratings", {}).get("totalCount", 0)
+                        if score is not None and total_ratings > 0:
+                            return f"{score}/5.0 ({total_ratings} оцінок)"
+                except Exception:
+                    self._logger.warning("rating_json_parse_error", seller_uuid=seller_uuid)
+                    return "немає оцінок"
+            elif resp.status_code in (403, 429):
+                self._logger.error("olx_rating_blocked", status_code=resp.status_code, seller_uuid=seller_uuid)
+            else:
+                self._logger.warning("rating_non_200", status_code=resp.status_code, seller_uuid=seller_uuid)
+
         except Exception as exc:
             self._logger.warning("rating_fetch_failed", seller_uuid=seller_uuid, error=type(exc).__name__)
         return "немає оцінок"

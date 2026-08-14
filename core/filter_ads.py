@@ -13,6 +13,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -46,45 +47,49 @@ logging.basicConfig(
 
 
 # ---------------------------------------------------------------------------
-# 1. CONFIG
+# 1. CONFIG (Оновлені та збалансовані патерни)
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)
 class PcCategoryConfig:
-    """Єдине джерело правди для категоризації."""
+    """Конфігурація патернів для точної категоризації ПК."""
 
-    obsolete_words: frozenset[str] = field(default_factory=lambda: frozenset({
-        "athlon", "ddr2", "ddr1", "ddr 2", "ddr 1", "ddr-2", "ddr-1",
-        "core2duo", "core 2 duo", "core 2duo", "f2a55m", "fm2a88", "fm2a85",
-        "fm2a75", "fm2a68", "fm2a55", "athlon ii", "athlon x2", "athlon x4",
-        "athlon x6", "athlon x8", "775", "lga775", "lga 775", "socket 775",
-        "am2", "am2+", "am3", "am3+", "fm1", "fm2", "fm2+",
-    }))
+    # 1. Майнінг обладнання (ASIC, ферми, крипта)
+    mining_pattern: re.Pattern = field(default_factory=lambda: re.compile(
+        r"(?i)\b(antminer|асик|асік|майнер|майнинг\s*ферм\w*|майнінг\s*ферм\w*|майнінг\s*р[іи]г|хешрейт|hashrate|\d+\s*th\b|\d+\s*gh/s)\b"
+    ))
+    
+    # 2. Реальний ОПТ / Гурт / Barebone (вищий пріоритет за бренди!)
+    wholesale_pattern: re.Pattern = field(default_factory=lambda: re.compile(
+        r"(?i)\b(гурт\b|оптом?|зі\s*складу|со\s*склада|партией|партією|в\s*наявності\s*\d+\s*шт|"
+        r"від\s*\d+\s*шт|от\s*\d+\s*шт|розпродаж\s*офісу|распродажа\s*офиса|barebone|тушка)\b"
+    ))
 
-    wholesale_words: frozenset[str] = field(default_factory=lambda: frozenset({
-        "опт", "оптом", "склад", "пачка", "пачкою", "партией", "партія",
-        "комплектом", "кілька шт", "несколько шт", "розпродаж офісу",
-        "распродажа офиса",
-    }))
+    # 3. Застаріле (Тільки DDR1/2, SDRAM, Socket 775/старі, Core 2 Duo, старі 2-ядерні пентіуми та карти 8xxx/9xxx GT)
+    obsolete_pattern: re.Pattern = field(default_factory=lambda: re.compile(
+        r"(?i)\b(ddr\s*[-_]?[12](?!\d)|sdram|core\s*2\s*duo|core2duo|athlon\s*(?:ii|x[234]|64)?|"
+        r"socket\s*(?:7|370|478|775)|lga\s*775|\b775\b|am[23]\+?|fm1\b|2\s*ядерн\w*|двохядерн\w*|"
+        r"g2020|g2030|g1610|g1620|g1820|g860|g840|pentium\s*[1234]\b|"
+        r"geforce\s*[6789]\d{3}|8600\s*gt|9600\s*gt|9800\s*gt|застаріл\w*|устаревш\w*)\b"
+    ))
 
-    brand_words: frozenset[str] = field(default_factory=lambda: frozenset({
-        "dell", "optiplex", "hp", "prodesk", "elitedesk", "workstation",
-        "lenovo", "thinkcentre", "fujitsu", "esprimo", "acer veriton", "acer"
-    }))
+    # 4. Брендові офісні ПК та Моноблоки (якщо НЕ опт)
+    brand_office_pattern: re.Pattern = field(default_factory=lambda: re.compile(
+        r"(?i)\b(optiplex|lenovo|dell|fujitsu|prodesk|elitedesk|thinkcentre|thinkstation|precision|esprimo|"
+        r"veriton|ideacentre|legion\s*[tctg]?\d*|alienware|omen|z\d{3}|моноблок|all-in-one|aio)\b"
+    ))
 
-    gaming_words: frozenset[str] = field(default_factory=lambda: frozenset({
-        "ігровий", "игровой", "gaming", "rtx", "gtx", "rx 5", "rx 6",
-        "rx 7", "rx 4", "геймерский", "геймерський", "ігровий пк", "игровой пк",
-    }))
-
-    maining_words: frozenset[str] = field(default_factory=lambda: frozenset({
-        "майнинг", "майнінг", "майнер", "майнит",
-    }))
+    # 5. Ігрові ПК (дискретні GPU, ігрові CPU та ключові слова)
+    gaming_pattern: re.Pattern = field(default_factory=lambda: re.compile(
+        r"(?i)\b(rtx\s*\d{3,4}|gtx\s*(?:1660|1650|1060|1070|1080|970|980|780|770)|"
+        r"rx\s*(?:4[78]0|5[789]0|[567]\d{3})|3060\s*т[іi]|3070\s*т[іi]|4060\s*т[іi]|4070\s*т[іi]|"
+        r"для\s*ігор|для\s*игр|ігров\w+|игров\w+|геймерс\w+|gaming|ryzen\s*[579]|"
+        r"5600x?|5500x?|5700x?|7500f|7600x?|7800x3d|5800x3d|5500x3d|"
+        r"12400f?|10400f?|11400f?|13400f?|14400f?)\b"
+    ))
 
     # Мережа / БД
     db_batch_size: int = 100
     db_query_timeout_seconds: float = 10.0
-
-    # Файл статистики
     stats_file: Path | None = None
 
 
@@ -107,7 +112,7 @@ class CategoryResult(BaseModel):
     """Результат категоризації одного оголошення."""
 
     ad_id: int = Field(gt=0)
-    category: str = Field(pattern=r"^(obsolete|wholesale|brand_office|gaming|home_office|maining)$")
+    category: str = Field(pattern=r"^(obsolete|wholesale|brand_office|gaming|home_office|mining)$")
 
 
 class CategoryStats(BaseModel):
@@ -118,7 +123,7 @@ class CategoryStats(BaseModel):
     brand_office: int = 0
     gaming: int = 0
     home_office: int = 0
-    maining: int = 0
+    mining: int = 0
 
     def increment(self, category: str) -> None:
         if hasattr(self, category):
@@ -126,11 +131,9 @@ class CategoryStats(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# 3. PURE FUNCTION — детектор категорії
+# 3. PURE FUNCTION — Детектор категорії з оновленою ієрархією
 # ---------------------------------------------------------------------------
 class PcCategoryDetector:
-    """Чистий клас: аналізує текст і повертає категорію. Немає побічних ефектів."""
-
     def __init__(self, config: PcCategoryConfig) -> None:
         self._config = config
 
@@ -138,18 +141,22 @@ class PcCategoryDetector:
         if not text:
             return "home_office"
 
-        lowered = text.lower()
+        full_text = text.strip()
 
-        if any(word in lowered for word in self._config.obsolete_words):
-            return "obsolete"
-        if any(word in lowered for word in self._config.wholesale_words):
+        if self._config.mining_pattern.search(full_text):
+            return "mining"
+
+        if self._config.wholesale_pattern.search(full_text):
             return "wholesale"
-        if any(word in lowered for word in self._config.brand_words):
+
+        if self._config.obsolete_pattern.search(full_text):
+            return "obsolete"
+
+        if self._config.brand_office_pattern.search(full_text):
             return "brand_office"
-        if any(word in lowered for word in self._config.gaming_words):
+
+        if self._config.gaming_pattern.search(full_text):
             return "gaming"
-        if any(word in lowered for word in self._config.maining_words):
-            return "maining"
 
         return "home_office"
 

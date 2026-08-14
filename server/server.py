@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -51,7 +52,6 @@ app.add_middleware(
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
     try:
-        # Неблокуючий виклик через asyncio.to_thread
         user_response = await asyncio.to_thread(supabase.auth.get_user, token)
         if not user_response or not user_response.user:
             raise HTTPException(
@@ -174,7 +174,7 @@ def get_ads(current_user=Depends(get_current_user)):
             .select("*")
             .eq("status", "active")
             .order("created_at_olx", desc=True, nullsfirst=False)
-            .limit(2000)  # Пул 2000 найновіших лотів (~400-600 КБ, завантажується миттєво)
+            .limit(2000)
             .execute()
         )
         rows = response.data or []
@@ -198,7 +198,6 @@ def get_ads(current_user=Depends(get_current_user)):
     return result
 
 
-# --- 2. GET /api/stats (Жива статистика) ---
 @app.get("/api/stats")
 async def get_stats(current_user=Depends(get_current_user)):
     try:
@@ -206,7 +205,6 @@ async def get_stats(current_user=Depends(get_current_user)):
             hour=0, minute=0, second=0
         ).isoformat()
 
-        # Лоти, знайдені за сьогодні
         scanned_res = (
             supabase.table("ads")
             .select("id", count="exact")
@@ -215,7 +213,6 @@ async def get_stats(current_user=Depends(get_current_user)):
         )
         scanned_today = scanned_res.count or 0
 
-        # Активні вигідні пропозиції (SUPER DEAL / GOOD DEAL)
         deals_res = (
             supabase.table("ads")
             .select("id", count="exact")
@@ -224,8 +221,6 @@ async def get_stats(current_user=Depends(get_current_user)):
             .execute()
         )
         deals_count = deals_res.count or 0
-
-        # Активні WS підключення
         active_users = len(manager.active_connections)
 
         return {
@@ -269,14 +264,99 @@ def get_single_ad(ad_id: str, current_user=Depends(get_current_user)):
         print(f"❌ [SUPABASE SINGLE FETCH ERROR]: {e}")
         raise HTTPException(status_code=500, detail="Помилка завантаження лоту з Supabase")
 
-    
+
+# --- 4. GET /api/components/{name}/competitors (Аналітика та конкуренти) ---
+@app.get("/api/components/{name}/competitors")
+async def get_component_competitors(name: str, current_user=Depends(get_current_user)):
+    clean_name = name.strip().lower()
+    print(f"🔍 [COMPETITORS API] Запит аналітики для '{clean_name}' від {current_user.email}")
+
+    try:
+        # 1. Знаходимо останній розрахунок ринкової ціни та ID конкурентів
+        def _fetch_price():
+            return (
+                supabase.table("component_prices")
+                .select("id, component_name, price, competitor_ids, date")
+                .ilike("component_name", f"%{clean_name}%")
+                .order("date", desc=True)
+                .order("id", desc=True)
+                .limit(1)
+                .execute()
+            )
+
+        price_res = await asyncio.to_thread(_fetch_price)
+        price_rows = price_res.data or []
+
+        fair_price = None
+        target_ad_ids = []
+        date_calculated = None
+
+        if price_rows:
+            latest = price_rows[0]
+            fair_price = latest.get("price")
+            date_calculated = latest.get("date")
+            raw_ids = latest.get("competitor_ids")
+
+            if isinstance(raw_ids, str):
+                try:
+                    raw_ids = json.loads(raw_ids)
+                except Exception:
+                    raw_ids = []
+
+            if isinstance(raw_ids, list):
+                target_ad_ids = [
+                    int(str(i).strip())
+                    for i in raw_ids
+                    if str(i).strip().isdigit()
+                ]
+
+        # 2. Якщо competitor_ids знайдено — тягнемо оголошення
+        competitors = []
+        if target_ad_ids:
+            def _fetch_competitor_ads():
+                return (
+                    supabase.table("ads")
+                    .select("*")
+                    .in_("ad_id", target_ad_ids)
+                    .limit(10)
+                    .execute()
+                )
+
+            ads_res = await asyncio.to_thread(_fetch_competitor_ads)
+            competitors = ads_res.data or []
+
+        # 3. Fallback: якщо списку competitor_ids немає — шукаємо по component_name в таблиці ads
+        if not competitors:
+            def _fetch_fallback_ads():
+                return (
+                    supabase.table("ads")
+                    .select("*")
+                    .ilike("component_name", f"%{clean_name}%")
+                    .order("price", desc=False)
+                    .limit(10)
+                    .execute()
+                )
+
+            fallback_res = await asyncio.to_thread(_fetch_fallback_ads)
+            competitors = fallback_res.data or []
+
+        return {
+            "component_name": clean_name,
+            "fair_price": fair_price,
+            "date_calculated": date_calculated,
+            "count": len(competitors),
+            "competitors": competitors,
+        }
+
+    except Exception as e:
+        print(f"❌ [COMPETITORS API ERROR]: {e}")
+        raise HTTPException(status_code=500, detail="Помилка отримання конкурентів")
+
+
 def verify_internal_secret(x_internal_secret: str = Header(None, alias="X-Internal-Secret")):
     expected_secret = os.getenv("INTERNAL_SECRET_KEY", "").strip()
-    
-    # Якщо ключ не налаштовано або він не збігається — відхиляємо запит (403)
     if not expected_secret or x_internal_secret != expected_secret:
         raise HTTPException(status_code=403, detail="Невірний або відсутній внутрішній секретний ключ")
-
 
 
 @app.post("/api/trigger-new-ad", dependencies=[Depends(verify_internal_secret)]) 
@@ -299,7 +379,6 @@ async def websocket_endpoint(
     websocket: WebSocket,
     token: str | None = Query(default=None),
 ):
-    # Авторизація клієнта через token у URL (/ws?token=...)
     if not token:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
