@@ -1,0 +1,1517 @@
+{
+  "917830114": {
+    "ad_id": 917830114,
+    "title": "8GB DDR3 1600MHz (комплект 2x4GB) CL9",
+    "description": "Продаю две планки оперативной памяти по 4 ГБ. Характеристики совпадают, стояли в одной системе. \n1. Crucial Ballistix Sport 4GB (BLS4G3D1609DS1S00) \nЧастота: 1600 MHz \nТайминги: 9-9-9-24 \nНапряжение: 1.5V \nС радиатором. \n2. Exceleram 4GB (E30136A) \nЧастота: 1600 MHz \nТайминги: 9-9-9-24 \nНапряжение: 1.65V \nОбе планки имеют низкие задержки (CL9), что позволяет им работать в паре (Dual Channel). Полностью рабочие. \nЦена: 500 грн за обе. \nВозможна поштучная продажа.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_8gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_8gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929255879": {
+    "ad_id": 929255879,
+    "title": "Продам ссд накопичувач на 1 тб Неробоча",
+    "description": "Продам накопичувач для пк . Не робоча ціна за 2 шт не оприділяються компютеро Привезений з Європи . Готовий відправити поштою в інше місто. Деталі в повідомленнях . дякую",
+    "expected_item_type": "storage",
+    "expected_component_name": "ssd_1tb",
+    "expected_socket": null,
+    "expected_has_defects": 1,
+    "system_snapshot": {
+      "component_name": "ssd_1tb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "931902850": {
+    "ad_id": 931902850,
+    "title": "SSD AMD Radeon R5 120GB 2.5\" SATA III",
+    "description": "Нормальне рішення для прискорення вашого ПК або ноутбука. Поставити Windows на SSD робить запуск системи та програм у рази швидшим у порівнянні з жорстким диском (HDD). \nБУ з рідною коробкою,Є нюанс на 3 фото... На роботу не впливає! \nБренд: AMD Radeon \nМодель: R5SL120G \nОб'єм: 120 GB \nФорм-фактор: 2.5\" \nІнтерфейс: SATA III (6 Gb/s) \nШвидкість читання: до 520 MB/s",
+    "expected_item_type": "storage",
+    "expected_component_name": "ssd_120gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_120gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "927240564": {
+    "ad_id": 927240564,
+    "title": "Блок живлення thermaltake gf a3 850w 80+ gold",
+    "description": "Повністю справний блок живлення, без нарікань на роботу, продутий від пилу і готовий до роботи. Повністю модульний, комплект кабелів повний.  \n \nПо конекторам які є  \n24 пін на материку  \n2шт 4+4 пін або 2шт 8 пін на проц  \n4шт 6+2 пін на відеокарту  \n1шт 12vhpwr pcie5  \n6шт сата  \n3шт молекс  \n \nПо всім іншим питанням звертайтеся по телефону або в особистих повідомленнях. Дам час на перевірку 21 день.",
+    "expected_item_type": "psu",
+    "expected_component_name": "850w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "850w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931902606": {
+    "ad_id": 931902606,
+    "title": "Блок живлення 500w",
+    "description": "Продам блок живлення  \nZALMAN ZM500-LE \nБлок живлення повністю робочий \nВсі живлення є використовувався без навантажень, тому що стояла затмчка у вигляди GTX 750 \nБлок живлення не шумить не гріється одним словом абсолютно готовий йдо роботи! \nЗа запитаннями пишіть у дірект",
+    "expected_item_type": "psu",
+    "expected_component_name": "500w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "500w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931902223": {
+    "ad_id": 931902223,
+    "title": "Asus Tuf Gaming a520m - plus 2. РЕМОНТ. Материнская плата am4.",
+    "description": "Продаю материнку, сейчас требует ремонт, все работает кроме процессора (он не греется или его не видит). Всё работало, разбирал ПК для чистки и перестала видеть процессор. Вертушки крутится, питание на все слоты принимает, отправляю.",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "a520",
+    "expected_socket": "am4",
+    "expected_has_defects": 1,
+    "system_snapshot": {
+      "component_name": "a520",
+      "item_type": "motherboard",
+      "socket": "am4",
+      "has_defects": 1
+    }
+  },
+  "931902237": {
+    "ad_id": 931902237,
+    "title": "Gigabyte ga - h110m - s2",
+    "description": "Продам комплект материнськ у плату: \nGigabyte ga - h110m - s2  \nОхолодження та роцесор celeron в подарунок.  \nВ комплекті також заглушка.  \nПродаж у зв'язку з оновленням власного пк.",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "h110",
+    "expected_socket": "lga1151",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "h110",
+      "item_type": "motherboard",
+      "socket": "lga1151",
+      "has_defects": 0
+    }
+  },
+  "931902461": {
+    "ad_id": 931902461,
+    "title": "Материнська плата ASUSPRIME B850M-K (AM5, DDR5, PCIe 5.0) -Стан нової",
+    "description": "Продаю новітню материнську плату ASUS PRIME B850M-K на чипсеті AMD B850 (сокет AM5, підтримка процесорів Ryzen 7000, 8000 та 9000 серій). \nПлата в ідеальному стані, була у використанні буквально пару разів для перевірки. Ніжки сокета цілі, усі роз'єми працюють бездоганно. \nОсновні характеристики: \nЧипсет та сокет: AMD B850 / Сокет AM5 \nФорм-фактор: Micro-ATX \nПам'ять: DDR5 (2 слоти) \nШвидкісний накопичувач: Слот M.2 PCIe 5.0 \nМережа: 2.5Gb Ethernet \nІнтерфейси: DisplayPort, HDMI, USB Type-C, USB 10Gbps, Aura Sync \nКомплектація: \nМатеринська плата ASUS PRIME B850M-K \nКабель SATA \nЗаводська документація та інструкції \nРідна коробка \n(Гарантійний талон та чек відсутні). \nПричина продажу: Зміна планів щодо збірки ПК. \nУмови відправки: \nВідправлю будь-яким зручним для вас способом — OLX Доставка (Нова Пошта, Укрпошта, Meest) або накладеним платежем. Також можливий особистий вивіз. \nПишіть у повідомлення, відповім на всі запитання!",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "b850",
+    "expected_socket": "am5",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "b85",
+      "item_type": "motherboard",
+      "socket": "am5",
+      "has_defects": 0
+    }
+  },
+  "925622386": {
+    "ad_id": 925622386,
+    "title": "Відеокарта ASUS GT630",
+    "description": "Продам комплектуючі до пк, а саме:  \n•Відеокарта GT630-2GD3(2 ГБ пам'яті), працює добре, нещодавно чистили і міняли термопасту, також є диск з драйвером до відеокарти(трохи пошкоджений) \nВідправка лише ОЛХ доставка новою поштою.",
+    "expected_item_type": "gpu",
+    "expected_component_name": "gt_630",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "gt_630",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929065555": {
+    "ad_id": 929065555,
+    "title": "Відеокарта Asus P106-100 6gb GeForce GTX 1060 6GB Asus",
+    "description": "GeForce GTX 1060 6GB Asus. в хорошем состоянии",
+    "expected_item_type": "gpu",
+    "expected_component_name": "gtx_1060_6_gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "gtx_1060_6_gb",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "795113744": {
+    "ad_id": 795113744,
+    "title": "Видеокарта Radeon Sapphire PULSE RX 570 4G G5",
+    "description": "Частота ядра: до 1284 МГц (Boost) \nПамять: 4 ГБ GDDR5, 7000 Мбит/с эффективная \n2048 потоковых процессоров \nСистема охлаждения Dual-X \nQuick Connect",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rx_570",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rx_570",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931902219": {
+    "ad_id": 931902219,
+    "title": "Відеокарта Nvidia GeForce GTX 1060 3GB GDDR5",
+    "description": "ПОТУЖНА відеокарта для бюджетного ігрового ПК. Ідеально підходить для популярних ігор (CS2, Dota 2, World of Tanks, GTA V, Fortnite) y Full HD \nЗгоден.. карта повний перезбір Но головне шо функціонує! \nГрафічний чіп: Nvidia GeForce GTX 1060 \nЧастота відеопам'яті: 8008 MHz \nОб'єм відеопам'яті: 3 GB GDDR5 \nШина пам'яті: 192 bit \nДодаткове живлення: 6-pin PCI-Express x16 \nЕфективне охолодження з двома вентиляторами \nНюанс - треба буде обслужити..",
+    "expected_item_type": "gpu",
+    "expected_component_name": "gtx_1060_3_gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "gtx_1060_3_gb",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "917831548": {
+    "ad_id": 917831548,
+    "title": "Відеокарта Asus ROG Radeon RX 6900 XT STRIX",
+    "description": "Продам свою картку Амд, у використанні була близько 2 років, використовував під 2к 240 гц монітор та 4к 144гц тв, стан ідеальний, останнім часом нічого важкого на пк не запускаю, так шо кулери на радіаторі навіть не вмикались) \n \nЗавжди хотів версію з СЖО, й не помилився, при 4к температури були не вище 65 градусів.Сама турбіна на картці не дуже шумна \nКоробки, нажаль, нема. \n \nОбсяг пам'яті \n16 Гб \nШина пам'яті \n256 біт \nЧастота графічного ядра \nBoost: 2365 Мгц \nЧастота відеопам'яті \n16000 Мгц \n \nПродаю у звязку з апгрейдом.",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rx_6900_xt",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rx_6900_xt",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931898581": {
+    "ad_id": 931898581,
+    "title": "Оперативная память G.Skill 32 GB (2x16GB) DDR5 6000 MHz Trident Z5 RGB",
+    "description": "Продам топовую память G.Skill 32 GB (2x16GB) DDR5 7600 MHz Trident Z5 RGB (F5-6000J4040F16GX2-TZ5RS) \n \nАбсолютно новая и коробка не вскрывалась. \n \nГарантия официальная 60мес.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr5_32gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr5_32gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "916884610": {
+    "ad_id": 916884610,
+    "title": "Оперативна памʼять DDR4  4 Гб до ноутбука",
+    "description": "Продам  оперативну пам'ять Самсунг DDR4 для ноутбука одна планка  4 Гб (частота 3200MHz) ціна  900грн, та одна планка DDR3*1 Гб (частота 1600MHz)* 200грн, памʼять 100% робоча з мого ноута, продаю бо замінив на більший обʼєм. \nВідправка олх+комісія. Самовивоз в Полтаві",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_4gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_4gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "912011279": {
+    "ad_id": 912011279,
+    "title": "Ddr3 4gb 2x 1333mhz",
+    "description": "Серверна оперативна пам'ять самсунг стан ідеал робоча \nПродаю через те що не підійшла",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_4gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_4gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "920226728": {
+    "ad_id": 920226728,
+    "title": "Оперативна памʼять 4GB DDR4 2400 MHz (CT4G4DFS824A)",
+    "description": "Оперативна пам'ять Crucial 4 ГБ DDR4 2400 МГц (CT4G4DFS824A) - НОВА, в упаковці. Підходить для підвищення продуктивності вашого комп'ютера. Crucial - це американський бренд, один з найкращих та найнадійніших виробників у сфері зберігання даних. \n \nОбсяг пам'яті: 4 ГБ \nТип пам'яті: DDR4 SDRAM \nНапруга живлення: 1.2 В \nЧастота пам'яті: 2400 МГц \nПризначення: Для настільних ПК \nСхема таймінгів пам'яті: CL17. \n \nВідправлю поштою, ОЛХ доставкою.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_4gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_4gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "909736803": {
+    "ad_id": 909736803,
+    "title": "Micron DDR3 4Gb 1866Mhz SO-DIMM 1.5V",
+    "description": "Micron DDR3 4Gb 1866Mhz SO-DIMM 1.5V (для ноутбуків) \nПродаю бо не потрібна. Підходить для прискорення вашого лептопу, як заміна старої слабкої планки чи як додаткова. Чудові таймінги та інші характеристики. Якщо виникли питання телефонуйте",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_4gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_4gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931893032": {
+    "ad_id": 931893032,
+    "title": "Пара оперативної памяті Hynix DDR3 16Gb (2x8Gb)",
+    "description": "Ціна за 2 шт. - Оперативна пам'ять для серверів Hynix 16GB (2x8) DDR3 (HMT31GR7BFR4C-H9)  \n \nСТАН: б/в. Товар у хорошому робочому стані, з незначними слідами використання.  \nДОСТАВКА: Нова Пошта. (Укрпошта: тільки після повної оплати за товар) \nОПЛАТА: ПриватБанк, Monobank, Sense Bank, NovaPay \nНАКЛАДЕНИЙ ПЛАТІЖ: по предоплаті на карту (не менше 200 грн.) на послуги перевізника. \n \nТЕЛЕФОНУВАТИ: з 10:00 до 21:00 (Telegram, Viber, WhatsApp)",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_16gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_16gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931899746": {
+    "ad_id": 931899746,
+    "title": "Жорсткий диск Western Digital серії WD Blue. WD5000AAKS 3.5\" HDD 500 GB 7200 об/хв IntelliSeek SecurePark WhisperDrive. Ідеальний стан.",
+    "description": "Жорсткий диск Western Digital серії WD Blue. WD5000AAKS 3.5\" HDD 500 GB 7200 об/хв IntelliSeek SecurePark WhisperDrive  \n \nЖорсткий диск для настільних ПК від Western Digital. Це представник лінійки, яка пізніше трансформувалася у відому серію WD Blue. \nБренд: Western Digital \nМодель: WD5000AAKS (належить до серії WD Caviar® SE16) \nФормфактор: 3.5\" (стандартний розмір для десктопних комп'ютерів) \nОб'єм пам'яті: 500.0 GB \nІнтерфейс підключення: SATA II (пропускна здатність до 3 Гбіт/с). Він зворотно сумісний із сучасними материнськими платами, що мають роз'єми SATA III. \nШвидкість обертання шпинделя: 7200 об/хв (RPM) \nБуферна пам'ять (Кеш): 16 МБ \nЕнергоспоживання: 5VDC — 0.68A, 12VDC — 0.55A. \nКраїна виробництва: Таїланд (Product of Thailand). \n \nВикористані технології \nЦя серія свого часу була популярною завдяки гарному балансу швидкості та надійності, що досягалося впровадженням фірмових технологій Western Digital: \nIntelliSeek: Технологія, яка розраховує оптимальну швидкість пошуку секторів. Це допомагає знизити енергоспоживання, а також мінімізувати рівень шуму та вібрацій під час активної роботи диска. \nSecurePark: Система безпечного паркування головок. Головки запису не торкаються поверхні магнітного диска під час розкручування, зупинки, або коли накопичувач вимкнений. Це значно знижує знос механіки та покращує стійкість до неробочих ударів під час транспортування. \nWhisperDrive: Спеціальні алгоритми оптимізації переміщення головок, які робили ці диски одними з найтихіших у своєму класі на момент випуску. \nRoHS: Диск виготовлено з дотриманням директиви щодо обмеження шкідливих речовин (без використання свинцю та інших токсичних матеріалів). \n \nБажано при зустрічі у Львові біля Вікторії Гарден, але також \n \nПересилаю Новою Поштою, Укрпоштою та Meest. \nМожлива OLX-доставка. \n \nОплата: \n- через Olx; \n- 100% передоплата на картку; \n- накладений платіж за умови передоплати 150 грн.",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_500gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_500gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "868701036": {
+    "ad_id": 868701036,
+    "title": "HDD Seagate Barracuda 500gb",
+    "description": "Продам жёсткий диск в полном рабочем состоянии",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_500gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_500gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931900368": {
+    "ad_id": 931900368,
+    "title": "Вінчестер SSD швидкий накопичувач Netac Диск на 256GB SATA III 2.5\" для ноутбука та компютера б/у",
+    "description": "Простий SSD накопичувач Netac об'ємом 256 ГБ у хорошому стані. Чудовий варіант для прискорення роботи ноутбука або комп'ютера без великих витрат. Накопичувач виконаний у форм-факторі 2.5 дюйма та підключається через інтерфейс SATA III, завдяки чому підходить для більшості сучасних і старіших ПК. Після встановлення такого SSD система починає працювати значно швидше порівняно зі звичайним жорстким диском HDD: Windows завантажується за лічені секунди, програми відкриваються швидше, а сам комп'ютер стає більш чуйним у повсякденному використанні. \n \nОб'єму 256 ГБ цілком достатньо для встановлення операційної системи, необхідних програм, браузерів, офісних додатків, а також зберігання фотографій, документів, музики та інших файлів. Такий твердотільний накопичувач чудово підійде для домашнього комп'ютера, робочого ПК, навчання, перегляду сайтів та навіть багатьох сучасних ігор. SSD не створює шуму під час роботи, менше нагрівається та є більш стійким до механічних впливів у порівнянні з класичними жорсткими дисками. \n \nЯкщо ви шукаєте SSD 256 ГБ для ноутбука, SATA SSD для комп'ютера, швидкий накопичувач для Windows або спосіб вдихнути нове життя у старий ПК, то цей варіант стане хорошим рішенням. Netac — відомий виробник накопичувачів, який зарекомендував себе стабільною роботою та хорошим співвідношенням ціни і якості.  \n \nДиск працює стабільно, без зависань та помилок, підходить як для встановлення операційної системи, так і для зберігання важливих даних. \nКористувався недовго, тому стан залишився хорошим. Накопичувач повністю справний, усе працює як належить, продаю тому, що просто лежить без діла.",
+    "expected_item_type": "storage",
+    "expected_component_name": "ssd_256gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_256gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "775954140": {
+    "ad_id": 775954140,
+    "title": "Жесткий диск SAMSUNG 250GB 7200rpm 16MB 3.5 SATA",
+    "description": "Жесткий диск SAMSUNG 250GB 7200rpm 16MB 3.5 SATA \n \nОтправлю ОЛХ доставкой. \n \nКод производителя HD256GJ \n \nЕмкость накопителя 250 ГБ \n \nТип жесткого диска Внутренний \n \nИнтерфейс подключения SATA \n \nФорм-фактор 3.5\" \n \nСкорость вращения шпинделя 7200 об/мин \n \nОбъем буфера 16 МБ",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_250gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_250gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929162743": {
+    "ad_id": 929162743,
+    "title": "Жорсткий диск Toshiba 1TB 3.5\" / 2.5\"",
+    "description": "Ціна вказана під олх доставку за любий! \n \nПовна оплата чи самовивіз 800. Обидва за 1700 . З власного користування, причина продажу були куплені більш великого обьему свого часу, ці тепер непотрібні. \n \nфото 2-3 Toshiba 1Tb 5400 об/мин 3 Gbit/s (MQ01ABD100) - В РЕЗЕРВІ ! \n \nфото 4-5 Toshiba 1TB 7200rpm 32MB DT01ACA100 3.5 SATA III. В наявності. \n \nЯкісно упакую при пересилці.",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_1tb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_1tb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "804174993": {
+    "ad_id": 804174993,
+    "title": "Жесткий диск SEAGATE 250GB (ST3250312AS) 7200rpm 16MB 3.5 SATA",
+    "description": "Жесткий диск SEAGATE 250GB (ST3250312AS) 7200rpm 16MB 3.5 SATA \n \nОтправлю ОЛХ доставкой, любым перевозчиком. \n \nКод производителя ST3250312AS \n \nЕмкость накопителя 250 ГБ \n \nТип жесткого диска Внутренний \n \nИнтерфейс подключения SATA \n \nФорм-фактор 3.5\" \n \nСкорость вращения шпинделя 7200 об/мин \n \nОбъем буфера 16 МБ",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_250gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_250gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "804176532": {
+    "ad_id": 804176532,
+    "title": "Жесткий диск MAXTOR 160GB (STM3160815AS) 7200rpm 16MB 3.5 SATA",
+    "description": "Жесткий диск MAXTOR 160GB (STM3160815AS) 7200rpm 16MB 3.5 SATA \nОтправлю ОЛХ доставкой, любым перевозчиком. \n \nКод производителя STM3160815AS \n \nЕмкость накопителя 160 ГБ \n \nТип жесткого диска Внутренний \n \nИнтерфейс подключения SATA \n \nФорм-фактор 3.5\" \n \nСкорость вращения шпинделя 7200 об/мин \n \nОбъем буфера 16 МБ",
+    "expected_item_type": "storage",
+    "expected_component_name": "ssd_160gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_160gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "804175924": {
+    "ad_id": 804175924,
+    "title": "Жесткий диск HITACHI 160GB (HDT721016SLA380) 7200rpm 16MB 3.5 SATA",
+    "description": "Жесткий диск HITACHI 160GB (HDT721016SLA380) 7200rpm 16MB 3.5 SATA \n \nОтправлю ОЛХ доставкой, любым перевозчиком. \n \nКод производителя HDT721016SLA380 \n \nЕмкость накопителя 160 ГБ \n \nТип жесткого диска Внутренний \n \nИнтерфейс подключения SATA \n \nФорм-фактор 3.5\" \n \nСкорость вращения шпинделя 7200 об/мин \n \nОбъем буфера 16 МБ",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_160gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_160gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "804220063": {
+    "ad_id": 804220063,
+    "title": "Жесткий диск SEAGATE 250GB 7200rpm 16MB 3.5 SATA",
+    "description": "Жесткий диск SEAGATE 250GB 7200rpm 16MB 3.5 SATA \n \nОтправлю ОЛХ доставкой, любым перевозчиком. \n \nКод производителя ST250DM000 \n \nЕмкость накопителя 250 ГБ \n \nТип жесткого диска Внутренний \n \nИнтерфейс подключения SATA \n \nФорм-фактор 3.5\" \n \nСкорость вращения шпинделя 7200 об/мин \n \nОбъем буфера 16 МБ",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_250gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_250gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "750981388": {
+    "ad_id": 750981388,
+    "title": "3.5\" Seagate st3160812as 160gb sata300, 3.5\" Samsung sp1654n 160gb ata - 7$",
+    "description": "БУ старенькие жесткие диски \n \n3.5\" Seagate st3160812as 160gb sata300 7200rpm 8mb кеш \n \n3.5\" Samsung sp1654n 160gb eide 7200rpm 8mb кеш \n \nПолностью рабочие. Цена указана за штуку. \n \nДоставка ОЛХ  +  % ОЛХкса",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_160gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_160gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929018774": {
+    "ad_id": 929018774,
+    "title": "Жорсткий диск Hitachi 2.5\" обємом 500GB (HTS545050A7E380)",
+    "description": "СТАН: б/в. Товар у хорошому робочому стані, з незначними слідами використання. Всі компоненти перевірені та працюють стабільно.  \nДОСТАВКА: Нова Пошта. (Укрпошта: тільки після повної оплати за товар) \nОПЛАТА: ПриватБанк, Monobank, Sense Bank, NovaPay \nНАКЛАДЕНИЙ ПЛАТІЖ: по предоплаті на карту (не менше 200 грн.) на послуги перевізника. \n \nТЕЛЕФОНУВАТИ: з 10:00 до 21:00 (Telegram, Viber, WhatsApp)",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_500gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_500gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931889613": {
+    "ad_id": 931889613,
+    "title": "Жорсткий диск Hitachi 2.5\" обємом 320GB (HTS543232L9SA02)",
+    "description": "СТАН: б/в. Товар у хорошому робочому стані, з незначними слідами використання. Всі компоненти перевірені та працюють стабільно. \nДОСТАВКА: Нова Пошта. (Укрпошта: тільки після повної оплати за товар) \nОПЛАТА: ПриватБанк, Monobank, Sense Bank, NovaPay \nНАКЛАДЕНИЙ ПЛАТІЖ: по предоплаті на карту (не менше 200 грн.) на послуги перевізника. \n \nТЕЛЕФОНУВАТИ: з 10:00 до 21:00 (Telegram, Viber, WhatsApp)",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_320gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_320gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931900493": {
+    "ad_id": 931900493,
+    "title": "Блок живлення FSP ATX350N ATX-350PNR 350 Вт W/NOISE KILLER Розділення ліній 12V (Dual +12V Rails) ATE OK / HI-POT OK. Пломба на корпусі. Гарний стан.",
+    "description": "Блок живлення FSP ATX350N ATX-350PNR 350 Вт W/NOISE KILLER Розділення ліній 12V (Dual +12V Rails) ATE OK / HI-POT OK  \n \nНадійний блок живлення від відомого OEM-виробника FSP Group Inc., модель ATX350N. За своєю компонентною базою він аналогічний до популярної серії ATX-350PNR, яка славиться своєю довговічністю в офісних та бюджетних домашніх збірках. \n \nНомінальна потужність \n350 Вт \nВхідна напруга \n220-240V~, 5A, 50Hz \nСтрум по лініях +12V \n+12V1: 10.0A; +12V2: 13.0A (Макс. 276 Вт сумарно) \nСтрум по лініях 3.3V / 5V \n+3.3V: 20.0A; +5V: 16.0A (Макс. 130 Вт сумарно) \nДодаткові лінії \n+5Vsb (чергова): 2.5A; -12V: 0.8A \nКабелі та роз'єми \nБазуючись на фотографіях дротів, блок має таку конфігурацію підключень: \n1 x 24-pin (Main Power): Основне живлення материнської плати. \n1 x 4-pin (ATX12V): Додаткове живлення процесора. \n1 x SATA: Живлення для жорсткого диска або SSD. \n4 x Molex (4-pin Peripheral): Для підключення старіших жорстких дисків, оптичних приводів, корпусних вентиляторів або перехідників (наприклад, Molex-to-SATA чи Molex-to-6pin для відеокарти). \n1 x FDD (Floppy): Для дисковода або специфічних плат розширення. \nПідтримувані технології та особливості \nW/NOISE KILLER: Вбудована система автоматичного регулювання обертів вентилятора залежно від температури всередині блоку. Це забезпечує дуже тиху роботу при низькому навантаженні на ПК. \nРозділення ліній 12V (Dual +12V Rails): Наявність віртуальних ліній +12V1 та +12V2 забезпечує стабільніше живлення, розподіляючи навантаження між процесором та іншими комплектуючими. \nATE OK / HI-POT OK: Заводські позначки успішного проходження тестів. ATE (Automated Test Equipment) гарантує правильність роботи схемотехніки, а HI-POT перевіряє ізоляцію на стійкість до високої напруги. \nRoHS: Відповідність директиві про обмеження шкідливих речовин (наприклад, свинцю) у виробництві. \n \nБажано при зустрічі у Львові біля Вікторії Гарден, але також \n \nПересилаю Новою Поштою, Укрпоштою та Meest. \nМожлива OLX-доставка. \n \nОплата: \n- через Olx; \n- 100% передоплата на картку; \n- накладений платіж за умови передоплати 150 грн.",
+    "expected_item_type": "psu",
+    "expected_component_name": "350w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "350w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "908875991": {
+    "ad_id": 908875991,
+    "title": "Блок питания 400 W",
+    "description": "Производитель \nMaxxtro \nФорм-фактор \nATX \nМощность блока питания \n400 Вт \nФункция PFC (Power Factor Correction) \nактивная \nОсобенности \nЗащита от перегрузки, Защита от короткого замыкания",
+    "expected_item_type": "psu",
+    "expected_component_name": "400w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "400w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "928933520": {
+    "ad_id": 928933520,
+    "title": "Superflower Leadex 1200W 80+ Platinum",
+    "description": "Продам гарний модульний блок живлення. Працює без нарікань. Повний комплект",
+    "expected_item_type": "psu",
+    "expected_component_name": "1200w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "1200w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "918696379": {
+    "ad_id": 918696379,
+    "title": "Блок питания FSP FSP600-80GLN 600W",
+    "description": "Продам блок питания FSP FSP600-80GLN 600W, мощность 600ват. \nСтоял в домашнем ПК. \nПродаю по причине продажи пк, остался только блок \n \n(перед продажей уточните наличие) \n \nЗвоните/пишите отвечу на ваши вопросы. \nЕсли нужно будет видео с работой блока питания - запишу. \n \nХарактеристики: \nПотужність: 600 Вт \nРоз'єм живлення процесора: 1x4+4pin \nКількість роз'ємів додаткового живлення для відеокарт: 1 \nКількість SATA роз'ємів: 4 \nТип роз'ємів додаткового живлення для відеокарт: 1x6pin \nКількість роз'ємів FDD: 1 \nКількість конекторів IDE (Molex): 5 \nСистема охолодження: Активна \nМаксимальні навантаження \n--- +3.3V: 30 А (99 Вт) \n--- +5V: 30 А (150 Вт) \n--- +12V1: 18 А (216 Вт) \n--- +12V2: 18 А (216 Вт) \n--- -12V: 0.5 А (6 Вт) \n--- +5Vsb: 2.5 А (12.5 Вт) \nРозміри (ДxШxВ): 15 x 8.6 x 14 см \nДодаткові характеристики: ККД 80% \nВентилятор на нижній стінці: 120 мм",
+    "expected_item_type": "psu",
+    "expected_component_name": "600w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "600w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931901502": {
+    "ad_id": 931901502,
+    "title": "Блок питания Aerocool VX Plus 600w",
+    "description": "Блок в отличном состоянии, работал 1.5 года в домашнем пк, пломба на месте. Работал в очень энергосберегающей сборке. \nИмеются кабели: \n20+4pin \n4+4 pin CPU \n6+2 pin PCI-E \nSATA: 4 штуки \nMolex: 3 штуки",
+    "expected_item_type": "psu",
+    "expected_component_name": "600w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "600w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "750977207": {
+    "ad_id": 750977207,
+    "title": "Power master pm-350cf 350 w, hipro hp-p3507f5 350 w - 6$",
+    "description": "БУ блоки питания АТХ \n \nPower master pm-350cf 350 w sata есть пара штук \n \nhipro hp-p3507f5 350 w есть пара десятков \n \nСостояние отличное. \n \nБез торгов и без обменов! Доставка ОЛХ  +  % ОЛХкса",
+    "expected_item_type": "psu",
+    "expected_component_name": "350w",
+    "expected_socket": "lga775",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "p35",
+      "item_type": "motherboard",
+      "socket": "lga775",
+      "has_defects": 0
+    }
+  },
+  "900584776": {
+    "ad_id": 900584776,
+    "title": "Продам блок живлення Foxconn 300W",
+    "description": "Блок живлення Foxconn 300W (пікова 400W) \n \nСтан: у чудовому робочому стані \nМодель: Foxconn TLA-3001P \nНомінальна потужність: 300W \nПікова потужність: 400W \nРоз’єми: стандартні ATX для підключення до ПК \nДобре підходить для офісного або домашнього комп’ютера \n \nЦіна: 270 грн \nВідправка Укр поштою або олх доставка, самовивіз.",
+    "expected_item_type": "psu",
+    "expected_component_name": "300w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "300w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "920818942": {
+    "ad_id": 920818942,
+    "title": "Мощный комплект Xeon X99 Dual: 2x 2686v4 / 128GB RAM / Machinist",
+    "description": "Продаю настоящего монстра для работы, рендеринга и виртуалок. Если вам нужно, чтобы компьютер переваривал всё и не задавал вопросов \"зачем так много ядер\", то это ваш вариант. \n \nХарактеристики: \n- Материнская плата: Machinist X99 Dual (поддержка двух процессоров) \n- Процессоры: 2 шт. Intel Xeon E5-2686 v4 (суммарно 36 ядер и 72 потока — просто машина) \n- Оперативная память: 128 ГБ (хватит, чтобы открыть все вкладки Chrome в мире и еще останется) \n \nСостояние идеальное",
+    "expected_item_type": "bundle",
+    "expected_component_name": "x99_e5_2686_v4_128gb",
+    "expected_socket": "lga2011-3",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "x99",
+      "item_type": "motherboard",
+      "socket": "lga2011-3",
+      "has_defects": 0
+    }
+  },
+  "909810834": {
+    "ad_id": 909810834,
+    "title": "Материнська плата Msi B840 Gaming Plus Wifi (AM5) 7000-9000 Серія AMD",
+    "description": "Материнська плата Msi B840 Gaming Plus Wifi в ідеальному стані, без нюансів, перевірена, тест стабільності на останньому фото. В комплекті тільки плата. \n \nЦіна та оплата: \n \n1. ОЛХ доставка (ціна актуальна в оголошенні) \n2. Накладний платіж Нова пошта 5000грн \n3. На рахунок ФОП 5000грн (відправка Нова Пошта, Укрпошта Meest або Самовивоз) \n4. Оплата в USDt \n5. Можливість оплати частинами через Банк з котиком. \n \nБез торгів будь ласка. Дякую за розуміння! \n \nКупуйте в перевірених продавців! \n \nФорм фактор АТХ \nЧіпсет B840 \nAMD AM5 Socket \nПідтримка AMD 7000 8000 та 9000 серії. (Біос оновлений на останній) \nЖивлення 7+2+1 \nDDR5 8000+ \nPcie 4.0 під відеокарту. \n2 слоти m2 pcie 4.0 \n2.5g ethernet \nWI-FI 7 \nBluetooth 5.4 \n \nПеред відправкою знімаю відео роботи плати \nКомплект на 7 фото \n \nповні характеристики \nwww.msi.com/Motherboard/B840-GAMING-PLUS-WIFI",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "b840",
+    "expected_socket": "am5",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "b840",
+      "item_type": "motherboard",
+      "socket": "am5",
+      "has_defects": 0
+    }
+  },
+  "931900245": {
+    "ad_id": 931900245,
+    "title": "Asus H81M-K + Intel Pentium G3220 + 6 Гб ОЗУ socket 1150",
+    "description": "Продам системний комплект на сокеті 1150 - материнка + процесор + память + охолодження. \nмат.плата Asus H81M-K \nпроцесор Intel Pentium G3220 (G3240) \nпамять ДДР3 4 + 2 ГБ  \nстандартне охолодження \nЄ 2 таких комплекти, ціна вказана за 1 комплект. \nОбидва повністю робочі і безпроблемні, відрізняються процесорами. \nВ 1му процесор G3220, в іншому G3240 \nЗаглушки в корпус присутні.",
+    "expected_item_type": "bundle",
+    "expected_component_name": "h81_pentium_g3220_6gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "pentium_g3220",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "923633654": {
+    "ad_id": 923633654,
+    "title": "Asus M5A78L-M LX sAM3+ Athlon ii x 3 450 + 4Gb ddr3+ кулер",
+    "description": "Материнская плата Asus M5A78L-M LX sAM3+ , с трехьядерным процессором  Athlon ii x 3 450 , оперативной памяти  4Gb DDR3 и кулер.Плата полностью рабочая.На рамке кулера обломано ушко и вкручен шуруп(временное решение),один конденсатор заменен.Плата работает стабильно.Тесты на фото.Цена 800 гр,олх доставка +37 гр укрпоштой.",
+    "expected_item_type": "bundle",
+    "expected_component_name": "m5a78l_athlon_ii_4gb",
+    "expected_socket": "am3+",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "760g",
+      "item_type": "motherboard",
+      "socket": "am3+",
+      "has_defects": 0
+    }
+  },
+  "931897377": {
+    "ad_id": 931897377,
+    "title": "Процессор Ryzen 5 5600X",
+    "description": "Процесор зняв із розбирання у невідомому станi.",
+    "expected_item_type": "cpu",
+    "expected_component_name": "ryzen_5_5600x",
+    "expected_socket": "am4",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ryzen_5_5600x",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931900396": {
+    "ad_id": 931900396,
+    "title": "Материнська плата Asus Prime B650M-A II -CSM та  Ryzen 7500f",
+    "description": "Продаю Материнська плата Asus Prime B650M-A II-CSM, та Ryzen 7500f,бажано разом.Бажано Одеса.",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "b650",
+    "expected_socket": "am4",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ryzen_5_7500f",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931900552": {
+    "ad_id": 931900552,
+    "title": "Процесор Amd Ryzen 5 7500f AM5",
+    "description": "Увага! Прохання не телефонувати, пишіть будь-ласка тут або у Вайбер. Продаж тільки у місті Дніпро із рук у руки \n \nПроцесор у використанні був 1,5 роки, проблем не було і немає. Використовувався в парі з 4070 super, вистачало з головою для гри на 2K моніторі. Причина продажу - апгрейд пк. Будь-які перевірки проца - без проблем",
+    "expected_item_type": "cpu",
+    "expected_component_name": "ryzen_5_7500f",
+    "expected_socket": "am5",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ryzen_5_7500f",
+      "item_type": "cpu",
+      "socket": "am5",
+      "has_defects": 0
+    }
+  },
+  "810360505": {
+    "ad_id": 810360505,
+    "title": "Intel Celeron g3930",
+    "description": "Intel Celeron g3930 2.9Ghz. LGA 1151. \n100% Робочий процесор. Без кулєра.",
+    "expected_item_type": "cpu",
+    "expected_component_name": "celeron_g3930",
+    "expected_socket": "lga1151",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "celeron_g3930",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "868701967": {
+    "ad_id": 868701967,
+    "title": "Процессор i3 2120",
+    "description": "В полном рабочем состоянии, работал мало и на офисном ПК",
+    "expected_item_type": "cpu",
+    "expected_component_name": "i3_2120",
+    "expected_socket": "lga1155",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "i3_2120",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931900873": {
+    "ad_id": 931900873,
+    "title": "Продам AMD Ryzen 5 5500",
+    "description": "Процессор использовался больше пол года, нюансов нету полностью рабочий.  \nПричина продажи апгрейд",
+    "expected_item_type": "cpu",
+    "expected_component_name": "ryzen_5_5500",
+    "expected_socket": "an4",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ryzen_5_5500",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "626861971": {
+    "ad_id": 626861971,
+    "title": "Двухядерный Процессор Intel® Celeron® E3300/LGA 775/800 МГц",
+    "description": "Двухядерный Процессор Intel® Celeron® E3300/LGA 775/800 МГц \n \nсокет LGA 775 \nКоличество ядер 2 \nтактовая частота 2,50 ГГц \n1 МБ кэш-памяти  \nчастота системной шины 800 МГц",
+    "expected_item_type": "cpu",
+    "expected_component_name": "celeron_e3300",
+    "expected_socket": "775",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "celeron_e3300",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931901180": {
+    "ad_id": 931901180,
+    "title": "Intel Core i5-7400T/ i5-7500T/ i5-7500 (s1151)",
+    "description": "Процессоры проверены и полностью исправны, тестировал на Asus Z270. \nВ наличии: \n \nIntel Core i5-7400T - 1 шт - 500 грн/шт \nIntel Core i5-7500T - 5 шт - 700 грн/шт \nIntel Core i5-7500 - 6 шт - 700 грн/шт \n \nВ Днепре нахожусь на пр.Д.Яворницкого 100, в другие города отправляю по предоплате. \nНаложенным платежом и OLX доставкой не отправляю.",
+    "expected_item_type": "cpu",
+    "expected_component_name": "i5_7400t",
+    "expected_socket": "lga1151",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "i5_7400t",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "819791114": {
+    "ad_id": 819791114,
+    "title": "Процессор Intel Pentium G4400",
+    "description": "Продам процессор в связи с апгрейдом своего компьютера. \n \nХарактеристики: \n \nСемейство процессоров \nIntel Pentium Dual-Core \n \nТип разъема \nSocket 1151 \n \nПоколение процессоров Intel \n6 поколение (Skylake) \n \nКоличество ядер \n2 \n \nИнтегрированная графика \nIntel HD Graphics \n \nМощность TDP \n54 Вт \n \nБазовая тактовая частота \n3300 МГц \n \nТип упаковки \nBOX \n \nКоличество каналов памяти \n2 \n \nТип памяти \nDDR3L/DDR4 \n \nТехпроцесс \n14 нм \n \nОбъем кэш памяти 1 уровня \n2 х 32 КБ \n \nОбъем кэш памяти 2 уровня \n2 х 256 КБ \n \nОбъем кэш памяти 3 уровня \n3 МБ",
+    "expected_item_type": "cpu",
+    "expected_component_name": "pentium_g4400",
+    "expected_socket": "lga1151",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "pentium_g4400",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931901919": {
+    "ad_id": 931901919,
+    "title": "Intel Core i5 12400 F",
+    "description": "Продам процессор intel Core I 5  12400F в отличном состоянии. Версия Box с родным кулером .",
+    "expected_item_type": "cpu",
+    "expected_component_name": "i5_12400f",
+    "expected_socket": "lga1700",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "i5_12400f",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931813969": {
+    "ad_id": 931813969,
+    "title": "Продам Rtx 4060 8gb б/в",
+    "description": "Продам rtx 4060. Шикарний стан, у користуванні всього рік, працює тихо та ідеально. Продаю тому що придбав rtx 5070, (поїде доречі в коробці 5070). Тест у Furmark прикладаю. Тільки олх доставка, відправка НП/Укр пошта. Шахраї можете не писати, за посиланням не перехожу=)пишіть в олх або тг embrace777jj",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rtx_4060",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rtx_4060",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "926502185": {
+    "ad_id": 926502185,
+    "title": "Відеокарта GIGABYTE GeForce RTX 2060 OC 6G",
+    "description": "Стан супер, стояла пів пору в ігровому компʼютері, причина продажу переїзд, купувалась в Угорщині",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rtx_2060",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rtx_2060",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931900497": {
+    "ad_id": 931900497,
+    "title": "Відеокарта GTX 750Ti ZOTAC 2gb",
+    "description": "Робоча, в абсолютно ідеальному стані відеокарта, \nсам купляв б/ушною її в 21му році і активно використовував десь до середини 23го, після чого і до недавно вона продовжувала стояти як затичка в додатковому комп'ютері, тепер і там для неї знайшлась заміна, то ж продаю лише оскільки не маю в ній необхідності. \n \nОсновні характеристики: \nГрафічний чип: NVIDIA GeForce GTX 750 Ti \nІнтерфейс: PCI Express 3.0 x16 \nОбсяг пам’яті: 2 ГБ GDDR5 \nЧастота пам’яті: 5000 МГц \nЧастота ядра: 1111 МГц \nРозрядність шини пам’яті: 128 біт \nМаксимальна роздільна здатність: 4096×2160 \nМінімальна потужність блоку живлення: 400 Вт \nТип охолодження: Активне, 2 вентилятори \nДодаткове живлення: 6 pin \nРоз’єми: DVI, HDMI, VGA",
+    "expected_item_type": "gpu",
+    "expected_component_name": "gtx_750_ti",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "gtx_750_ti",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931900683": {
+    "ad_id": 931900683,
+    "title": "GTX 1080 Ti 11GB ASUS ROG Strix",
+    "description": "Продам GTX 1080 Ti 11GB ASUS ROG Strix \n \nВидеокарта полностью рабочая, отлично подходит для игр и повседневного использования. \n \nХарактеристики: \n• 11 GB GDDR5X \n• ASUS ROG Strix \n• Полностью исправна \n \nПо состоянию: у одного вентилятора повреждена/отломана часть крепления, из-за чего он немного шатается. На работоспособность видеокарты это не влияет. Сам вентилятор при необходимости можно заменить — новый стоит примерно 250 грн. \n \nСамостоятельно менять не стал, так как просто нет времени заниматься заменой. Поэтому сделаю скидку 500 грн и учту этот момент в цене. \n \nОтправка Новой Почтой \nТакже возможна отправка через Meet \n \nПо всем вопросам пишите в личные сообщения.",
+    "expected_item_type": "gpu",
+    "expected_component_name": "gtx_1080_ti",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "gtx_1080_ti",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "893077571": {
+    "ad_id": 893077571,
+    "title": "Gigabyte RTX 3060TI",
+    "description": "Відеокарта NVIDIA GeForce GIGABYTE RTX 3060TI \nAMPERE ARCH / RAY TRACING / DLSS \nGAMING OC 8g \nСтан - ідеальний, баги та артефакти - відсутні. \nВідеокартою - не майтили",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rtx_3060_ti",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rtx_3060_ti",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "885300458": {
+    "ad_id": 885300458,
+    "title": "Відеокарта Gtx 960 2gb",
+    "description": "Продам відеокарту gtx 960 2gb winforce є коробка та чєк \nВ хорошому стані,термопаста мінялась за весь час разів 5 майже кожен рік",
+    "expected_item_type": "gpu",
+    "expected_component_name": "gtx_960",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "gtx_960",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "923631359": {
+    "ad_id": 923631359,
+    "title": "Sapphire AMD Radeon RX 580 4Gb",
+    "description": "Видеокарта Sapphire AMD Radeon RX 580 4Gb.В хорошем состоянии,тесты на фото,цена 2100 гр ,олх доставка +63 гр.",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rx_580",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rx_580",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "930263725": {
+    "ad_id": 930263725,
+    "title": "ігрова відеокарта RTX4070 12GB ASUS Dual OC пломба. Trade-in",
+    "description": "!!УВАГА!! > В оголошенні вказана чиста ціна. Якщо потрібна OLX доставка - цінник в оголошенні буде підвищено на 3% через комісію OLX з продавця. \nЄ можливість обміну (TRADE-IN) на Ваші комплектуючі ПК. \n \nДовжина відеокарти 267мм \nВідмінний стан. Без проблем і ремонтів. На заводській пломбі, не вскривалася. \n \n+можна додати всього для збірки ПК. \n \nМи тепер в Івано-Франківську! Для постійних клієнтів з Харкова є безкоштовна доставка поштою. \nМожливий самовивіз у Франківську. Або відправка новою поштою. Можлива перевірка перед покупкою віддалено по Team Viewer. +5 днів на перевірку після отримання на всі комплектуючі в оголошеннях. \nНа OLX давно. З відмінним рейтингом. Понад 500 успішних угод через OLX та більше 1000 позитивних відгуків. \nНа ресурсі overclockers є в перевірених багато років. Є ще комплектуючі та збірки - дивіться інші оголошення в профілі.",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rtx_4070",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rtx_4070",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "803893576": {
+    "ad_id": 803893576,
+    "title": "Видеокарта Gigabyte Radeon R9 270 2048MB GDDR5 256bit HDMI, 2хDVI",
+    "description": "Видеокарта в отличном состоянии, как новая, все работает отлично, без пыли и грязи, термопаста поменяна. \nОтправлю любым перевозчиком или самовывоз. \n \nВидеокарта Gigabyte Radeon R9 270 2048MB GDDR5 (256bit) (950/5600) (2хDVI, HDMI, DisplayPort) (GV-R927OC-2GD) PCI-Ex  \n \nГрафический чип   R9 270 \n \nЧастота памяти   5600 МГц \n \nЧастота ядра   950 МГц \n \nСистема охлаждения   2 вентилятора + радиатор (система Windforce) \n \nОбъем памяти   2 ГБ \n \nЧастота RAMDAC   400 МГц, 10 бит на канал \n \nМаксимально поддерживаемое разрешение   4096x2160 \n \nПоддерживаемые 3D API   DirectX 11.2, OpenGL 4.3 \n \nРазрядность шины памяти   256 бит \n \nМинимально необходимая мощность БП   600 Вт \n \nТип памяти   GDDR5 \n \nРазмеры   254 x141 x 43 мм \n \nИнтерфейс   PCI-Express x16 3.0 \n \nРазъемы  HDMI, DVI, DisplayPort  \n \nФорм-фактор   Дискретная (Стандартная) \n \nДополнительное питание   6 + 6 pin \n \nТип системы охлаждения   Активная",
+    "expected_item_type": "gpu",
+    "expected_component_name": "r9_270",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "r9_270",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "891466943": {
+    "ad_id": 891466943,
+    "title": "Відеокарта GTX 660 TI, 2gb gddr5, РОБОЧА",
+    "description": "Продаю відеокарту GTX 660 TI, 2gb gddr5, в чудовому стані. Обслугована (змінював термопасту і все), в ремонті не була, використовувалась у власному пк. Проблем ніколи не мала, просто оновив систему на більш потужнішу. По потужності така сама а то і в деяких іграх краща ніж gtx750ti та gtx1050. Потребує додаткового живлення 6+6 pin. У World Of Tanks на високих налаштуваннях 65-70 fps на моніторі з fullhd, 1920x1080. В карті впевнений на 100%, усі відеовиходи працюють справно. \n \nТериторіально знаходжусь за адресою м. Кривий Ріг, Покровський район, вул. Ракітіна. \n \nДЯКУЮ  ЗА  УВАГУ !!! дивіться інші мої оголошення",
+    "expected_item_type": "gpu",
+    "expected_component_name": "gtx_660_ti",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "gtx_660_ti",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "931899929": {
+    "ad_id": 931899929,
+    "title": "msi rtx 3060 ti + корпус та бп на 450w",
+    "description": "Продам відеокарту msi 3060 ti без коробки \nта бпшник \nкорпус в подарунок",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rtx_3060_ti",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rtx_3060_ti",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931588878": {
+    "ad_id": 931588878,
+    "title": "Msi RTX 5060TI 16GB",
+    "description": "Продам новую видеокарта MSI GeForce RTX5060Ti 16Gb VENTUS 2X. Видеокарта в использовании не была.  \n \nТорг реальному покупателю.  \n \nСемейство графики\tNVIDIA \nФорм-фактор\tстандартная \nНазначение\tигровая \nГрафический чип\tGeForce RTX 5060 Ti \nИнтерфейс\tPCI-Express 5.0 \nОбъем встроенной памяти\t16 ГБ \nТип памяти\tGDDR7 \nРазрядность шины памяти\t128 Bit \nЧастота ядра (Boost)\t2602 MHz \nЧастота памяти\t28000 MHz \nМаксимальное число дисплеев\t4 \nМаксимальное разрешение\t7680 x 4320 \nСовместимость с HDCP\tесть \nРазъемы\t1 x HDMI 2.1b, 3 x DisplayPort 2.1b \nТип системы охлаждения\tактивный \nВид охлаждения\tкулер, радиатор \nКоличество вентиляторов\t2 шт \nРазъемы дополнительного питания\t8 pin \nМаксимальная потребляемая мощность\t180 Вт \nМинимальная рекомендованная мощность блока питания\t600 Вт \nВерсия DirectX\t1‎2 Ultimate \nВерсия OpenGL\t4.6 \nВерсия DLSS\tDLSS 4 \nРазмеры\t227 х 127 х 41 мм",
+    "expected_item_type": "gpu",
+    "expected_component_name": "rtx_5060_ti_16_gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rtx_5060_ti_16_gb",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931899141": {
+    "ad_id": 931899141,
+    "title": "SSD Western Digital 512GB NVMe M.2",
+    "description": "SSD повністю справний, пройшов перевірку, працює стабільно, без помилок. \n \nХарактеристики: \nВиробник: Western Digital \nМодель: SN530 \nОб'єм: 512 ГБ \nФорм-фактор: M2 2280 \nІнтерфейс: PCIe Gen3 x4 / NVMe \nТип пам'яті: 3D TLC NAND \nКонтролер: WD \nШвидкість читання: до 2400 МБ/с \nШвидкість запису: до 1750 МБ/с \n \nВідправка OLX Доставка / Укрпошта, Meest Пошта. \nТакож можлива відправка накладеним платежем по невеликій передплаті.",
+    "expected_item_type": "storage",
+    "expected_component_name": "ssd_512gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_512gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931689295": {
+    "ad_id": 931689295,
+    "title": "Відеокарта p104-100 8gb",
+    "description": "Відеокарта Nvida p104-100 8gb без відеовиходів для майнінгу \nМожна використовувати для не складних задач для пк \n500 грн оплата на карту \n550 грн при предоплаті на доставку решта суми накладним платижем \n600 грн при олх доставці",
+    "expected_item_type": "gpu",
+    "expected_component_name": "p104_100",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "p104_100",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929155517": {
+    "ad_id": 929155517,
+    "title": "Оперативна пам’ять Hynix DDR3 4GB (2×2GB) для ПК",
+    "description": "Продам комплект оперативної пам’яті Hynix DDR3 – 2 планки по 2 ГБ (загалом 4 ГБ). \nПам’ять повністю справна, працює без зауважень. Продається у зв’язку з оновленням ПК. \nКомплектація: 2 планки по 2 ГБ. \nВідправка OLX Доставкою або самовивіз.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_4gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_4gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929156588": {
+    "ad_id": 929156588,
+    "title": "Оперативна пам’ять Patriot Signature Line Premium DDR4 16GB 2x8GB 3200 MHz",
+    "description": "Продам комплект оперативної пам’яті Patriot DDR4 — 2 планки по 8GB, загалом 16GB. Частота 3200 MHz. \n \nПідійде для ПК на DDR4, хороший варіант для ігор, роботи, навчання та апгрейду системи. Пам’ять працює стабільно, без проблем. \n \nХарактеристики: \n \nОб’єм: 16GB \nКомплект: 2x8GB \nТип: DDR4 \nЧастота: 3200 MHz \nВиробник: Patriot \n \nВідправка OLX Доставкою (+3% за комісію) або наложкою за мінімальною предоплатою \nДля швидкого зв'язку Telegram: \nt.me/chernihiv_bazar_kodek або без t.me",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_16gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_16gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "922535856": {
+    "ad_id": 922535856,
+    "title": "Модуль памяті для компютера DDR4 16GB 2400 MHz Dragon RAM Geil (GWB432GB2400C14DC)",
+    "description": "Залишилась 1 планка \nМодель GWB432GB2400C14DC \nПовністю у справному стані, перевірена мемтестом \nПеревірена на інтел і АМД \nПРодається комплектом або поштучно \nДворанкова \nВідправляю, олх доставка на покупці \nВ пріорітеті накладний чи самовивіз \nТип пам'яті \nDDR4 \nОб'єм пам'яті \n32 ГБ \nКількість модулів у наборі \n2 \nЧастота пам'яті \n2400 МГц \nТаймінги \nCL14 \nНапруга живлення \n1.2 В \nОхолодження \nнемає \nДодатково \nПримітка \nПоставка товару можлива в ОЕМ-версії. Тобто, товар може поставлятися без супроводжуючих матеріалів і додаткових компонентів, в упаковці без оформлення, що гарантує лише їх безпечне транспортування. \nІнші \nВиробник \nGeil \nМодель \nDDR4 32GB (2x16GB) 2400 MHz Dragon RAM \nАртикул \nGWB432GB2400C14DC",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_16gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_16gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931895343": {
+    "ad_id": 931895343,
+    "title": "Оперативная память DDR3 4GB Micron 1600MHz PC3-12800U (MT8JTF51264AZ-1G6E1)",
+    "description": "Продам оперативную память Micron объемом 4 ГБ для стационарного ПК. \n​Объем: 4 GB \n​Тип памяти: DDR3 SDRAM \n​Форм-фактор: DIMM (240-pin) \n​Частота: 1600 MHz (PC3-12800U) \n​Ранговость: 1Rx8 (одноранговая) \n​Тайминги / Напряжение: CL11, 1.5V \n​Модель: MT8JTF51264AZ-1G6E1 \n​Состояние: Отличное, полностью рабочая.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_4gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_4gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931895350": {
+    "ad_id": 931895350,
+    "title": "Комплект оперативної пам’яті KingBank DDR4 3200MHz — 16GB (2×8GB)",
+    "description": "Комплект оперативної пам’яті KingBank DDR4 3200MHz — 16GB (2×8GB). \n \n• Частота: 3200 MHz   \n• Об’єм: 16 GB (2×8 GB)   \n• Формат: DDR4   \n• Працює у двоканальному режимі   \n• Стан: б/в, справний \n \nЦіна: 3700 грн за комплект",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_16gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_16gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931896189": {
+    "ad_id": 931896189,
+    "title": "Kingston Hyperx Fury 32 gb 2 x 16 gb гигабайт 2666 МГц DDR4 частота идеал гарантия модель HX426C16FB3/16 и HX426C16FB/16",
+    "description": "Цена указана для наложенного платежа или полной оплаты, OLX-доставка +3% + 20 грн к цене за комплект оперативной памяти Kingston HyperX Fury — отличное состояние, полностью рабочий. \n \nКомплект из двух модулей HyperX Fury DDR4, отлично подходящий для игровых, домашних и рабочих компьютеров. Модули имеют одинаковый объём и частоту, поэтому отлично работают вместе в двухканальном режиме. \n \nМодули: \n• HX426C16FB3/16 — 16 ГБ \n• HX426C16FB/16 — 16 ГБ \n \nОбщий объём: 32 ГБ (2×16 ГБ) \nТип памяти: DDR4 \nЧастота: 2666 МГц \nТайминги: CL16 \nНапряжение: 1.2 В \nФорм-фактор: DIMM 288-pin \nECC: нет \nRegistered: нет \n \nПолностью рабочее состояние \nПроверена мемтестом \nБез ошибок и скрытых дефектов \nОтличное внешнее и техническое состояние \n7 дней гарантия на проверку \n \nКомплект: \n• 2 планки по 16 ГБ \n• общий объём 32 ГБ \n \nПреимущества: \n• большой объём 32 ГБ \n• работа в двухканальном режиме \n• частота 2666 МГц \n• низкие тайминги CL16 \n• качественные радиаторы HyperX Fury \n• отличная совместимость с платформами Intel и AMD \n \nОтлично подходит для: \n• игровых ПК \n• рабочих станций \n• монтажа видео \n• многозадачности \n• апгрейда компьютера \n \nВажно: \nМодули имеют разные версии/маркировки, но одинаковый объём, частоту и основные рабочие характеристики. \n \nДоставка и оплата: \nОтправка Новой Почтой или Укрпочтой по всей Украине. \nЦена указана для наложенного платежа; при OLX-доставке +3% и +20 грн. \nСамовывоз в г. Александрия. \n \n i7-6700K  \n i7-6700  \n i7-6700T  \n i5-6600K  \n i5-6600  \n i5-6600T  \n i5-6500  \n i5-6500T  \n i5-6400  \n i5-6400T  \n i3-6320  \n i3-6300  \n i3-6300T  \n i3-6100  \n i3-6100T  \n \n i7-7700K  \n i7-7700  \n i7-7700T  \n i5-7600K  \n i5-7600  \n i5-7600T  \n i5-7500  \n i5-7500T  \n i5-7400  \n i5-7400T  \n i3-7350K  \n i3-7320  \n i3-7300  \n i3-7300T  \n i3-7100  \n i3-7100T  \n \n i7-8700K  \n i7-8700  \n i7-8700T  \n i5-8600K  \n i5-8600  \n i5-8600T  \n i5-8500  \n i5-8500T  \n i5-8400  \n i5-8400T  \n i3-8350K  \n i3-8300  \n i3-8300T  \n i3-8100  \n i3-8100T  \n \n i9-9900KS  \n i9-9900KF  \n i9-9900K  \n i9-9900  \n i9-9900T  \n i7-9700KF  \n i7-9700K  \n i7-9700F  \n i7-9700  \n i7-9700T  \n i5-9600KF  \n i5-9600K  \n i5-9600  \n i5-9600T  \n i5-9500F  \n i5-9500  \n i5-9500T  \n i5-9400F  \n i5-9400  \n i5-9400T  \n i3-9350KF  \n i3-9350K  \n i3-9320  \n i3-9300  \n i3-9300T  \n i3-9100F  \n i3-9100  \n i3-9100T  \n \n i9-10900K  \n i9-10900KF  \n i9-10900  \n i9-10900F  \n i9-10900T  \n i9-10850K  \n i7-10700K  \n i7-10700KF  \n i7-10700  \n i7-10700F  \n i7-10700T  \n i5-10600K  \n i5-10600KF  \n i5-10600  \n i5-10600T  \n i5-10505  \n i5-10500  \n i5-10500T  \n i5-10400  \n i5-10400F  \n i5-10400T  \n i3-10320  \n i3-10300  \n i3-10300T  \n i3-10105  \n i3-10105F  \n i3-10105T  \n i3-10100  \n i3-10100F  \n i3-10100T  \n \n i9-11900K  \n i9-11900KF  \n i9-11900  \n i9-11900F  \n i9-11900T  \n i7-11700K  \n i7-11700KF  \n i7-11700  \n i7-11700F  \n i7-11700T  \n i5-11600K  \n i5-11600KF  \n i5-11600  \n i5-11600T  \n i5-11500  \n i5-11500T  \n i5-11400  \n i5-11400F  \n i5-11400T  \n \n i9-12900KS  \n i9-12900K  \n i9-12900KF  \n i9-12900  \n i9-12900F  \n i9-12900T  \n i7-12700K  \n i7-12700KF  \n i7-12700  \n i7-12700F  \n i7-12700T  \n i5-12600K  \n i5-12600KF  \n i5-12600  \n i5-12600T  \n i5-12500  \n i5-12500T  \n i5-12400  \n i5-12400F  \n i5-12400T  \n i3-12300  \n i3-12300T  \n i3-12100  \n i3-12100F  \n i3-12100T  \n \n i9-13900KS  \n i9-13900K  \n i9-13900KF  \n i9-13900  \n i9-13900F  \n i9-13900T  \n i7-13700K  \n i7-13700KF  \n i7-13700  \n i7-13700F  \n i7-13700T  \n i5-13600K  \n i5-13600KF  \n i5-13600  \n i5-13600T  \n i5-13500  \n i5-13500T  \n i5-13400  \n i5-13400F  \n i5-13400T  \n i3-13100  \n i3-13100F  \n i3-13100T  \n \n i9-14900KS  \n i9-14900K  \n i9-14900KF  \n i9-14900  \n i9-14900F  \n i9-14900T  \n i7-14700K  \n i7-14700KF  \n i7-14700  \n i7-14700F  \n i7-14700T  \n i5-14600K  \n i5-14600KF  \n i5-14600  \n i5-14600T  \n i5-14500  \n i5-14500T  \n i5-14400  \n i5-14400F  \n i5-14400T  \n \nRyzen 7 1800X  \nRyzen 7 1700X  \nRyzen 7 1700  \nRyzen 5 1600X  \nRyzen 5 1600  \nRyzen 5 1500X  \nRyzen 5 1400  \nRyzen 3 1300X  \nRyzen 3 1200  \n \nRyzen 7 2700X  \nRyzen 7 2700  \nRyzen 7 2700E  \nRyzen 5 2600X  \nRyzen 5 2600  \nRyzen 5 2600E  \nRyzen 5 2500X  \nRyzen 3 2300X  \nRyzen 5 2400G  \nRyzen 3 2200G  \n \nRyzen 9 3950X  \nRyzen 9 3900X  \nRyzen 9 3900  \nRyzen 7 3800X  \nRyzen 7 3700X  \nRyzen 5 3600X  \nRyzen 5 3600  \nRyzen 5 3600XT  \nRyzen 5 3500X  \nRyzen 5 3500  \nRyzen 3 3300X  \nRyzen 3 3100  \nRyzen 5 3400G  \nRyzen 3 3200G  \n \nRyzen 7 PRO 4750G  \nRyzen 7 4700G  \nRyzen 5 PRO 4650G  \nRyzen 5 4600G  \nRyzen 3 PRO 4350G  \nRyzen 3 4300G  \n \nRyzen 9 5950X  \nRyzen 9 5900X  \nRyzen 9 5900  \nRyzen 7 5800X3D  \nRyzen 7 5800X  \nRyzen 7 5800  \nRyzen 7 5700X  \nRyzen 7 5700G  \nRyzen 7 5700  \nRyzen 5 5600X  \nRyzen 5 5600  \nRyzen 5 5600G  \nRyzen 5 5500  \nRyzen 5 5500GT  \nRyzen 3 5300G  \nRyzen 3 4100",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_32gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_32gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "931896394": {
+    "ad_id": 931896394,
+    "title": "Оперативна память G.Skill DDR5 64GB (2x32GB) 5200MHz Ripjaws S5 White (Гарантія до 2028!)",
+    "description": "Продам комплект швидкої та стильної оперативної пам'яті G.Skill Ripjaws S5 DDR5 64GB (2x32GB) 5200MHz у білому кольорі (White). Ідеально підійде для потужної ігрової системи, 3D-візуалізації, монтажу відео або робочої станції. \n \nСтан та особливості: \nСтан: Абсолютно нова, не використовувалася. \n \nГарантія та чеки: В наявності офіційний чек та офіційна гарантія до серпня 2028 року! \n \nКомплектація: Повний комплект із блистерною упаковкою. \n \nПричина продажу: Збирав новий ПК, але плашки не підійшли за сумісністю QVL до материнської плати. Купив інший комплект, а про цей просто забув. Продаю через непотрібність. \n \nТехнічні характеристики: \nОб'єм: 64 GB (2 плашки по 32 GB) \n \nТип пам'яті: DDR5 SDRAM \n \nТактова частота: 5200 MHz \n \nCерія: Ripjaws S5 \n \nКолір радіаторів: Білий (White) - чудово виглядає в білих та світлих збірках \n \nФорм-фактор: DIMM (288-pin)",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr5_64gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_64gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929159085": {
+    "ad_id": 929159085,
+    "title": "Оперативна память DDR3-1600 Kingston 4Gb",
+    "description": "Робоча ОЗУ, помилок не видає \n \nDDR3-1600 Kingston 4Gb \nНизькопрофільна \nСерійний номер: KVR16N11S8/4 \nТаймінги: CL11  \nНапруга: 1,5 В",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_4gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_4gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931897751": {
+    "ad_id": 931897751,
+    "title": "Оперативна память HyperX Impact DDR4 SO-DIMM 32GB (2×16GB) 2666MHz",
+    "description": "Комплект оперативної пам'яті HyperX Impact DDR4 для ноутбуків, 32 GB (2×16 GB). Можна придбати весь комплект за 5 500 грн або окремо по одному модулю (3000 грн за один). Два однакові модулі по 16 GB дозволяють працювати у двоканальному режимі. \n \nМожете пропонувати свою ціну. \n \nХарактеристики: \n \n0б'єм: 32 GB (2x16 GB) \n \nТип: DDR4 SO-DIMM \n \nЧастота: 2666 MHz (PC4-21300) \n \nТаймінги: CL15 \n \nНапруга: 1.2 V \n \nМодель: HX426S151B2/16 \n \nФормат: 260-pin SO-DIMM \n \nБренд: НуperX (Kingston) \n \nСтан: \n \nБ/в, повністю справна \n \nВикористовувалась у ноутбуці \n \nКомплект: 2 модулі по 16 GB \n \nПідійде для ноутбуків та міні-ПК із підтримкою DDR4 SO-DIMM 2666 MHz.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_32gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_32gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931898286": {
+    "ad_id": 931898286,
+    "title": "Kingston HyperX Predator DDR4 1x8GB 4133Mhz CL19 (HX441C19PB3/8)",
+    "description": "Швидка і надійна оперативна пам'ять DDR4 від Kingston. \n \nКупував новою в 2018 році в інтернет-магазині ASK.UA. \n \nСтан ідеальний, за увесь час взагалі ніяких проблем не було. \nБез проблем працювала в системі на своїх заявлених частотах (4133Mhz), розганяти не розганяв, так як її частота це максимальна частота яку підтримує мій процесор (core i5-7640x), таймінги також не чіпав. \n \nЯкщо є якісь запитання - запитуйтe, обов'язково відповім!",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_8gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_8gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931898337": {
+    "ad_id": 931898337,
+    "title": "Оперативна память для ноутбука DDR4 8 GB, ОЗУ, RAM SO-DIMM  DDR4 8GB",
+    "description": "Оперативна пам'ять SK hynix 8gb 2666 \nСтояла в ноуті, продаю по причині апгрейду",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_8gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_8gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "921679391": {
+    "ad_id": 921679391,
+    "title": "Игровая ОЗУ Veritech RGB DDR4 16GB (2x8GB) | Идеальное состояние",
+    "description": "Продам абсолютно новый комплект оперативной памяти Veritech RGB. Планки в использовании не были, доставались только один раз для проверки работоспособности и сделать фото (на фото видно, что всё горит и определяется корректно). \nОсновные преимущества: \n• Состояние: Новая вещь. Контакты чистые, без следов установки. \n• Премиальный дизайн: Стильные черные радиаторы и яркая RGB-подсветка по всей верхней грани. Выглядит очень дорого, идеально для игрового ПК. \n• Эффективное охлаждение: Массивные радиаторы отлично справляются с отводом тепла, память не греется даже в тяжелых играх. \n• Скорость: Это DDR4, объем 16 ГБ (комплект из двух планок по 8 ГБ). Работает в двухканальном режиме, обеспечивая максимальный FPS и быструю работу системы. \nХарактеристики: \n• Тип: DDR4 (для настольного ПК) \n• Объем: 16 ГБ (2x8 ГБ) \n• Частота: 3200 MHz \n• Особенности: Управляемая RGB подсветка, радиаторы охлаждения.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_16gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_16gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929161444": {
+    "ad_id": 929161444,
+    "title": "Goodram IRDM X DDR4 16 GB (2×8 GB) 3200 MHz CL16 – комплект,",
+    "description": "Продам комплект оперативної пам'яті Goodram IRDM X DDR4. \nХарактеристики: • Об'єм: 16 ГБ (2×8 ГБ) • Тип: DDR4 DIMM • Частота: 3200 МГц • Таймінги: CL16-20-20 • Напруга: 1.35 В • Формат: Dual Channel Kit • Радіатори червоного кольору • Lifetime Warranty (довічна гарантія від виробника) \nПам'ять повністю справна, працює без помилок. Підійде для сучасних платформ Intel та AMD. Відмінний варіант для ігор, роботи та повсякденного використання. \nКомплектація:  2 модулі по 8 ГБ  Оригінальні пластикові бокси \nПричина продажу: не використовується. \nМожлива перевірка при зустрічі. \nВідправлю OLX Доставкою (Нова пошта або Укрпошта) чи передам при особистій зустрічі. \nЦіна за комплект!",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr4_16gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr4_16gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "929161523": {
+    "ad_id": 929161523,
+    "title": "4 Gb DDR3 оперативна память",
+    "description": "Оперативка sodimm 4 Gb DDR3 2R×8 \nЗамінив на 8 Gb, відповідно ця не потрібна.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_4gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_4gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "873434241": {
+    "ad_id": 873434241,
+    "title": "Оперативная память Corsair 8 gb ddr3",
+    "description": "Одна из лучших оперативок Corsair ddr3. Одна планка памяти на 8 гиг. Что гораздо лучше чем 2 планки по 4гиг. Память с родной упаковкой.  \n \nПродажа по Днепру или олх доставкой.",
+    "expected_item_type": "ram",
+    "expected_component_name": "ram_ddr3_8gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_8gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "920054897": {
+    "ad_id": 920054897,
+    "title": "Винчестера 320 gb.12 шт.",
+    "description": "не путаем-разница между серверным и бытовым винчестером. \nнадёжность и выносливость.стабильно месяцами и годами непрырывно работать. \nразборка рабочих серверов-что на жёлтый метал что как запчасти..продажа ноутов и мини пк. \nоптом дешевле",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_320",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_320gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "848095773": {
+    "ad_id": 848095773,
+    "title": "Жосткий диск 250 Gb",
+    "description": "Жорсткий диск WD, об‘єм 250 Gb, SATA / 16MB Cashe",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_250gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_250gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "925481080": {
+    "ad_id": 925481080,
+    "title": "Жорсткий диск Seagate SkyHawk HDD 8TB 7200rpm 256MB ST8000VX0022 3.5 SATAIII",
+    "description": "Жорсткий у відмінному стані. \nСтояв виключно як файлосховище дизайнерського ПК \nПідходить для відеоспостереження. \nНарікань на роботу нема. \nВсе стабільно та без збоїв. \nМожна зробити будь-яку перевірку. \nВідправляю.Комісія ОЛХ на покупці \nМісткість накопичувача \n8 ТБ \nТип жорсткого диска \nВнутрішній \nІнтерфейс підключення \nSATAIII \nФорм-фактор \n3.5\" \nПризначення \nДля комп'ютера \nШвидкість обертання шпинделя \n7200 об/хв \nТехнологія \nHDD \nОбсяг буфера \n256 МБ \nКраїна-виробник \nКитай \nТайвань \nКолір \nСріблястий \nСередній час очікування \n4.16 мс \nШвидкість передавання даних \n210 МБ/c \nМаксимальна споживана потужність \n9 Вт \nНапрацювання на відмову \n1 мільйон годин \nФізичні розміри, вага \n146.99 x 101.85 x 26.11 мм, 780 г \nКод виробника \nST8000VX0022 \nКраїна реєстрації бренду \nСША",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_8tb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_8tb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931896632": {
+    "ad_id": 931896632,
+    "title": "Kingston sxs1000/2000g 2tb на запчастини",
+    "description": "Не бачить пк і ноутбук.Що саме з ним Незнаю,продаю як ж на запчастини або відновлення  \nВідправляю",
+    "expected_item_type": "storage",
+    "expected_component_name": "ssd_2tb",
+    "expected_socket": null,
+    "expected_has_defects": 1,
+    "system_snapshot": {
+      "component_name": "ssd_2tb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "929035460": {
+    "ad_id": 929035460,
+    "title": "Жесткий диск 3.5\" 1TB Toshiba 7200rpm 32MB DT01ACA100 SATA III",
+    "description": "Жесткий диск 3.5\" 1TB Toshiba 7200rpm 32MB DT01ACA100 SATA III \n \nолх доставки нет \n \nотправка в другой город при полной оплате на карту",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_1tb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_1tb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "605909840": {
+    "ad_id": 605909840,
+    "title": "Плата HDD жёсткого диска WD 2060-771672-004 REV A та інші",
+    "description": "Имеются платы и от других моделей HDD .  \nСПРАШИЫВЙТЕ ТУТ. \nВопросы просьба через почту  \nПлата HDD 2060-771672-004 REV A \nможет использоваться в WD3200BEVT , WD2500BEVT , WD1600BEVT, WD3200BPVT, WD6400BEVT, WD5000BEVT и др. \nв зависимости от прошивки. \nДля правильной работы диска необходимо перепрошить или перепаять микросхему памяти с вашего диска. У каждого диска прошивка обычно индивидуальна.  \nСамовывоз. \nОтправка ОЛХ доставкой.",
+    "expected_item_type": "other",
+    "expected_component_name": "none",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "rtx_2060",
+      "item_type": "gpu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931897933": {
+    "ad_id": 931897933,
+    "title": "SSD 256GB Prologix S380 M.2 2280 PCIe 3.0 x4 NVMe 3D TLC",
+    "description": "Ссд стояв в ноуті, в ідеальному стані, продаю по причині апгрейду \n \nМожу зробити будь-які тести",
+    "expected_item_type": "storage",
+    "expected_component_name": "ssd_256gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ssd_256gb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "755860309": {
+    "ad_id": 755860309,
+    "title": "HP HDD 1TB 2.5-inch SFF SATA 6Gb/s 7.2K RPM",
+    "description": "Опис: \nЖорсткий диск HP 1 ТБ 2,5 дюйма SFF SATA 6 Гбіт/с 7,2 тис. об/хв \n512n Midline (MDL) із можливістю гарячого підключення \nв G8 G9 G10 (Gen8 Gen9 Gen10)  \n \nPart Number(s) \nOption Part# 655710-B21 \nSmartBuy Part# 655710-S21 \nSpare Part# 656108-001 \nAssembly Part# 614829-003 \nModel# MM1000GBKAL \nModel# ST91000640NS \n \nТехнічні характеристики:\t \nКатегорія\t Жорсткий диск Proliant \nПідкатегорія\t 7,2 тис \nПокоління\t SATA SC \nНомер   \t 614829-003 \nФорм-фактор \t 2,5 дюйма \nЄмність\t 1000 ГБ \nРоз'єм\t 22-позиційний штекер Serial ATA (SATA). \nШвидкість передачі даних\t6G = 6 Гбіт/с (750 МБ/с) \nШвидкість шпинделя\t   7200 об/хв \nБайти/Сектор\t 512",
+    "expected_item_type": "storage",
+    "expected_component_name": "hdd_1tb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "hdd_1tb",
+      "item_type": "storage",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "911777890": {
+    "ad_id": 911777890,
+    "title": "Be Quiet Power Zone Z1-750W Bronze",
+    "description": "Повністю модульний блок живлення для потужної системи. \nПри офісних задачах чи невимогливих іграх (навантаження до 200 ват працює ледь чутно), при більшому навантаженні також тихий. \n \nУ комплекті: \n- сам блок живлення; \n- коробка; \n- комплект всіх кабелів (як на фото на коробці).",
+    "expected_item_type": "psu",
+    "expected_component_name": "750w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "750w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "772491898": {
+    "ad_id": 772491898,
+    "title": "Блок питания 300w",
+    "description": "Блок питания: Dts atx-450A \nМощность:300 w \nДоп. питание на видеокарту 6 pin \nНесколько раз чинился  \nКулер: cooler master",
+    "expected_item_type": "psu",
+    "expected_component_name": "300w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "300w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "872031330": {
+    "ad_id": 872031330,
+    "title": "Герметичний блок живлення Mean Well HLG-600H 24V 600W IP67",
+    "description": "Герметичний блок живлення Mean Well HLG-600H 24V 600W IP67 призначений для живлення пристроїв постійної напруги 24 В та тривалої потужності до 600 Вт. \nПристрій вирізняється серед аналогів суцільним алюмінієвим корпусом-радіатором, що дозволяє відводити тепло у важкодоступних місцях, двома окремими вихідними кабелями 14AWG для підключення пристоїв 24 В та окремою лінією 5 В. Струм навантаження до 25 А. Широкий діапазон вхідної напруги. \nВага складає приблизно 3800 грамів. Конкретно важкий. \n \nНовий. Не використовувався за призначенням.  \nПродаю через зміни у проекті. Наявне оригінальне пакування.  \n \nПовна специфікація та вартість є у офіціалів meanwell.kiev.ua.",
+    "expected_item_type": "psu",
+    "expected_component_name": "600w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "600w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "931897823": {
+    "ad_id": 931897823,
+    "title": "Блок живлення Vinga PSU-400-12 (400W)",
+    "description": "Продам полностью исправный блок питания. Могу доукомплектовать кабелем питания.",
+    "expected_item_type": "psu",
+    "expected_component_name": "400w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "400w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "926499605": {
+    "ad_id": 926499605,
+    "title": "Блок живлення модульний gamemax GM-700",
+    "description": "Повністю робочий блок живлення (80 Bronze, Silver і Platinum), продаю по причині оновлення відеокарти бо БЖ заслабкий для теперішньої збірки, а працював з: Ryzen 7800x та Radeon RX6600 (в даний момент теж продається) \nДуже тихий з купою захистів. \nМодульний, в комплекті 3 шлейфи: під додаткове живлення відеокарт, живлення дисків та SSD та 4-pin Molex на останньому фото упаковки є перелік. \nкупував на розетці 25.06.2020 року, зараз такий новий коштує від 3000грн \n \nhttps:// youtu.be/bIZmcRrWMrQ на цьому відео він працює в моєму ПК",
+    "expected_item_type": "psu",
+    "expected_component_name": "700w",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "700w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "869994241": {
+    "ad_id": 869994241,
+    "title": "Блок живлення Corsair CX750F RGB Black (750w) 80 Plus Bronze, RGB (Напівробочий, на запчастини)",
+    "description": "Блок живлення Corsair CX750F RGB Black в напів робочому стані, іноді запускаєтсья і працює, а іноді може просто не включитись. Що з ним невідомо. Продаю на запчастини по ціні кабелів. \n \nЦіна та оплата: \n \n1. ОЛХ доставка (ціна актуальна в оголошенні) \n2. Накладний платіж Нова пошта 2000грн \n3. На рахунок ФОП 2000грн (відправка Нова Пошта, Укрпошта Meest або Самовивоз) \n \nБез торгів будь ласка. Дякую за розуміння! \n \nКупуйте в перевірених продавців! \n \nМодульний \nСертифікат 80 PLUS Bronze \nЄ Регульована RGB підсвітка. \n \nКабелі в комплекті: \n1шт - 24пін \n2шт - Cpu 8pin (4+4) \n2шт - Pcie 8 pin (6+2) подвійні \n2шт - сата \n1шт - молекс \n1шт регулювання підсвіткою \n \nдетальній характеристики: \nwww.corsair.com/ru/ru/p/psu/cp-9020218-eu/cx-series-cx750f-rgb-750-watt-80-plus-bronze-certified-fully-modular-rgb-psu-eu-cp-9020218-eu?srsltid=AfmBOorgBt_FnEYnW5p-3O8-AcxdukMwimW-ie31xcPK0OFM6Fj-aCht",
+    "expected_item_type": "psu",
+    "expected_component_name": "750w",
+    "expected_socket": null,
+    "expected_has_defects": 1,
+    "system_snapshot": {
+      "component_name": "750w",
+      "item_type": "psu",
+      "socket": null,
+      "has_defects": 1
+    }
+  },
+  "927602565": {
+    "ad_id": 927602565,
+    "title": "Материнская плата B650M S2H новая",
+    "description": "Чеки и коробка.Продажа в свяхи покупкой второй более мощной материнки. \nполная гарантия.отправка олх доставка проценты лежат на получателе, \nкомиссия \nтелеграмм для связи \n \n2% + 20 грн. (не более 499 грн) \n \n-90 грн. \n \nЕсли покупатель выберет оплату наложенным платежом в отделении Новая Почта, с вас будет взиматься небольшая дополнительная комиссия: \n \n15 грн за заказы до 500 грн; \n \n20 грн за заказы от 501 до 1000 грн; \n \nКомиссия для заказов свыше 1000 грн отсутствует. \n \nИтого \n \n3 410 грн.",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "b650m",
+    "expected_socket": "am5",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "b650m",
+      "item_type": "motherboard",
+      "socket": "am5",
+      "has_defects": 0
+    }
+  },
+  "922535213": {
+    "ad_id": 922535213,
+    "title": "Материнська плата Gigabyte GA-H170-D3H (s1151, Intel H170, PCI-Ex16)",
+    "description": "Продаю материнську плату у відмінному стані. \nНе ремонтувалась, не паялась не перегрівалась \nПрацює як має бути \nПрацювала в парі з процесором 7700к (є в продажу). \nЗбалансований чіпсет, що дозволяє розганяти проци і озу, але коштує адекватних грошей. \nВ комплекті плата та заглушка \nВідправляю. ОЛХ комісія на покупці. \nНакладний без передплати, самовивіз вітається \nСокет \nSocket 1151 \nЧипсет (Північний міст) \nIntel H170 \nФормфактор \nATX \nПідтримка пам'яті \n4 x DDR4 DIMM; Кількість каналів 2 \nКількість роз'ємів M.2 (NGFF) \n1 шт \nПідтримка процесорів \nIntel Core i7/Core i5/Core i3/Pentium/Celeron 6-го покоління під сокет LGA1151 \nPCI Express x16 \n1 x PCI-E 3.0 x16 \n1 x PCI-E 3.0 x16 (x4) \nВбудоване відео \nЗ підтримкою відеоядра процесора \nМаксимальний обсяг оперативної пам'яті \n64 ГБ (2133 (O.C.) МГц) \nКонектор живлення \n1 x 24-pin ATX \n1 x 8-pin ATX 12 В \nUSB \n1 х USB 3.0 \nВбудоване аудіо \n7.1-канальний HDA кодек Realtek ALC1150 \nКількість роз'ємів SATA II \nНемає \nPCI Express x1 \n2 x PCI-E 3.0 x1 \nКонтролер RAID \n0 \n1 \n5 \n10 \nКількість роз'ємів SATA III \n6 шт \nКількість роз'ємів SATAe \nЗ SATAe інтерфейсом \nЗовнішні роз'єми \n1 x PS/2 порт для клавіатури та мишки \n4 x USB 3.0 \n2 x USB 2.0 \n1 x HDMI \n1 x D-Sub \n1 x DVI-D \n1 x RJ-45 LAN \n6 x Аудіороз'ємів \n \nВідеовиходи будуть працювати тільки в тоді, якщо процесор має вбудоване графічне ядро. \nФізичні розміри \n305 x 214 мм",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "h170",
+    "expected_socket": "lga1151",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "h170",
+      "item_type": "motherboard",
+      "socket": "lga1151",
+      "has_defects": 1
+    }
+  },
+  "884946732": {
+    "ad_id": 884946732,
+    "title": "Gigabyte Z690 Master  s1700",
+    "description": "Б\\В материнська плата \nGigabyte Z690 Aorus Master  \nБіос f32 \nКомплект: wifi антени",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "z690",
+    "expected_socket": "lga1700",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "z690",
+      "item_type": "motherboard",
+      "socket": "lga1700",
+      "has_defects": 0
+    }
+  },
+  "931896527": {
+    "ad_id": 931896527,
+    "title": "Материнська плата Asus PRIME B760M-A WiFi D4",
+    "description": "Стан біля ідеального, стояла в пк декілька місяців, на офіційній гарантії 36 місяців від магазину KTC (до 31.03.2029). Будь-які перевірки, по часу не обмежую. Повний заводський комплект. \n \nПишіть, відповідаю швидко. \n \nОбмін не цікавить.",
+    "expected_item_type": "motherboard",
+    "expected_component_name": "b760",
+    "expected_socket": "lga1700",
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "b760",
+      "item_type": "motherboard",
+      "socket": "lga1700",
+      "has_defects": 0
+    }
+  },
+  "923694409": {
+    "ad_id": 923694409,
+    "title": "Комплект Socket 1150: i3 4330, ASUS HB1M-E, 2x4 DDR3 4Gb",
+    "description": "Продам комплект socket 1150:  \n- Процесовр Intel i3 4330 \n- Материнська плата ASUS HB1M-E,  \n- Оперативна пам'ять 2x4 DDR3 4Gb \nВ хорошому стані, працює \n \nВ комплекті задня заглушка і диск з драйверами.",
+    "expected_item_type": "bundle",
+    "expected_component_name": "h81_i3_4330_8gb",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "ram_ddr3_8gb",
+      "item_type": "ram",
+      "socket": null,
+      "has_defects": 0
+    }
+  },
+  "923694441": {
+    "ad_id": 923694441,
+    "title": "Игровой комплект Материнская плата Gigabyte H110M + Intel Core i5-6400",
+    "description": "Продам отличный, полностью рабочий комплект (материнская плата + процессор + кулер). Система стояла в домашнем ПК, использовалась для учебы и нетребовательных игр. Никаких нюансов, перегревов или ремонтов не было. Любые проверки приветствуются. \nПроцессор: Intel Core i5-6400 (4 ядра / 4 потока, частота до 3.30 GHz). Холодный и стабильный чип. \nМатеринская плата: Gigabyte GA-H110M-S2HP-CF (Socket LGA1511). Качественная плата, обновлен самый свежий BIOS (версия F22f от 2024 года). Уже полностью готова к апгрейду на процессоры i7-6700 / i7-7700 без каких-либо прошивок! \nКомплект идеально подойдет для сборки бюджетного игрового ПК или бодрого рабочего компьютера. Продаю по причине перехода на другую платформу.==Комплект сейчас стоит в моем личном ПК, им пользуюсь каждый день. Перед отправкой все аккуратно сниму, очищу от пыли и упакую. Любые видеотесты работы работы могу записать по запросу перед отправкой",
+    "expected_item_type": "bundle",
+    "expected_component_name": "h110_i5_6400",
+    "expected_socket": null,
+    "expected_has_defects": 0,
+    "system_snapshot": {
+      "component_name": "i5_6400",
+      "item_type": "cpu",
+      "socket": null,
+      "has_defects": 1
+    }
+  }
+}

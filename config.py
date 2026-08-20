@@ -1,8 +1,8 @@
-import re
 import os
+import re
+from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
-from pathlib import Path
 from hardware_matchers import normalize_title
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -32,6 +32,7 @@ BANNED_KEYWORDS = [
     "прогріта", "після майнінгу", "відвал", "артефакти", "копія"
 ]
 
+
 def load_all_gpus_from_db():
     """Завантажує всі розпізнані відеокарти з таблиці gpu_specs."""
     try:
@@ -42,16 +43,12 @@ def load_all_gpus_from_db():
         print(f"⚠️ [CONFIG WARN] Не вдалося завантажити відеокарти з DB: {e}")
         return []
 
-# Динамічно завантажуємо відеокарти з бази замість великого масиву VIDEOCARDS
-DB_VIDEOCARDS = load_all_gpus_from_db()
-if DB_VIDEOCARDS:
-    VIDEOCARDS = DB_VIDEOCARDS
+VIDEOCARDS = load_all_gpus_from_db()
 
 
 def load_all_cpus_from_db():
-    """Завантажує всі 3200+ десктопних процесорів з таблиці cpu_specs."""
+    """Завантажує десктопні процесори з таблиці cpu_specs."""
     try:
-        # Витягуємо лише slugs та бренди
         res = supabase.table("cpu_specs").select("slug, brand, raw_name").execute()
         rows = res.data or []
         
@@ -61,11 +58,11 @@ def load_all_cpus_from_db():
 
         for row in rows:
             slug = row["slug"]
-            raw_name = row["raw_name"].lower()
+            raw_name = row.get("raw_name", "").lower()
 
             if "xeon" in raw_name:
                 xeon_list.append(slug)
-            elif row["brand"] == "AMD":
+            elif row.get("brand") == "AMD":
                 amd_list.append(slug)
             else:
                 intel_list.append(slug)
@@ -73,10 +70,8 @@ def load_all_cpus_from_db():
         return intel_list, amd_list, xeon_list
     except Exception as e:
         print(f"⚠️ [CONFIG WARN] Не вдалося завантажити процесори з DB: {e}")
-        # Резервні дефолтні значення, якщо немає інету
         return [], [], []
 
-# Динамічно завантажуємо списки при запуску проєкту
 INTEL_CPUS, AMD_CPUS, XEON_CPUS = load_all_cpus_from_db()
 
 MOTHERBOARDS = [
@@ -94,7 +89,7 @@ MOTHERBOARDS = [
     "760g", "770", "780g", "785g", "790x", "790fx", "870", "880g", "890gx", "890fx", "970", "990x", "990fx",
     "a55", "a58", "a68h", "a75", "a78", "a85x", "a88x",
     "a320", "b350", "x370", "b450", "x470", "a520", "b550", "x570",
-    "a620", "b650", "b650e", "x670", "x670e", "b840", "b850", "x870", "x870e"
+    "a620", "b650", "b650m", "x670", "x670e", "b840", "b850", "x870", "x870e"
 ]
 
 SOCKETS = [
@@ -107,7 +102,7 @@ SOCKETS = [
 ]
 
 CHIPSET_TO_SOCKET = {
-    "p45": "lga775", "g41": "lga775", "p35": "lga775",
+    "p45": "lga775", "g41": "lga775", "p35": "lga775", "g31": "lga775",
     "h61": "lga1155", "b75": "lga1155", "z77": "lga1155", "h77": "lga1155", "z68": "lga1155", "p67": "lga1155",
     "h81": "lga1150", "b85": "lga1150", "z87": "lga1150", "z97": "lga1150", "h97": "lga1150",
     "h110": "lga1151", "b150": "lga1151", "b250": "lga1151", "z170": "lga1151", "z270": "lga1151",
@@ -120,6 +115,66 @@ CHIPSET_TO_SOCKET = {
     "a320": "am4", "b350": "am4", "x370": "am4", "b450": "am4", "x470": "am4", "a520": "am4", "b550": "am4", "x570": "am4",
     "a620": "am5", "b650": "am5", "b650e": "am5", "x670": "am5", "x670e": "am5", "b840": "am5", "b850": "am5", "x870": "am5", "x870e": "am5"
 }
+
+
+def infer_cpu_socket(cpu_key: str) -> str | None:
+    """Визначає сокет за назвою процесора."""
+    k = cpu_key.lower().replace("-", "_")
+
+    # AMD Ryzen
+    if "ryzen" in k:
+        if any(f"_{gen}" in k for gen in ["7", "8", "9"]) and ("7500" in k or "7600" in k or "7700" in k or "7800" in k or "7900" in k or "7950" in k or "8500" in k or "8600" in k or "8700" in k or "9600" in k or "9700" in k or "9800" in k or "9900" in k or "9950" in k):
+            return "am5"
+        return "am4"
+
+    # AMD FX / Athlon
+    if k.startswith("fx_"):
+        return "am3+"
+    if "athlon_ii" in k or "athlon_x4" in k:
+        return "am3"
+
+    # Intel Core & Low-end
+    if any(k.startswith(p) for p in ["i3_", "i5_", "i7_", "i9_", "pentium_", "celeron_"]):
+        # 12, 13, 14 gen
+        if re.search(r"_(?:12|13|14)\d{3}", k) or "g6900" in k or "g7400" in k:
+            return "lga1700"
+        # 10, 11 gen
+        if re.search(r"_(?:10|11)\d{3}", k) or "g5900" in k or "g6400" in k:
+            return "lga1200"
+        # 8, 9 gen
+        if re.search(r"_[89]\d{3}", k) or "g4900" in k or "g5400" in k:
+            return "lga1151v2"
+        # 6, 7 gen
+        if re.search(r"_[67]\d{3}", k) or any(c in k for c in ["g3900", "g3930", "g4400", "g4560", "g4600"]):
+            return "lga1151"
+        # 4, 5 gen
+        if re.search(r"_[45]\d{3}", k) or any(c in k for c in ["g3220", "g3240", "g3250", "g3258", "g3420", "g1820", "g1840"]):
+            return "lga1150"
+        # 2, 3 gen
+        if re.search(r"_[23]\d{3}", k) or any(c in k for c in ["g530", "g620", "g630", "g840", "g850", "g860", "g1610", "g1620", "g2020", "g2030", "g2120", "g2130"]):
+            return "lga1155"
+        # 1 gen
+        if re.search(r"_[5-9]\d{2}\b", k):
+            return "lga1156"
+        # 775 legacy
+        if any(c in k for c in ["e3300", "e5300", "e5700", "e6500", "e7500", "e8400", "e8500", "q6600", "q8400", "q9400", "q9550"]):
+            return "lga775"
+
+    # Intel Xeon
+    if "xeon" in k:
+        if "v3" in k or "v4" in k or "2686" in k or "2678" in k or "2670_v3" in k:
+            return "lga2011-3"
+        if "v1" in k or "v2" in k or "2670" in k or "2689" in k or "2650" in k:
+            return "lga2011"
+        if "e3" in k:
+            if "v5" in k or "v6" in k:
+                return "lga1151"
+            if "v3" in k:
+                return "lga1150"
+            return "lga1155"
+
+    return None
+
 
 PSUS = [
     "200w", "240w", "250w", "300w", "350w", "380w", "385w", "400w", "420w", "430w", 
@@ -137,17 +192,12 @@ STORAGES = [
     "hdd_18tb", "hdd_20tb"
 ]
 
-
 RAMS = [
-    # DDR3
     "ram_ddr3_4gb", "ram_ddr3_8gb", "ram_ddr3_16gb",
-    # DDR4
     "ram_ddr4_4gb", "ram_ddr4_8gb", "ram_ddr4_16gb", "ram_ddr4_32gb", "ram_ddr4_64gb",
-    # DDR5
     "ram_ddr5_8gb", "ram_ddr5_16gb", "ram_ddr5_32gb", "ram_ddr5_48gb", "ram_ddr5_64gb", "ram_ddr5_96gb"
 ]
 
-# Генератори ключів для підтримуваних стародрукованих типів
 def generate_mb_keywords(mb_code: str) -> list[str]:
     variants = set()
     raw = mb_code.replace("_", " ")
@@ -167,11 +217,9 @@ def generate_mb_keywords(mb_code: str) -> list[str]:
 def generate_psu_keywords(psu_code: str) -> list[str]:
     variants = set()
     num = re.sub(r"\D", "", psu_code)
-    for unit in ["w", "вт", "ват", "watt", "wt", "в"]:
+    for unit in ["w", "вт", "ват", "watt", "wt"]:
         variants.add(f"{num}{unit}")
         variants.add(f"{num} {unit}")
-        variants.add(f"{num}{unit}.")
-        variants.add(f"{num} {unit}.")
     return list(variants)
 
 def generate_storage_keywords(st_code: str) -> list[str]:
@@ -190,11 +238,9 @@ def generate_storage_keywords(st_code: str) -> list[str]:
         variants.add(f"{cap_num} {unit} {t}")
     return list(variants)
 
-# --- СЛОВНИК СІТКИ ТОВАРІВ ---
 HARDWARE_TARGETS = {}
 
 def _register_simple(items_list: list[str], item_type: str, subcategory: str):
-    """Швидка реєстрація моделей GPU / CPU для Direct Lookup (O(1))."""
     for item in items_list:
         HARDWARE_TARGETS[item] = {
             "item_type": item_type,
@@ -202,7 +248,6 @@ def _register_simple(items_list: list[str], item_type: str, subcategory: str):
         }
 
 def _register_legacy_targets(items_list: list[str], item_type: str, subcategory: str, kw_generator):
-    """Реєстрація категорій, де поки використовується створювана картотека регулярних виразів."""
     for item in items_list:
         keywords = kw_generator(item)
         keywords_sorted = sorted(set(keywords), key=len, reverse=True)
@@ -214,19 +259,16 @@ def _register_legacy_targets(items_list: list[str], item_type: str, subcategory:
             "compiled_pattern": re.compile(pattern_str, re.IGNORECASE)
         }
 
-# Реєстрація нових компонентів (O(1))
 _register_simple(VIDEOCARDS, "gpu", "videokarty")
 _register_simple(INTEL_CPUS, "cpu", "protsessory")
 _register_simple(AMD_CPUS, "cpu", "protsessory")
 _register_simple(XEON_CPUS, "cpu", "protsessory")
 _register_simple(RAMS, "ram", "operativnaya-pamyat")
 
-# Реєстрація старого механізму для Motherboards, PSU, Storage
 _register_legacy_targets(MOTHERBOARDS, "motherboard", "materinskie-platy", generate_mb_keywords)
 _register_legacy_targets(PSUS, "psu", "bloki-pitaniya", generate_psu_keywords)
 _register_legacy_targets(STORAGES, "storage", "zhestkie-diski", generate_storage_keywords)
 
-# Для відкатних категорій (Motherboards, Storage, PSU)
 LEGACY_PRE_SORTED_TARGETS = [
     (k, v) for k, v in HARDWARE_TARGETS.items() if "compiled_pattern" in v
 ]

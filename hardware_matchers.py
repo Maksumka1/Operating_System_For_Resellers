@@ -2,8 +2,8 @@
 hardware_matchers.py
 
 Модуль для витягування апаратних ключів із назв товарів.
-Рефакторинг із фокусом на: читабельність, типізацію, масштабованість,
-базову безпеку (валідація вхідних даних, захист від ReDoS через обмеження довжини).
+Рефакторинг із фокусом на: точність екстракції, відсутність хибних спрацювань,
+правильну детекцію бандлів та розділення типів накопичувачів/ОЗП.
 """
 
 from __future__ import annotations
@@ -11,7 +11,8 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Pattern, Set
+from typing import Any, Dict, List, Optional, Pattern, Set
+
 
 # ---------------------------------------------------------------------------
 # Безпека та валідація
@@ -34,11 +35,8 @@ def _validate_title(title: Optional[str]) -> str:
         return ""
     if not isinstance(title, str):
         title = str(title)
-    
-    # Автоматично обрізаємо занадто довгий текст замість падіння помилкою
     if len(title) > SecurityLimits.MAX_TITLE_LENGTH:
         return title[:SecurityLimits.MAX_TITLE_LENGTH]
-        
     return title
 
 
@@ -72,7 +70,6 @@ class TextNormalizer:
 
     def normalize(self, raw_title: str) -> str:
         text = raw_title.lower()
-        
         text = re.sub(r"[`'’ʼ]", "'", text)
         text = text.translate(self._trans_table)
 
@@ -96,25 +93,14 @@ class TextNormalizer:
 # Базовий екстрактор
 # ---------------------------------------------------------------------------
 
-@dataclass(frozen=True)
-class ExtractionResult:
-    """Результат роботи екстрактора."""
-    category: str
-    keys: List[str]
-
-
 class BaseExtractor(ABC):
-    """Базовий клас для всіх апаратних екстракторів."""
-
     CATEGORY: str = "base"
 
     @abstractmethod
     def extract(self, normalized_title: str) -> List[str]:
-        """Повертає список унікальних ключів."""
         ...
 
     def _limit(self, items: List[str]) -> List[str]:
-        """Обмежує кількість результатів та дедублікує."""
         seen: Set[str] = set()
         out: List[str] = []
         for item in items:
@@ -131,7 +117,6 @@ class BaseExtractor(ABC):
 class GpuExtractor(BaseExtractor):
     CATEGORY = "gpu"
 
-    # --- patterns ---
     _VRAM = re.compile(r"\b(?P<vram_num>\d{1,2})\s*(?:gb|гб|г|g)\b", re.IGNORECASE)
 
     _NVIDIA = re.compile(
@@ -176,17 +161,16 @@ class GpuExtractor(BaseExtractor):
     def extract(self, normalized_title: str) -> List[str]:
         raw: List[str] = []
 
-        # NVIDIA
         for m in self._NVIDIA.finditer(normalized_title):
             g = m.groupdict()
             if g.get("bare_num"):
                 num = g["bare_num"]
                 suf = f"_{g['bare_suf']}" if g.get("bare_suf") else ""
                 prefix = "gtx" if num.startswith(("10", "16", "9", "7")) else "rtx"
-                raw.append(f"{prefix}_{num}{suf}")
+                raw.append(f"{prefix}_{num}{suf}".replace(" ", "_"))
             elif g.get("number_direct"):
-                raw.append(f"rtx_{g['number_direct']}_{g['suffix_direct']}")
-                raw.append(f"gtx_{g['number_direct']}_{g['suffix_direct']}")
+                raw.append(f"rtx_{g['number_direct']}_{g['suffix_direct']}".replace(" ", "_"))
+                raw.append(f"gtx_{g['number_direct']}_{g['suffix_direct']}".replace(" ", "_"))
             else:
                 family = g.get("family") or g.get("family_alt")
                 number = g.get("number") or g.get("number_alt")
@@ -197,7 +181,6 @@ class GpuExtractor(BaseExtractor):
                         key += f"_{suffix.replace(' ', '_')}"
                     raw.append(key)
 
-        # AMD RX
         for m in self._AMD_RX.finditer(normalized_title):
             g = m.groupdict()
             if g.get("pro_num"):
@@ -212,7 +195,6 @@ class GpuExtractor(BaseExtractor):
                         raw.append(f"{key}_{suffix}")
                     raw.append(key)
 
-        # Mining
         for m in self._MINING.finditer(normalized_title):
             g = m.groupdict()
             if g.get("p_series"):
@@ -220,7 +202,6 @@ class GpuExtractor(BaseExtractor):
             elif g.get("cmp_fam"):
                 raw.append(f"{g['cmp_fam']}_{g['cmp_num']}")
 
-        # AMD Legacy
         for m in self._AMD_LEGACY.finditer(normalized_title):
             g = m.groupdict()
             if g.get("hd_num"):
@@ -236,14 +217,12 @@ class GpuExtractor(BaseExtractor):
             elif g.get("vega_num"):
                 raw.append(f"rx_vega_{g['vega_num']}")
 
-        # Intel Arc
         for m in self._INTEL_ARC.finditer(normalized_title):
             g = m.groupdict()
             model = g.get("model") or g.get("model_alt")
             if model:
                 raw.append(f"arc_{model}")
 
-        # VRAM
         vram_match = self._VRAM.search(normalized_title)
         vram_val = vram_match.group("vram_num") if vram_match else None
 
@@ -278,7 +257,7 @@ class CpuExtractor(BaseExtractor):
     )
 
     _INTEL_LOW = re.compile(
-        r"\b(?:pentium|celeron)\s*(?:gold\s+)?(?P<p_code>[g|e]?\d{3,4}[a-z]?)\b"
+        r"\b(?:pentium|celeron)\s*(?:gold\s+)?(?P<p_code>[ge]?\d{3,4}[a-z]?)\b"
         r"|"
         r"\b(?P<p_num>5300)\s*dual\s*core\b",
         re.IGNORECASE,
@@ -350,13 +329,14 @@ class CpuExtractor(BaseExtractor):
                     raw.append(f"celeron_{code}")
                 else:
                     raw.append(f"pentium_g{code}")
+                    raw.append(f"celeron_g{code}")
             elif g.get("p_num"):
                 raw.append(f"pentium_e{g['p_num']}")
 
         for m in self._AMD_RYZEN.finditer(normalized_title):
             g = m.groupdict()
             number = g.get("number") or g.get("number_alt")
-            series = g.get("series") or g.get("series_alt") or self._infer_ryzen_series(number)
+            series = g.get("series") or g.get("series_alt") or (self._infer_ryzen_series(number) if number else "5")
             suffix = g.get("suffix") or g.get("suffix_alt") or ""
             if number:
                 raw.append(f"ryzen_{series}_{number}{suffix}")
@@ -397,26 +377,29 @@ class CpuExtractor(BaseExtractor):
 
 
 # ---------------------------------------------------------------------------
-# Motherboard Extractor
+# Motherboard Extractor (Точні межі \b, сортування за спаданням довжини)
 # ---------------------------------------------------------------------------
 
 class MotherboardExtractor(BaseExtractor):
     CATEGORY = "motherboard"
 
+    # Сортований перелік чипсетів (довші йдуть першими, щоб b850 не матчило як b85)
+    _CHIPSET_LIST = [
+        "x870e", "x670e", "b650e", "x870", "x670", "b850", "b840", "b650", "a620", "b550", "a520", "x570",
+        "x470", "b450", "x370", "b350", "a320", "990fx", "890fx", "890gx", "790fx", "790gx",
+        "z790", "h770", "b760", "z690", "h670", "b660", "h610", "z590", "h570", "b560", "h510",
+        "z490", "h470", "b460", "h410", "z390", "z370", "h370", "b365", "b360", "h310",
+        "z270", "h270", "b250", "z170", "h170", "b150", "h110", "z97", "h97", "z87", "h87", "b85", "h81",
+        "z77", "z75", "h77", "z68", "p67", "h67", "b75", "h61", "x299", "x99", "x79", "x58",
+        "p55", "p45", "p35", "p965", "g41", "g31", "tb360", "760g", "880g", "870", "770", "a88x", "a78", "a75", "a68h", "a58", "a55"
+    ]
+    
     _CHIPSET = re.compile(
-        r"\b(?P<intel_chip>z790|z690|z590|z490|z390|z370|z270|z170|z97|z87|z77|z75|z68|"
-        r"b760|b660|b560|b460|b365|b360|b250|b150|b85|b75|"
-        r"h770|h670|h610|h570|h510|h470|h410|h370|h310|h270|h170|h110|h97|h87|h81|h77|h67|h61|"
-        r"x299|x99|x79|x58|p67|p55|p45|p35|p965|g41|g31)(?:[a-z0-9_]*\b)?"
-        r"|"
-        r"\b(?P<amd_chip>x870e|x870|x670e|x670|x570|x470|x370|"
-        r"b850|b840|b650e|b650|b550|b450|b350|"
-        r"a620|a520|a320|a88x|a78|a75|a68h|a58|a55|"
-        r"990fx|990x|890fx|890gx|880g|870|790fx|790gx|790x|785g|780g|770|760g)(?:[a-z0-9_]*\b)?"
+        r"\b(?P<chip>" + "|".join(sorted(_CHIPSET_LIST, key=len, reverse=True)) + r")\b"
         r"|"
         r"\b(?P<amd_legacy_970>970)\s*(?:am3|am3\+|плата|материнка|motherboard|mb)\b"
         r"|"
-        r"\b(?P<custom_chip>n68c|n68|g6100|m68mt|m5a78l|m4a78lt|m4n68t|m2npv|p5kpl|p5qc|tb360)\b",
+        r"\b(?P<custom_chip>n68c|n68|g6100|m68mt|m5a78l|m4a78lt|m4n68t|m2npv|p5kpl|p5qc)\b",
         re.IGNORECASE,
     )
 
@@ -425,7 +408,7 @@ class MotherboardExtractor(BaseExtractor):
         "n68c": ["760g", "n68"],
         "m68mt": ["760g", "n68"],
         "m4n68t": ["760g", "n68"],
-        "m5a78l": ["760g", "780g"],
+        "m5a78l": ["760g", "m5a78l"],
         "m4a78lt": ["760g", "780g"],
         "p5kpl": ["g31"],
         "p5qc": ["p45"],
@@ -437,12 +420,7 @@ class MotherboardExtractor(BaseExtractor):
         raw: List[str] = []
         for m in self._CHIPSET.finditer(normalized_title):
             g = m.groupdict()
-            chip = (
-                g.get("intel_chip")
-                or g.get("amd_chip")
-                or g.get("amd_legacy_970")
-                or g.get("custom_chip")
-            )
+            chip = g.get("chip") or g.get("amd_legacy_970") or g.get("custom_chip")
             if not chip:
                 continue
             chip_clean = chip.lower()
@@ -461,11 +439,11 @@ class PsuExtractor(BaseExtractor):
     CATEGORY = "psu"
 
     _PSU = re.compile(
-        r"\b(?P<watt>\d{3,4})\s*(?:w|вт|ват|watt|wt|в)\b"
+        r"\b(?P<watt>\d{3,4})\s*(?:w|вт|ват|watt|wt)\b"
         r"|"
         r"\b(?:ctg|gpa|gpc|gps|gpx|iarena|task|element|proton|smart|core|vx|ud|bqt|aps|bdf|gpe|rs|kf|tx|hx|rm|cx|cv|sf|ssr|sp|gx|gm|gd|dq|pq|pn|fm|atx|mwe)\s*[-_]?\s*(?P<model_watt>\d{3,4})\b"
         r"|"
-        r"\b(?P<prefix_watt>\d{3,4})\s*(?:w|вт|ват)?\s*(?:chieftec|zalman|seasonic|corsair|be\s+quiet|aerocool|cougar|deepcool|msi|asus|gigabyte|vinga|emerson)\b",
+        r"\b(?P<prefix_watt>\d{3,4})\s*(?:w|вт|ват)?\s*(?:chieftec|zalman|seasonic|corsair|be\s+quiet|aerocool|cougar|deepcool|msi|asus|gigabyte|vinga|emerson|superflower)\b",
         re.IGNORECASE,
     )
 
@@ -487,7 +465,7 @@ class PsuExtractor(BaseExtractor):
 
 
 # ---------------------------------------------------------------------------
-# Storage Extractor
+# Storage Extractor (Ізоляція HDD від SSD та RAM)
 # ---------------------------------------------------------------------------
 
 class StorageExtractor(BaseExtractor):
@@ -503,32 +481,41 @@ class StorageExtractor(BaseExtractor):
     )
 
     _SSD = re.compile(
-        r"\b(?:ssd|ссд|nvme|m\.2|m2|evo|pro|patriot|kingston|apacer|goodram|netac)\b",
+        r"\b(?:ssd|ссд|nvme|m\.2|m2|evo|pro|patriot|kingston|apacer|goodram|netac|sxs1000|sn\d{3})\b",
         re.IGNORECASE,
     )
     _HDD = re.compile(
-        r"\b(?:hdd|хдд|жорстк|жестк|винчестер|seagate|barracuda|ironwolf|toshiba|hitachi|fujitsu|wd|western\s+digital)\b",
+        r"\b(?:hdd|хдд|жорстк|жестк|винчестер|seagate|barracuda|ironwolf|skyhawk|toshiba|hitachi|fujitsu|wd|western\s+digital|3\.5)\b",
+        re.IGNORECASE,
+    )
+    _RAM_EXCLUDE = re.compile(
+        r"\b(?:ddr\d?|ram|озу|пам'ять|память|оперативн\w*|dimm|sodimm)\b",
         re.IGNORECASE,
     )
     _NON_STORAGE = re.compile(
-        r"\b(?:карман|кишеня|салазки|caddy|контроллер|контролер|expander|плата|dvd|дискета|кабель|адаптер)\b",
+        r"\b(?:карман|кишеня|салазки|caddy|контроллер|контролер|expander|плата\s+hdd|плата\s+жорсткого|плата\s+жесткого|dvd|дискета|кабель|адаптер)\b",
         re.IGNORECASE,
     )
 
     def extract(self, normalized_title: str) -> List[str]:
-        if self._NON_STORAGE.search(normalized_title):
+        # Якщо в описі явно вказано ОЗП або аксесуари — ігноруємо
+        if self._NON_STORAGE.search(normalized_title) or self._RAM_EXCLUDE.search(normalized_title):
             return []
 
         raw: List[str] = []
         is_ssd = bool(self._SSD.search(normalized_title))
         is_hdd = bool(self._HDD.search(normalized_title))
-        types = []
-        if is_ssd:
-            types.append("ssd")
-        if is_hdd:
-            types.append("hdd")
-        if not types:
-            types = ["ssd", "hdd"]
+
+        # Визначаємо типи: пріоритет за чіткими маркерами
+        if is_hdd and not is_ssd:
+            types = ["hdd"]
+        elif is_ssd and not is_hdd:
+            types = ["ssd"]
+        elif is_hdd and is_ssd:
+            # Наприклад "Вінчестер SSD"
+            types = ["ssd"] if "ssd" in normalized_title or "ссд" in normalized_title else ["hdd"]
+        else:
+            types = ["hdd", "ssd"]
 
         for m in self._CAPACITY.finditer(normalized_title):
             g = m.groupdict()
@@ -561,7 +548,7 @@ class RamExtractor(BaseExtractor):
         re.IGNORECASE,
     )
     _NON_RAM = re.compile(
-        r"\b(?:кулер|радіαтор|радиатор|тримач|держатель|планка\s+кріплення)\b",
+        r"\b(?:кулер|радіатор|радиатор|тримач|держатель|планка\s+кріплення)\b",
         re.IGNORECASE,
     )
 
@@ -590,7 +577,7 @@ class RamExtractor(BaseExtractor):
 
 
 # ---------------------------------------------------------------------------
-# Bundle Detector
+# Bundle Detector (Виправлено перевірку target_items)
 # ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
@@ -602,11 +589,12 @@ class BundleResult:
 class BundleDetector:
     """Визначає, чи є товар комплектом (bundle) кількох компонентів."""
 
-    # Прибрано \b перед \+
     _BUNDLE_KEYWORDS = re.compile(
         r"\b(?:комплект|сет|set|збірка|сборка|мать\s*\+\s*проц|плата\s*\+\s*проц|проц\s*\+\s*мать|комплектом)\b"
         r"|"
-        r"(?:\+\s*(?:озу|ram|кулер|охлад|водянка|память|пам'ять|памяттю|оператива|бж|видеокарта|відеокарта))\b",
+        r"(?:\+\s*(?:озу|ram|кулер|охлад|водянка|память|пам'ять|памяттю|оператива|бж|видеокарта|відеокарта))\b"
+        r"|"
+        r"\+",
         re.IGNORECASE,
     )
 
@@ -615,10 +603,12 @@ class BundleDetector:
         gpu_extractor: Optional[GpuExtractor] = None,
         cpu_extractor: Optional[CpuExtractor] = None,
         mb_extractor: Optional[MotherboardExtractor] = None,
+        ram_extractor: Optional[RamExtractor] = None,
     ) -> None:
         self.gpu_ex = gpu_extractor or GpuExtractor()
         self.cpu_ex = cpu_extractor or CpuExtractor()
         self.mb_ex = mb_extractor or MotherboardExtractor()
+        self.ram_ex = ram_extractor or RamExtractor()
 
     def detect_from_extracted(
         self,
@@ -626,24 +616,50 @@ class BundleDetector:
         gpus: List[str],
         cpus: List[str],
         mbs: List[str],
-        hardware_targets: Optional[Dict[str, Set[str]]] = None,
+        rams: Optional[List[str]] = None,
+        hardware_targets: Optional[Dict[str, Any]] = None,
     ) -> Optional[BundleResult]:
-        """Приймає вже витягнуті списки комплектуючих, уникаючи повторного парсингу."""
+        rams = rams or []
+
+        # Якщо передано таргет-словник, перевіряємо валідність ключів
         if hardware_targets:
-            gpus = [c for c in gpus if c in hardware_targets.get("gpu", set())]
-            cpus = [c for c in cpus if c in hardware_targets.get("cpu", set())]
-            mbs = [c for c in mbs if c in hardware_targets.get("motherboard", set())]
+            if isinstance(next(iter(hardware_targets.values()), None), dict):
+                # Плаский словник: {target_name: {"item_type": ...}}
+                valid_gpus = {k for k, v in hardware_targets.items() if v.get("item_type") == "gpu"}
+                valid_cpus = {k for k, v in hardware_targets.items() if v.get("item_type") == "cpu"}
+                valid_mbs = {k for k, v in hardware_targets.items() if v.get("item_type") == "motherboard"}
+            else:
+                # Вкладений словник: {"gpu": {...}}
+                valid_gpus = set(hardware_targets.get("gpu", []))
+                valid_cpus = set(hardware_targets.get("cpu", []))
+                valid_mbs = set(hardware_targets.get("motherboard", []))
+
+            gpus = [c for c in gpus if c in valid_gpus]
+            cpus = [c for c in cpus if c in valid_cpus]
+            mbs = [c for c in mbs if c in valid_mbs]
 
         categories = sum(bool(x) for x in (gpus, cpus, mbs))
         has_keyword = bool(self._BUNDLE_KEYWORDS.search(normalized_title))
 
-        if categories >= 2 or (has_keyword and categories >= 1):
+        # Комплект якщо: >= 2 основних компонентів АБО 1 основний + RAM + ключове слово (+)
+        if has_keyword and (categories >= 1):
             primary_cpu = cpus[0] if cpus else None
             primary_mb = mbs[0] if mbs else None
             primary_gpu = gpus[0] if gpus else None
+            primary_ram = rams[0] if rams else None
 
-            parts = [p for p in (primary_cpu, primary_mb, primary_gpu) if p]
-            bundle_key = "bundle_" + "_".join(parts) if parts else "bundle_generic"
+            # Формуємо стандартизований ключ бандла
+            parts = []
+            if primary_mb:
+                parts.append(primary_mb)
+            if primary_cpu:
+                parts.append(primary_cpu)
+            if primary_gpu:
+                parts.append(primary_gpu)
+            if primary_ram:
+                parts.append(primary_ram)
+
+            bundle_key = "_".join(parts) if parts else "bundle_generic"
 
             return BundleResult(
                 bundle_key=bundle_key,
@@ -651,77 +667,25 @@ class BundleDetector:
                     "cpu": primary_cpu,
                     "motherboard": primary_mb,
                     "gpu": primary_gpu,
+                    "ram": primary_ram,
                 },
             )
         return None
 
     def detect(
-        self, normalized_title: str, hardware_targets: Optional[Dict[str, Set[str]]] = None
+        self, normalized_title: str, hardware_targets: Optional[Dict[str, Any]] = None
     ) -> Optional[BundleResult]:
-        """Окремий виклики детектора з витягуванням компонентів «на льоту»."""
         gpus = self.gpu_ex.extract(normalized_title)
         cpus = self.cpu_ex.extract(normalized_title)
         mbs = self.mb_ex.extract(normalized_title)
+        rams = self.ram_ex.extract(normalized_title)
         return self.detect_from_extracted(
-            normalized_title, gpus, cpus, mbs, hardware_targets
+            normalized_title, gpus, cpus, mbs, rams, hardware_targets
         )
 
 
 # ---------------------------------------------------------------------------
-# Фасад — єдиний точний вход
-# ---------------------------------------------------------------------------
-
-@dataclass(frozen=True)
-class HardwareProfile:
-    """Повний профіль товару."""
-    gpu: List[str] = field(default_factory=list)
-    cpu: List[str] = field(default_factory=list)
-    motherboard: List[str] = field(default_factory=list)
-    psu: List[str] = field(default_factory=list)
-    storage: List[str] = field(default_factory=list)
-    ram: List[str] = field(default_factory=list)
-    bundle: Optional[BundleResult] = None
-
-
-class HardwareMatcher:
-    """Головний клас: нормалізує заголовок і делегує витягування екстракторам."""
-
-    def __init__(self) -> None:
-        self.normalizer = TextNormalizer()
-        self.gpu_ex = GpuExtractor()
-        self.cpu_ex = CpuExtractor()
-        self.mb_ex = MotherboardExtractor()
-        self.psu_ex = PsuExtractor()
-        self.storage_ex = StorageExtractor()
-        self.ram_ex = RamExtractor()
-        self.bundle_detector = BundleDetector(
-            self.gpu_ex, self.cpu_ex, self.mb_ex
-        )
-
-    def match(self, title: str) -> HardwareProfile:
-        validated = _validate_title(title)
-        clean = self.normalizer.normalize(validated)
-
-        gpus = self.gpu_ex.extract(clean)
-        cpus = self.cpu_ex.extract(clean)
-        mbs = self.mb_ex.extract(clean)
-
-        # Детектор використовує вже готові результати
-        bundle = self.bundle_detector.detect_from_extracted(clean, gpus=gpus, cpus=cpus, mbs=mbs)
-
-        return HardwareProfile(
-            gpu=gpus,
-            cpu=cpus,
-            motherboard=mbs,
-            psu=self.psu_ex.extract(clean),
-            storage=self.storage_ex.extract(clean),
-            ram=self.ram_ex.extract(clean),
-            bundle=bundle,
-        )
-
-
-# ---------------------------------------------------------------------------
-# Глобальні функції для зворотної сумісності (Backward Compatibility API)
+# Backward Compatibility API
 # ---------------------------------------------------------------------------
 
 _default_normalizer = TextNormalizer()
@@ -731,10 +695,10 @@ _default_mb_ex = MotherboardExtractor()
 _default_psu_ex = PsuExtractor()
 _default_storage_ex = StorageExtractor()
 _default_ram_ex = RamExtractor()
+_default_bundle_detector = BundleDetector()
 
 
 def normalize_title(title: str) -> str:
-    """Нормалізує назву товару."""
     if not title:
         return ""
     validated = _validate_title(title)
@@ -751,51 +715,40 @@ def _safe_normalize(title: str) -> str:
 
 
 def extract_cpu(title: str) -> List[str]:
-    """Витягує CPU з назви."""
     clean = _safe_normalize(title)
     return _default_cpu_ex.extract(clean) if clean else []
 
 
 def extract_gpu(title: str) -> List[str]:
-    """Витягує GPU з назви."""
     clean = _safe_normalize(title)
     return _default_gpu_ex.extract(clean) if clean else []
 
 
 def extract_motherboard(title: str) -> List[str]:
-    """Витягує материнську плату з назви."""
     clean = _safe_normalize(title)
     return _default_mb_ex.extract(clean) if clean else []
 
 
 def extract_mb(title: str) -> List[str]:
-    """Аліас для extract_motherboard."""
     return extract_motherboard(title)
 
 
 def extract_psu(title: str) -> List[str]:
-    """Витягує БЖ з назви."""
     clean = _safe_normalize(title)
     return _default_psu_ex.extract(clean) if clean else []
 
 
 def extract_storage(title: str) -> List[str]:
-    """Витягує накопичувачі (SSD/HDD) з назви."""
     clean = _safe_normalize(title)
     return _default_storage_ex.extract(clean) if clean else []
 
 
 def extract_ram(title: str) -> List[str]:
-    """Витягує ОЗП з назви."""
     clean = _safe_normalize(title)
     return _default_ram_ex.extract(clean) if clean else []
 
 
-
-_default_bundle_detector = BundleDetector()
-
 def detect_bundle_components(title: str, hardware_targets: dict | None = None) -> dict | None:
-    """Сумісний аліас для витягування комплектів (bundle)."""
     clean = _safe_normalize(title)
     if not clean:
         return None

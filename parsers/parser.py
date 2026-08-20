@@ -222,21 +222,37 @@ class EnvConfig(BaseModel):
 
 @dataclass(frozen=True)
 class PcParserConfig:
-    """Бізнес-конфігурація парсера ПК."""
-
     category_id: str = "78"
+
+    strictly_forbidden_peripherals: tuple[str, ...] = field(default_factory=lambda: (
+        "колонки", "колонка", "акустика", "навушники", "наушники",
+        "гарнітура", "гарнитура", "рентген", "техніка б/у", "техника б/у"
+    ))
+
+    allowed_with_pc_peripherals: tuple[str, ...] = field(default_factory=lambda: (
+        "мишка", "мышка", "клавіатура", "клавиатура"
+    ))
+
     not_a_pc_words: tuple[str, ...] = field(default_factory=lambda: (
         "материнська плата", "материнская плата", "материнка", "мать",
         "блок питания", "блок живлення", "дбж", "ups", "бесперебойник",
         "оперативна память", "оперативная память", "озу", "ram",
         "кулер", "вентилятор", "корпус без", "видеокарта", "відеокарта",
         "процессор", "процесор", "ssd", "hdd", "жесткий диск", "жорсткий диск",
+        "лікар", "операці", "хвороба"
     ))
+
     pc_indicators: tuple[str, ...] = field(default_factory=lambda: (
-        "пк", "комп", "системний блок", "системный блок", "компьютер",
-        "комп'ютер", "системник", "pc", "mac", "блок", "сервер", "станці",
-        "workstation", "игров", "ігров", "ноутбук",
+        "пк", "pc", "комп", "компютер", "комп'ютер", "компьютер", "комьютер",
+        "системник", "системничек", "системний блок", "системный блок", "системний", "системный",
+        "моноблок", "imac", "mac mini", "macmini", "macstudio", "mac pro", "workstation",
+        "неттоп", "nettop", "ноутбук", "laptop", "ігровий", "игровой",
+        "optiplex", "thinkcentre", "elitedesk", "prodesk", "micro",
+        "тонкий клієнт", "тонкий клиент", "thin client", "raspberry", "мікрокомп",
+        "asic", "antminer", "майнер"
     ))
+
+
     headers: dict[str, str] = field(default_factory=lambda: {
         "accept": "application/json",
         "accept-language": "uk",
@@ -413,25 +429,82 @@ def clean_url(url: str) -> str:
     parsed = urlparse(url)
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
 
-
 def extract_price(price_val: str | int | float) -> int:
     if isinstance(price_val, (int, float)):
         return int(price_val)
     digits = re.sub(r"\D", "", str(price_val))
     return int(digits) if digits else 0
 
-
 def is_real_pc(title: str, cfg: PcParserConfig) -> tuple[bool, str]:
     if not title:
         return False, "empty_title"
 
-    title_lower = title.lower()
+    t = title.lower().replace("’", "'").replace("`", "'").replace("ʼ", "'").strip()
+
+    # 1. Спам та службові оголошення
+    if re.search(r"\b(відгукніться|важливо|увага|куплю|шукаю)\b", t):
+        return False, "spam_or_notice"
+
+    # 2. Послуги збірки та налаштування (блокуємо безумовно)
+    if re.search(r"\b(зберу|соберу|під замовлення|под заказ|на замовлення|на заказ|збірка пк|сборка пк)\b", t):
+        return False, "pc_assembly_service"
+
+    # 3. Набори офісної техніки / різного заліза
+    if re.search(r"комп[']?ютерн(ої|ой)\s+технік(и|а)", t):
+        return False, "bundle_of_misc_hardware"
+
+    # 4. Абсолютно заборонена периферія
+    for word in cfg.strictly_forbidden_peripherals:
+        if re.search(rf"\b{re.escape(word)}\b", t):
+            return False, f"strictly_forbidden: {word}"
+
+    # 5. Комплектуючі / деталі до ПК (з урахуванням одруківок типу "комлеткиуючі")
+    if re.search(r"\bком[пл]+[еиа-я]*[тк]+[уюіючих]+\s*(до|к)?\s*(пк|pc|комп)", t):
+        return False, "parts_bundle_for_pc"
+
+    # 6. Детекція компонентів заліза
+    has_cpu = bool(re.search(r"(ryzen|i[3579]-?\d{4,5}|xeon|core\s*i[3579]|pentium|celeron|\b2020m\b|\ba[468]-?\d{4}\b|\bm[1234]\b)", t))
+    has_gpu = bool(re.search(r"(gtx\s*\d{3,4}|rtx\s*\d{3,4}|rx\s*\d{3,4}|radeon|quadro|\b1060\b|\b1070\b|\b1080\b|\b1050\b|\b3080\b|\b3060\b|\b3070\b|\b4060\b|geforce)", t))
+    has_ram_or_ssd = bool(re.search(r"(ddr[345]|\d+\s*gb|\d+\s*гб|ssd|nvme|m\.2|\b500\b|\b240\b|\b256\b|\b16\b|\b32\b|\b4tb\b)", t))
+
+    # 7. Базові індикатори ПК
+    has_pc_indicator = any(
+        re.search(rf"(?<![a-zа-яіїєґ0-9]){re.escape(ind)}", t)
+        for ind in cfg.pc_indicators
+    )
+
+    # 8. Обробка комплектів (ПК + монітор / девайси)
+    if re.search(r"\b(комплект[а-яіїєґ]*|проц\+)\b", t):
+        # Якщо це окремий апгрейд-набір без корпусу/відеокарти — блокуємо
+        is_real_pc_bundle = has_pc_indicator and (has_gpu or any(ind in t for ind in ("системний блок", "системный блок", "компьютер", "комп'ютер", "компютер", "пк")))
+        if not is_real_pc_bundle:
+            return False, "parts_bundle_or_service"
+
+    # 9. Клавіатури / мишки без чіткого індикатора ПК
+    for word in cfg.allowed_with_pc_peripherals:
+        if re.search(rf"\b{re.escape(word)}\b", t):
+            if not has_pc_indicator:
+                return False, f"peripheral_without_pc: {word}"
+
+    # 10. ПК за конфігурацією заліза
+    is_spec_pc = (has_cpu and has_gpu) or (has_cpu and has_ram_or_ssd and has_pc_indicator) or (has_gpu and has_ram_or_ssd and has_pc_indicator)
+
+    # 11. Окремі відеокарти
+    if has_gpu and not has_cpu and not has_pc_indicator:
+        return False, "standalone_gpu"
+
+    # 12. Окремі процесори
+    if has_cpu and not has_gpu and not has_pc_indicator and not is_spec_pc:
+        return False, "standalone_cpu"
+
+    # 13. Заборонені запчастини
     for bad_word in cfg.not_a_pc_words:
-        if bad_word in title_lower:
-            if title_lower.startswith(bad_word):
-                return False, f"starts_with_banned_word: {bad_word}"
-            if not any(indicator in title_lower for indicator in cfg.pc_indicators):
-                return False, f"banned_word_without_pc_indicator: {bad_word}"
+        if bad_word in t and not (has_pc_indicator or is_spec_pc):
+            return False, f"banned_word_without_pc_indicator: {bad_word}"
+
+    # 14. Відсутність ключових слів
+    if not (has_pc_indicator or is_spec_pc):
+        return False, "no_pc_keywords_or_hardware"
 
     return True, "valid_pc"
 

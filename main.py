@@ -589,30 +589,28 @@ class PipelineOrchestrator:
             ),
         )
 
-        # 5. Продавці та конкуренти
-        results = await asyncio.gather(
-            self._runner.run(
-                "SELLER_ANALYZER",
-                seller_analyzer.main_async,
-                db_lock=asyncio.Lock(),
-            ),
-            self._runner.run(
-                "COMPETITOR_FINDER",
-                competitor_finder.main_async,
-                db_lock=asyncio.Lock(),
-            ),
+        # 5. Продавці (миттєвий аналіз та бродкаст)
+        updated_seller_ids = await self._runner.run(
+            "SELLER_ANALYZER",
+            seller_analyzer.main_async,
+            db_lock=asyncio.Lock(),
         )
 
-        updated_seller_ids, updated_comp_ids = results[0], results[1]
-        all_updated = list(set((updated_seller_ids or []) + (updated_comp_ids or [])))
+        if updated_seller_ids:
+            seller_rows = await self._repo.fetch_active_ads(updated_seller_ids[:50])
+            if seller_rows:
+                await self._runner.run(
+                    "WEBSOCKET_BROADCAST",
+                    self._broadcaster.send,
+                    seller_rows,
+                )
 
-        if all_updated:
-            rows = await self._repo.fetch_active_ads(all_updated)
-            await self._runner.run(
-                "WEBSOCKET_BROADCAST",
-                self._broadcaster.send,
-                rows,
-            )
+        # 6. Конкуренти ПК
+        await self._runner.run(
+            "COMPETITOR_FINDER",
+            competitor_finder.main_async,
+            db_lock=asyncio.Lock(),
+        )
 
     def shutdown(self) -> None:
         self._shutdown.set()

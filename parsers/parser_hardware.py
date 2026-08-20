@@ -36,6 +36,8 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
 from supabase import Client, create_client
 
+from config import infer_cpu_socket
+
 try:
     import structlog
     _HAS_STRUCTLOG = True
@@ -50,7 +52,14 @@ if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
 try:
-    from config import CHIPSET_TO_SOCKET, HARDWARE_TARGETS, LEGACY_PRE_SORTED_TARGETS, SOCKETS, STATS_FILE
+    from config import (
+        CHIPSET_TO_SOCKET,
+        HARDWARE_TARGETS,
+        LEGACY_PRE_SORTED_TARGETS,
+        SOCKETS,
+        STATS_FILE,
+        infer_cpu_socket,
+    )
     from hardware_matchers import (
         detect_bundle_components,
         extract_cpu,
@@ -68,6 +77,9 @@ except ImportError as e:
     SOCKETS = getattr(sys.modules.get("config"), "SOCKETS", [])
     CHIPSET_TO_SOCKET = getattr(sys.modules.get("config"), "CHIPSET_TO_SOCKET", {})
     STATS_FILE = Path("stats.json")
+
+    def infer_cpu_socket(k: str) -> str | None:
+        return None
 
     def normalize_title(t: str) -> str:
         return t.lower()
@@ -92,7 +104,6 @@ except ImportError as e:
 
     def extract_ram(t: str) -> list[str]:
         return []
-
 
 # ===========================================================================
 # 0. OBSERVABILITY — Logging, Metrics, Tracing
@@ -337,13 +348,14 @@ BROKEN_PATTERN = re.compile(
 
 CLEAN_PATTERNS = re.compile(
     r"(?:"
-    r"без\s+(?:будь-яких\s+|будь\s+яких\s+)?(?:проблем|дефект\w*|артефакт\w*|ремонт\w*|нюанс\w*)|"
-    r"без\s+майнинга\s+и\s+ремонтов|"
-    r"не\s+(?:був|были?|было)\s+в\s+ремонт\w*|"
+    r"без\s+(?:будь-яких\s+|будь\s+яких\s+)?(?:проблем|дефект\w*|артефакт\w*|ремонт\w*|нюанс\w*|помилок|ошибок)|"
+    r"без\s+(?:майнингу|майнинга|ремонтів|ремонтов|нарікань|нареканий)|"
+    r"не\s+(?:був|были?|было|має|имеет)\s+(?:в\s+)?(?:ремонт\w*|дефект\w*|нюанс\w*)|"
     r"в\s+ремонт\w*\s+не\s+(?:був|был)|"
     r"не\s+ремонтував\w*|не\s+ремонтировал\w*|не\s+вскрывался\w*|не\s+розбирався|"
-    r"дефект\w*\s+(?:не|нет)\s+\w*|"
-    r"без\s+физических\s+повреждений"
+    r"(?:дефект\w*|нюанс\w*|проблем\w*)\s+(?:не|нет|відсутні|отсутствуют)|"
+    r"тести?\s+без\s+(?:помилок|ошибок|артефакт\w*)|"
+    r"без\s+фізичних\s+пошкоджень|без\s+физических\s+повреждений"
     r")",
     re.IGNORECASE,
 )
@@ -383,8 +395,15 @@ def detect_socket(
         pattern = r"(?<![a-z0-9])" + re.escape(sock.lower().replace("-", " ")) + r"(?![a-z0-9])"
         if re.search(pattern, full_text.replace("-", " ")):
             return sock.replace("socket", "lga").lower()
+
+    # 1. Пошук через чіпсет материнської плати
     mb_key = component_name.lower().replace("_", "")
-    return chipset_map.get(mb_key)
+    sock_from_mb = chipset_map.get(mb_key)
+    if sock_from_mb:
+        return sock_from_mb
+
+    # 2. Пошук через модель процесора
+    return infer_cpu_socket(component_name)
 
 
 def match_ad_to_hardware_target(title: str, target_items_for_type: dict | None = None) -> tuple[str, dict] | None:
