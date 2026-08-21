@@ -88,7 +88,7 @@ class AppConfig:
 
     server_port: int = 8000
     server_host: str = "127.0.0.1"
-    websocket_url: str = "http://localhost:8000/api/trigger-new-ad"
+    websocket_url: str = os.getenv("WEBSOCKET_URL", "http://127.0.0.1:8000/api/trigger-new-ad")
 
     iteration_pause_sec: float = 20.0
     error_pause_sec: float = 10.0
@@ -646,7 +646,6 @@ async def main() -> None:
     formatter = ResultFormatter()
     runner = ModuleRunner(logger, formatter)
     broadcaster = BroadcastService(config, logger)
-    server = WebServerManager(config, logger)
 
     orchestrator = PipelineOrchestrator(
         config=config,
@@ -667,10 +666,6 @@ async def main() -> None:
         except (AttributeError, NotImplementedError):
             pass
 
-    # Запуск сервера
-    server.start()
-    atexit.register(server.stop)
-
     # Фонові задачі
     bg_manager = BackgroundTaskManager(runner, config, orchestrator._shutdown)
     bg_tasks = [
@@ -683,7 +678,6 @@ async def main() -> None:
     finally:
         for t in bg_tasks:
             t.cancel()
-        server.stop()
         logger.log(
             f"🛑 **[{logger._now()}]** Зупинка оркестратора.\n",
             "INFO",

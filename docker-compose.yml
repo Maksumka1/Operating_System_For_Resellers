@@ -1,0 +1,65 @@
+services:
+  # 1. FastAPI Web Server
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edge_feed_backend
+    restart: unless-stopped
+    command: uvicorn server.server:app --host 0.0.0.0 --port 8000 --workers 1
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - app_network
+    expose:
+      - "8000"
+
+  # 2. 24/7 Async Orchestrator (Parsers + Analyzers)
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edge_feed_orchestrator
+    restart: unless-stopped
+    command: python main.py
+    env_file:
+      - .env
+    environment:
+      # Перевизначаємо адресу бродкасту на внутрішній docker-сервіс
+      - WEBSOCKET_URL=http://backend:8000/api/trigger-new-ad
+    volumes:
+      - ./data:/app/data
+      - ./debug:/app/debug
+      - ./logs:/app/logs
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+  # 3. Caddy Reverse Proxy (Auto SSL + Routing)
+  caddy:
+    image: caddy:2-alpine
+    container_name: edge_feed_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
