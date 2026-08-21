@@ -1,0 +1,35 @@
+name: Continuous Deployment (CD)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            cd /opt/edge-feed
+            
+            echo "Оновлення репозиторію..."
+            git pull origin main
+            
+            echo "Перезбірка та перезапуск контейнерів..."
+            docker compose up -d --build
+            
+            echo "Очищення застарілих docker-образів..."
+            docker image prune -f
+            
+            echo "Деплой успішно завершено!"
