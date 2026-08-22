@@ -1,5 +1,5 @@
 # Заміни api.yourdomain.com на свій справжній піддомен
-api.yourdomain.com {
+api.maksimkaa.online {
     # Проксування всіх REST API та WebSocket на контейнер backend
     reverse_proxy backend:8000 {
         # Збільшений таймаут для довготривалих WebSocket з'єднань
