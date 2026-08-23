@@ -210,7 +210,7 @@ class EnvConfig(BaseModel):
     pages_to_parse: int = Field(default=1, ge=1, le=20)
     impersonate_browser: str = Field(default="chrome124")
     stats_file: Path = Field(default=Path("stats.json"))
-    websocket_trigger_url: str = Field(default="http://localhost:8000/api/trigger-new-ad")
+    websocket_trigger_url: str = os.getenv("WEBSOCKET_URL", "http://127.0.0.1:8000/api/trigger-new-ad")
 
     @field_validator("supabase_url")
     @classmethod
