@@ -78,7 +78,7 @@ class PcAdRecord(BaseModel):
     ad_id: int = Field(gt=0)
     title: str = Field(default="")
     description: str | None = Field(default=None)
-    price: int = Field(gt=0)
+    price: int = Field(default=0, ge=0)
     url: str | None = Field(default=None)
 
     @property
@@ -293,6 +293,7 @@ class SupabasePcAdRepository(PcAdRepository):
                     .select("ad_id, title, description, price, url")
                     .eq("item_type", "pc")
                     .eq("status", "active")
+                    .gt("price", 1000)
                     .or_("has_defects.eq.0,has_defects.is.null")
                     .is_("estimated_fair_price", "null")
                     .order("created_at_olx", desc=True)
