@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import secrets
 import httpx
 from datetime import datetime, timedelta, timezone
@@ -433,8 +434,25 @@ async def get_ads(
             query = query.gte("created_at_olx", threshold)
 
         if search_query.strip():
-            sq = search_query.strip()
-            query = query.ilike("title", f"%{sq}%")
+            sq = search_query.strip().lower().replace("-", "_").replace(" ", "_")
+            
+            # Якщо користувач шукає конкретну модель (наприклад rx_6600, rtx_3060, i7_7700)
+            is_hardware_code = bool(re.match(r"^(?:rx|rtx|gtx|i[3579]|ryzen|r[3579])_\w+", sq))
+            
+            if is_hardware_code:
+                query = query.or_(
+                    f"gpu_detected.eq.{sq},"
+                    f"cpu_detected.eq.{sq},"
+                    f"component_name.eq.{sq},"
+                    f"title.ilike.% {search_query.strip()} %,"
+                    f"title.ilike.{search_query.strip()} %,"
+                    f"title.ilike.% {search_query.strip()}"
+                )
+            else:
+                # Звичайний текстовий пошук по тайтлу
+                query = query.ilike("title", f"%{search_query.strip()}%")
+
+
 
         if min_seller_deals > 0:
             query = query.gte("seller_successful_deals", min_seller_deals)

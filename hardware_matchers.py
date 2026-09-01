@@ -176,24 +176,23 @@ class GpuExtractor(BaseExtractor):
                 number = g.get("number") or g.get("number_alt")
                 suffix = g.get("suffix") or g.get("suffix_alt")
                 if family and number:
-                    key = f"{family}_{number}"
-                    if suffix:
-                        key += f"_{suffix.replace(' ', '_')}"
-                    raw.append(key)
+                    suf_clean = f"_{suffix.strip().replace(' ', '_').lower()}" if suffix else ""
+                    raw.append(f"{family}_{number}{suf_clean}")
+
 
         for m in self._AMD_RX.finditer(normalized_title):
             g = m.groupdict()
             if g.get("pro_num"):
                 raw.append(f"w{g['pro_num']}")
-                raw.append(f"rx_w{g['pro_num']}")
             else:
                 number = g.get("number") or g.get("number_alt")
                 suffix = g.get("suffix") or g.get("suffix_alt")
                 if number:
                     key = f"rx_{number}"
                     if suffix:
-                        raw.append(f"{key}_{suffix}")
-                    raw.append(key)
+                        raw.append(f"{key}_{suffix.lower()}")
+                    else:
+                        raw.append(key)
 
         for m in self._MINING.finditer(normalized_title):
             g = m.groupdict()
@@ -318,7 +317,8 @@ class CpuExtractor(BaseExtractor):
                 number = g.get("number") or g.get("number_alt")
                 suffix = g.get("suffix") or g.get("suffix_alt") or ""
                 if brand and number:
-                    raw.append(f"{brand}_{number}{suffix}")
+                    suf_clean = suffix.strip().lower()
+                    raw.append(f"{brand}_{number}{suf_clean}")
 
         for m in self._INTEL_LOW.finditer(normalized_title):
             g = m.groupdict()
