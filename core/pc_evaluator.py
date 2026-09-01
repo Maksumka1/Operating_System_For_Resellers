@@ -312,10 +312,10 @@ class SupabasePcAdRepository(PcAdRepository):
         if not evaluations:
             return 0
 
-        # Єдиний пакетний список для upsert
+        # Формуємо записи, додаючи обов'язкові поля для сумісності з upsert
         records_to_upsert = []
         for ev in evaluations:
-            records_to_upsert.append({
+            record = {
                 "ad_id": ev.ad_id,
                 "seller_price_clean": ev.seller_price_clean,
                 "gpu_detected": ev.gpu_detected,
@@ -339,17 +339,27 @@ class SupabasePcAdRepository(PcAdRepository):
                 "saving_percent": ev.saving_percent,
                 "deal_status": ev.deal_status,
                 "evaluated_at": ev.evaluated_at,
-            })
-        def _upsert() -> None:
+            }
+            records_to_upsert.append(record)
+
+        def _batch_update() -> None:
             self._client.table("ads").upsert(records_to_upsert, on_conflict="ad_id").execute()
 
         try:
-            await asyncio.to_thread(_upsert)
+            await asyncio.to_thread(_batch_update)
             self._logger.info("evaluations_upserted_successfully: count=%s", len(records_to_upsert))
             return len(records_to_upsert)
         except Exception as exc:
-            self._logger.error("evaluations_upsert_failed: %s", str(exc))
-            return 0
+            self._logger.warning("direct_upsert_failed_trying_patch: %s", str(exc))
+            try:
+                for rec in records_to_upsert:
+                    target_id = rec.pop("ad_id")
+                    self._client.table("ads").update(rec).eq("ad_id", target_id).execute()
+                self._logger.info("evaluations_patch_fallback_success: count=%s", len(records_to_upsert))
+                return len(records_to_upsert)
+            except Exception as patch_exc:
+                self._logger.error("evaluations_all_update_methods_failed: %s", str(patch_exc))
+                return 0
 
 
 # ---------------------------------------------------------------------------
