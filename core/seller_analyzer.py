@@ -316,7 +316,7 @@ class SupabaseSellerRepository(SellerRepository):
     async def fetch_unchecked_sellers(self) -> list[SellerRawData]:
         def _fetch() -> list[dict[str, Any]]:
             try:
-                # 🛡️ Беремо до 50 продавців за ітерацію
+                # Беремо до 50 продавців за ітерацію
                 resp = (
                     self._client.table("ads")
                     .select("ad_id, seller_id, seller_uuid, seller_created_at, seller_type")
@@ -352,15 +352,16 @@ class SupabaseSellerRepository(SellerRepository):
             for up in updates
         ]
 
-        def _upsert() -> None:
-            self._client.table("ads").upsert(payload_list, on_conflict="ad_id").execute()
+        def _execute_rpc() -> int:
+            res = self._client.rpc("bulk_update_seller_metrics", {"p_updates": payload_list}).execute()
+            return res.data if res.data is not None else 0
 
         try:
-            await asyncio.to_thread(_upsert)
-            self._logger.info("sellers_upserted_successfully: count=%s", len(payload_list))
-            return len(payload_list)
+            updated_count = await asyncio.to_thread(_execute_rpc)
+            self._logger.info("sellers_updated_via_rpc: count=%s", updated_count)
+            return updated_count
         except Exception as exc:
-            self._logger.error("sellers_upsert_failed: %s", str(exc))
+            self._logger.error("sellers_rpc_update_failed: %s", str(exc))
             return 0
 
 
