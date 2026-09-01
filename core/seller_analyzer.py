@@ -314,8 +314,9 @@ class SupabaseSellerRepository(SellerRepository):
         self._logger = _get_logger(__name__)
 
     async def fetch_unchecked_sellers(self) -> list[SellerRawData]:
-        def _fetch_page(offset: int, limit: int) -> list[dict[str, Any]]:
+        def _fetch() -> list[dict[str, Any]]:
             try:
+                # 🛡️ Беремо до 50 продавців за ітерацію
                 resp = (
                     self._client.table("ads")
                     .select("ad_id, seller_id, seller_uuid, seller_created_at, seller_type")
@@ -323,68 +324,44 @@ class SupabaseSellerRepository(SellerRepository):
                     .neq("seller_id", "failed")
                     .eq("status", "active")
                     .eq("seller_checked", 0)
-                    .range(offset, offset + limit - 1)
+                    .order("created_at_olx", desc=True)
+                    .limit(50)
                     .execute()
                 )
                 return resp.data or []
             except Exception as exc:
-                self._logger.error("fetch_unchecked_sellers_failed", offset=offset, error=str(exc))
+                self._logger.error("fetch_unchecked_sellers_failed: %s", str(exc))
                 return []
 
-        all_records: list[SellerRawData] = []
-        offset = 0
-        page_size = 1000
-
-        while True:
-            rows = await asyncio.to_thread(_fetch_page, offset, page_size)
-            if not rows:
-                break
-
-            for row in rows:
-                try:
-                    all_records.append(SellerRawData.model_validate(row))
-                except Exception:
-                    self._logger.warning("invalid_seller_record_skipped", ad_id=row.get("ad_id"))
-
-            if len(rows) < page_size:
-                break
-            offset += page_size
-
-        return all_records
+        rows = await asyncio.to_thread(_fetch)
+        return [SellerRawData.model_validate(r) for r in rows if r.get("ad_id")]
 
     async def update_seller_analysis_batch(self, updates: list[SellerAnalysisResult], batch_size: int) -> int:
         if not updates:
             return 0
 
-        from collections import defaultdict
-        by_payload: dict[tuple[int, str, str, str], list[int]] = defaultdict(list)
-        for up in updates:
-            key = (up.successful_deals, up.seller_rating, up.seller_type, up.seller_risk)
-            by_payload[key].append(up.ad_id)
-
-        updated_total = 0
-        for (deals, rating, s_type, risk), ids in by_payload.items():
-            payload = {
-                "seller_successful_deals": deals,
-                "seller_rating": rating,
-                "seller_type": s_type,
-                "seller_risk_score": risk,
+        payload_list = [
+            {
+                "ad_id": up.ad_id,
+                "seller_successful_deals": up.successful_deals,
+                "seller_rating": up.seller_rating,
+                "seller_type": up.seller_type,
+                "seller_risk_score": up.seller_risk,
                 "seller_checked": 1,
             }
-            for i in range(0, len(ids), batch_size):
-                batch = ids[i : i + batch_size]
+            for up in updates
+        ]
 
-                def _update(batch_ids: list[int]) -> None:
-                    self._client.table("ads").update(payload).in_("ad_id", batch_ids).execute()
+        def _upsert() -> None:
+            self._client.table("ads").upsert(payload_list, on_conflict="ad_id").execute()
 
-                try:
-                    await asyncio.to_thread(_update, batch)
-                    updated_total += len(batch)
-                    self._logger.info("seller_batch_updated", count=len(batch), risk=risk, type=s_type)
-                except Exception as exc:
-                    self._logger.error("seller_batch_failed", error=str(exc), batch_size=len(batch))
-
-        return updated_total
+        try:
+            await asyncio.to_thread(_upsert)
+            self._logger.info("sellers_upserted_successfully: count=%s", len(payload_list))
+            return len(payload_list)
+        except Exception as exc:
+            self._logger.error("sellers_upsert_failed: %s", str(exc))
+            return 0
 
 
 # ---------------------------------------------------------------------------

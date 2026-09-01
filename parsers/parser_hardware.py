@@ -296,10 +296,18 @@ class SupabaseAdsRepository(AdsRepository):
         self._logger = _get_logger(__name__, trace)
 
     async def fetch_seen_urls(self) -> set[str]:
+        from datetime import datetime, timedelta, timezone
+
         def _fetch() -> set[str]:
             try:
-                resp = self._client.table("ads").select("url").execute()
-                return {row["url"] for row in (resp.data or [])}
+                two_days_ago = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
+                resp = (
+                    self._client.table("ads")
+                    .select("url")
+                    .gte("created_at_olx", two_days_ago)
+                    .execute()
+                )
+                return {row["url"] for row in (resp.data or []) if row.get("url")}
             except Exception as exc:
                 self._logger.error("fetch_seen_urls_failed: %s", str(exc))
                 return set()
@@ -308,7 +316,7 @@ class SupabaseAdsRepository(AdsRepository):
         result = await asyncio.to_thread(_fetch)
         await self._metrics.time("db_fetch_urls", time.monotonic() - t0)
         await self._metrics.inc("db_fetch_urls_count", len(result))
-        self._logger.info("seen_urls_loaded: count=%s", len(result))
+        self._logger.info("seen_urls_loaded (last 48h): count=%s", len(result))
         return result
 
     async def upsert_ads(self, ads: list[ParsedAd]) -> int:

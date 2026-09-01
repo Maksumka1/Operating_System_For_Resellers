@@ -286,7 +286,7 @@ class SupabasePcAdRepository(PcAdRepository):
         self._logger = _get_logger(__name__)
 
     async def fetch_unrated_pcs(self, config: PcEvaluatorConfig) -> list[PcAdRecord]:
-        def _fetch_page(offset: int, limit: int) -> list[dict[str, Any]]:
+        def _fetch() -> list[dict[str, Any]]:
             try:
                 resp = (
                     self._client.table("ads")
@@ -295,101 +295,60 @@ class SupabasePcAdRepository(PcAdRepository):
                     .eq("status", "active")
                     .or_("has_defects.eq.0,has_defects.is.null")
                     .is_("estimated_fair_price", "null")
-                    .range(offset, offset + limit - 1)
+                    .order("created_at_olx", desc=True)
+                    .limit(100)
                     .execute()
                 )
                 return resp.data or []
             except Exception as exc:
-                self._logger.error("unrated_pcs_fetch_failed", offset=offset, error=str(exc))
+                self._logger.error("unrated_pcs_fetch_failed: %s", str(exc))
                 return []
 
-        all_records: list[PcAdRecord] = []
-        offset = 0
-
-        while True:
-            rows = await asyncio.to_thread(_fetch_page, offset, config.page_size)
-            if not rows:
-                break
-
-            for row in rows:
-                try:
-                    all_records.append(PcAdRecord.model_validate(row))
-                except Exception:
-                    self._logger.warning(
-                        "invalid_pc_record_skipped",
-                        ad_id=row.get("ad_id"),
-                    )
-
-            if len(rows) < config.page_size:
-                break
-            offset += config.page_size
-
-        return all_records
+        rows = await asyncio.to_thread(_fetch)
+        return [PcAdRecord.model_validate(r) for r in rows if r.get("ad_id")]
 
     async def update_evaluations(self, evaluations: list[PcEvaluationResult], batch_size: int) -> int:
         if not evaluations:
             return 0
 
-        from collections import defaultdict
-
-        # Групуємо за payload щоб мінімізувати запити
-        by_payload: dict[tuple, list[int]] = defaultdict(list)
+        # Єдиний пакетний список для upsert
+        records_to_upsert = []
         for ev in evaluations:
-            key = (
-                ev.seller_price_clean,
-                ev.gpu_detected, ev.cpu_detected,
-                ev.gpu_market_price, ev.cpu_market_price,
-                ev.mb_detected, ev.mb_market_price,
-                ev.ram_detected, ev.ram_market_price,
-                ev.psu_detected, ev.psu_market_price,
-                ev.storage_detected, ev.storage_market_price,
-                ev.estimated_fair_price, ev.saving_uah, ev.saving_percent,
-                ev.deal_status, ev.evaluated_at,
-            )
-            by_payload[key].append(ev.ad_id)
+            records_to_upsert.append({
+                "ad_id": ev.ad_id,
+                "seller_price_clean": ev.seller_price_clean,
+                "gpu_detected": ev.gpu_detected,
+                "cpu_detected": ev.cpu_detected,
+                "gpu_market_price": ev.gpu_market_price,
+                "cpu_market_price": ev.cpu_market_price,
+                "mb_detected": ev.mb_detected,
+                "motherboard_detected": ev.mb_detected,
+                "mb_market_price": ev.mb_market_price,
+                "motherboard_market_price": ev.mb_market_price,
+                "ram_detected": ev.ram_detected,
+                "ram_market_price": ev.ram_market_price,
+                "psu_detected": ev.psu_detected,
+                "psu_market_price": ev.psu_market_price,
+                "storage_detected": ev.storage_detected,
+                "ssd_detected": ev.storage_detected,
+                "storage_market_price": ev.storage_market_price,
+                "ssd_market_price": ev.storage_market_price,
+                "estimated_fair_price": ev.estimated_fair_price,
+                "saving_uah": ev.saving_uah,
+                "saving_percent": ev.saving_percent,
+                "deal_status": ev.deal_status,
+                "evaluated_at": ev.evaluated_at,
+            })
+        def _upsert() -> None:
+            self._client.table("ads").upsert(records_to_upsert, on_conflict="ad_id").execute()
 
-        updated_total = 0
-
-        for payload_tuple, ad_ids in by_payload.items():
-            payload = {
-                "seller_price_clean": payload_tuple[0],
-                "gpu_detected": payload_tuple[1],
-                "cpu_detected": payload_tuple[2],
-                "gpu_market_price": payload_tuple[3],
-                "cpu_market_price": payload_tuple[4],
-                "mb_detected": payload_tuple[5],
-                "motherboard_detected": payload_tuple[5],
-                "mb_market_price": payload_tuple[6],
-                "motherboard_market_price": payload_tuple[6],
-                "ram_detected": payload_tuple[7],
-                "ram_market_price": payload_tuple[8],
-                "psu_detected": payload_tuple[9],
-                "psu_market_price": payload_tuple[10],
-                "storage_detected": payload_tuple[11],
-                "ssd_detected": payload_tuple[11],
-                "storage_market_price": payload_tuple[12],
-                "ssd_market_price": payload_tuple[12],
-                "estimated_fair_price": payload_tuple[13],
-                "saving_uah": payload_tuple[14],
-                "saving_percent": payload_tuple[15],
-                "deal_status": payload_tuple[16],
-                "evaluated_at": payload_tuple[17],
-            }
-
-            for i in range(0, len(ad_ids), batch_size):
-                batch = ad_ids[i : i + batch_size]
-
-                def _update(batch_ids: list[int]) -> None:
-                    self._client.table("ads").update(payload).in_("ad_id", batch_ids).execute()
-
-                try:
-                    await asyncio.to_thread(_update, batch)
-                    updated_total += len(batch)
-                    self._logger.info("evaluation_batch_updated", count=len(batch), status=payload_tuple[16])
-                except Exception as exc:
-                    self._logger.error("evaluation_batch_failed", error=str(exc), batch_size=len(batch))
-
-        return updated_total
+        try:
+            await asyncio.to_thread(_upsert)
+            self._logger.info("evaluations_upserted_successfully: count=%s", len(records_to_upsert))
+            return len(records_to_upsert)
+        except Exception as exc:
+            self._logger.error("evaluations_upsert_failed: %s", str(exc))
+            return 0
 
 
 # ---------------------------------------------------------------------------
