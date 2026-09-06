@@ -434,22 +434,28 @@ async def get_ads(
             query = query.gte("created_at_olx", threshold)
 
         if search_query.strip():
-            sq = search_query.strip().lower().replace("-", "_").replace(" ", "_")
-            
-            # Якщо користувач шукає конкретну модель (наприклад rx_6600, rtx_3060, i7_7700)
-            is_hardware_code = bool(re.match(r"^(?:rx|rtx|gtx|i[3579]|ryzen|r[3579])_\w+", sq))
-            
-            if is_hardware_code:
-                query = query.or_(
-                    f"gpu_detected.eq.{sq},"
-                    f"cpu_detected.eq.{sq},"
-                    f"component_name.eq.{sq},"
-                    f"title.ilike.% {search_query.strip()} %,"
-                    f"title.ilike.{search_query.strip()} %,"
-                    f"title.ilike.% {search_query.strip()}"
-                )
+            raw_sq = search_query.strip().lower()
+            sq = re.sub(r"[\s\-]+", "_", raw_sq)
+
+            is_gpu_code = bool(re.match(r"^(?:rx|rtx|gtx|arc|gt|hd|r[579]|vega)_\w+", sq))
+            is_cpu_code = bool(re.match(r"^(?:i[3579]|ryzen_[3579]|r[3579]|core_ultra|xeon|fx|athlon)_\w+", sq))
+            is_component_code = is_gpu_code or is_cpu_code or bool(re.match(r"^(?:b\d{3}|z\d{3}|x\d{3}|h\d{3}|a\d{3}|ram_\w+|ssd_\w+|hdd_\w+)", sq))
+
+            if is_component_code:
+                conditions = [
+                    f"component_name.eq.{sq}",
+                ]
+                
+                if category in ("pc", "all"):
+                    if is_gpu_code:
+                        conditions.append(f"gpu_detected.eq.{sq}")
+                    if is_cpu_code:
+                        conditions.append(f"cpu_detected.eq.{sq}")
+
+                # Якщо вказано конкретний тип заліза (наприклад, category='gpu'), ПК взагалі відсікаються
+                query = query.or_(",".join(conditions))
             else:
-                # Звичайний текстовий пошук по тайтлу
+                # Звичайний текстовий пошук по словах
                 query = query.ilike("title", f"%{search_query.strip()}%")
 
 

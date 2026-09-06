@@ -161,25 +161,28 @@ class GpuExtractor(BaseExtractor):
     def extract(self, normalized_title: str) -> List[str]:
         raw: List[str] = []
 
+        # 1. NVIDIA
         for m in self._NVIDIA.finditer(normalized_title):
             g = m.groupdict()
             if g.get("bare_num"):
                 num = g["bare_num"]
-                suf = f"_{g['bare_suf']}" if g.get("bare_suf") else ""
+                suf = f"_{g['bare_suf'].strip().replace(' ', '_').lower()}" if g.get("bare_suf") else ""
                 prefix = "gtx" if num.startswith(("10", "16", "9", "7")) else "rtx"
-                raw.append(f"{prefix}_{num}{suf}".replace(" ", "_"))
+                raw.append(f"{prefix}_{num}{suf}")
             elif g.get("number_direct"):
-                raw.append(f"rtx_{g['number_direct']}_{g['suffix_direct']}".replace(" ", "_"))
-                raw.append(f"gtx_{g['number_direct']}_{g['suffix_direct']}".replace(" ", "_"))
+                suf = f"_{g['suffix_direct'].strip().replace(' ', '_').lower()}"
+                num = g["number_direct"]
+                raw.append(f"rtx_{num}{suf}")
+                raw.append(f"gtx_{num}{suf}")
             else:
                 family = g.get("family") or g.get("family_alt")
                 number = g.get("number") or g.get("number_alt")
                 suffix = g.get("suffix") or g.get("suffix_alt")
                 if family and number:
                     suf_clean = f"_{suffix.strip().replace(' ', '_').lower()}" if suffix else ""
-                    raw.append(f"{family}_{number}{suf_clean}")
+                    raw.append(f"{family.lower()}_{number}{suf_clean}")
 
-
+        # 2. AMD Radeon RX
         for m in self._AMD_RX.finditer(normalized_title):
             g = m.groupdict()
             if g.get("pro_num"):
@@ -190,10 +193,14 @@ class GpuExtractor(BaseExtractor):
                 if number:
                     key = f"rx_{number}"
                     if suffix:
-                        raw.append(f"{key}_{suffix.lower()}")
+                        suf_clean = suffix.strip().lower()
+                        raw.append(f"{key}_{suf_clean}")
                     else:
-                        raw.append(key)
+                        # Додаємо базову версію ТІЛЬКИ якщо в назві немає XT/GRE
+                        if not re.search(rf"\brx\s*{number}\s*(?:xtx|xt|gre)\b", normalized_title):
+                            raw.append(key)
 
+        # 3. Mining
         for m in self._MINING.finditer(normalized_title):
             g = m.groupdict()
             if g.get("p_series"):
@@ -201,27 +208,31 @@ class GpuExtractor(BaseExtractor):
             elif g.get("cmp_fam"):
                 raw.append(f"{g['cmp_fam']}_{g['cmp_num']}")
 
+        # 4. AMD Legacy
         for m in self._AMD_LEGACY.finditer(normalized_title):
             g = m.groupdict()
             if g.get("hd_num"):
                 key = f"hd_{g['hd_num']}"
                 if g.get("hd_suf"):
-                    raw.append(f"{key}_{g['hd_suf']}")
-                raw.append(key)
+                    raw.append(f"{key}_{g['hd_suf'].lower()}")
+                else:
+                    raw.append(key)
             elif g.get("r_fam") and g.get("r_num"):
-                key = f"{g['r_fam']}_{g['r_num']}"
+                key = f"{g['r_fam'].lower()}_{g['r_num']}"
                 if g.get("r_suf"):
-                    key += f"_{g['r_suf']}"
+                    key += f"_{g['r_suf'].lower()}"
                 raw.append(key)
             elif g.get("vega_num"):
                 raw.append(f"rx_vega_{g['vega_num']}")
 
+        # 5. Intel Arc
         for m in self._INTEL_ARC.finditer(normalized_title):
             g = m.groupdict()
             model = g.get("model") or g.get("model_alt")
             if model:
-                raw.append(f"arc_{model}")
+                raw.append(f"arc_{model.lower()}")
 
+        # VRAM binding
         vram_match = self._VRAM.search(normalized_title)
         vram_val = vram_match.group("vram_num") if vram_match else None
 
@@ -229,7 +240,6 @@ class GpuExtractor(BaseExtractor):
         for key in raw:
             if vram_val:
                 final.append(f"{key}_{vram_val}gb")
-                final.append(f"{key}_{vram_val}_gb")
             final.append(key)
 
         return self._limit(final)
