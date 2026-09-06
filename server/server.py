@@ -216,9 +216,9 @@ def verify_internal_secret(x_internal_secret: str = Header(None, alias="X-Intern
 class NewAdModel(BaseModel):
     id: Union[int, str, None] = None
     ad_id: Union[int, str, None] = None
-    url: str = Field(..., max_length=2048)
-    title: str = Field(..., max_length=500)
-    description: str | None = Field(default="", max_length=10000)
+    url: str = Field(..., max_length=4096)
+    title: str = Field(..., max_length=2000)
+    description: str | None = Field(default="", max_length=20000)
     price: float | int | None = 0
     seller_price_clean: float | int | None = None
     item_type: str | None = "unknown"
@@ -668,7 +668,7 @@ async def get_component_competitors(
 @limiter.limit("300/minute")
 async def trigger_new_ad(
     request: Request,
-    payload: Union[List[NewAdModel], NewAdModel] = Body(..., max_length=500),
+    payload: Union[List[NewAdModel], NewAdModel] = Body(...),
 ) -> dict[str, str]:
     if isinstance(payload, list):
         for ad in payload:

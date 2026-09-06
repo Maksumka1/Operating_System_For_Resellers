@@ -312,54 +312,19 @@ class SupabasePcAdRepository(PcAdRepository):
         if not evaluations:
             return 0
 
-        # Формуємо записи, додаючи обов'язкові поля для сумісності з upsert
-        records_to_upsert = []
-        for ev in evaluations:
-            record = {
-                "ad_id": ev.ad_id,
-                "seller_price_clean": ev.seller_price_clean,
-                "gpu_detected": ev.gpu_detected,
-                "cpu_detected": ev.cpu_detected,
-                "gpu_market_price": ev.gpu_market_price,
-                "cpu_market_price": ev.cpu_market_price,
-                "mb_detected": ev.mb_detected,
-                "motherboard_detected": ev.mb_detected,
-                "mb_market_price": ev.mb_market_price,
-                "motherboard_market_price": ev.mb_market_price,
-                "ram_detected": ev.ram_detected,
-                "ram_market_price": ev.ram_market_price,
-                "psu_detected": ev.psu_detected,
-                "psu_market_price": ev.psu_market_price,
-                "storage_detected": ev.storage_detected,
-                "ssd_detected": ev.storage_detected,
-                "storage_market_price": ev.storage_market_price,
-                "ssd_market_price": ev.storage_market_price,
-                "estimated_fair_price": ev.estimated_fair_price,
-                "saving_uah": ev.saving_uah,
-                "saving_percent": ev.saving_percent,
-                "deal_status": ev.deal_status,
-                "evaluated_at": ev.evaluated_at,
-            }
-            records_to_upsert.append(record)
+        payload = [e.model_dump() for e in evaluations]
 
-        def _batch_update() -> None:
-            self._client.table("ads").upsert(records_to_upsert, on_conflict="ad_id").execute()
+        def _execute_rpc() -> int:
+            res = self._client.rpc("bulk_update_pc_evaluations", {"p_updates": payload}).execute()
+            return res.data if res.data is not None else 0
 
         try:
-            await asyncio.to_thread(_batch_update)
-            self._logger.info("evaluations_upserted_successfully: count=%s", len(records_to_upsert))
-            return len(records_to_upsert)
+            updated = await asyncio.to_thread(_execute_rpc)
+            self._logger.info("evaluations_updated_via_rpc: count=%s", updated)
+            return updated
         except Exception as exc:
-            self._logger.warning("direct_upsert_failed_trying_patch: %s", str(exc))
-            try:
-                for rec in records_to_upsert:
-                    target_id = rec.pop("ad_id")
-                    self._client.table("ads").update(rec).eq("ad_id", target_id).execute()
-                self._logger.info("evaluations_patch_fallback_success: count=%s", len(records_to_upsert))
-                return len(records_to_upsert)
-            except Exception as patch_exc:
-                self._logger.error("evaluations_all_update_methods_failed: %s", str(patch_exc))
-                return 0
+            self._logger.error("evaluations_rpc_failed: %s", str(exc))
+            return 0
 
 
 # ---------------------------------------------------------------------------
