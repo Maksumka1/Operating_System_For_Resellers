@@ -140,8 +140,6 @@ class HardwareExtractor(ABC):
 
 
 class HardwareMatchersExtractor(HardwareExtractor):
-    """Адаптер для модуля hardware_matchers."""
-
     def __init__(
         self,
         hardware_targets: frozenset[str],
@@ -166,6 +164,22 @@ class HardwareMatchersExtractor(HardwareExtractor):
         for c in candidates:
             if c in self._targets:
                 return c
+            
+        for c in candidates:
+            alt_keys = []
+            if "1000gb" in c:
+                alt_keys.append(c.replace("1000gb", "1tb"))
+            if "1tb" in c:
+                alt_keys.append(c.replace("1tb", "1000gb"))
+            if "_gb" in c:
+                alt_keys.append(c.replace("_gb", "gb"))
+            if "gb" in c and not c.endswith("_gb"):
+                alt_keys.append(c.replace("gb", "_gb"))
+
+            for alt in alt_keys:
+                if alt in self._targets:
+                    return alt
+
         return None
 
     def extract(self, text: str) -> ExtractedComponents:

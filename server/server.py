@@ -88,7 +88,10 @@ PUBLIC_AD_COLUMNS = (
     "id,ad_id,url,title,description,price,seller_price_clean,item_type,component_name,"
     "socket,city,created_at_olx,photo_url,all_photos,has_defects,pc_category,seller_name,"
     "seller_rating,seller_successful_deals,seller_risk_score,estimated_fair_price,"
-    "competitor_price,saving_uah,saving_percent,deal_status,evaluated_at"
+    "competitor_price,saving_uah,saving_percent,deal_status,evaluated_at,"
+    "gpu_detected,cpu_detected,mb_detected,motherboard_detected,ram_detected,psu_detected,"
+    "storage_detected,ssd_detected,gpu_market_price,cpu_market_price,mb_market_price,"
+    "motherboard_market_price,ram_market_price,psu_market_price,storage_market_price,ssd_market_price"
 )
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
