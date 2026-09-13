@@ -38,6 +38,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from supabase import Client, create_client
+from services.telegram_notifier import TelegramNotifierService, handle_category_toggle
 
 load_dotenv()
 
@@ -54,6 +55,8 @@ INTERNAL_SECRET_KEY = os.getenv("INTERNAL_SECRET_KEY", "").strip()
 MONOBANK_TOKEN = os.getenv("MONOBANK_TOKEN", "").strip()
 APP_PUBLIC_URL = os.getenv("APP_PUBLIC_URL", "http://localhost:8000").strip().rstrip("/")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").strip().rstrip("/")
+
+tg_service = TelegramNotifierService(os.getenv("TELEGRAM_BOT_TOKEN", ""))
 
 ALLOWED_ORIGINS_RAW = os.getenv(
     "ALLOWED_ORIGINS", 
@@ -372,6 +375,56 @@ async def get_my_subscription(
         "trial_end": sub.get("trial_end"),
         "subscription_end": sub.get("subscription_end"),
     }
+
+
+@app.post("/api/telegram/webhook")
+async def telegram_webhook(request: Request):
+    """Обробляє натискання кнопок та команди вибору категорій у боті."""
+    data = await request.json()
+
+    if "callback_query" in data:
+        cq = data["callback_query"]
+        chat_id = cq["from"]["id"]
+        category = cq["data"].replace("toggle_", "")
+        
+        updated_categories = await handle_category_toggle(chat_id, category)
+        
+        text = f"Оновлено! Ваші активні категорії: {', '.join(updated_categories).upper()}"
+        async with httpx.AsyncClient() as client:
+            await client.post(
+                f"{tg_service.api_url}/answerCallbackQuery",
+                json={"callback_query_id": cq["id"], "text": f"Перемкнуто: {category.upper()}"}
+            )
+            await client.post(
+                f"{tg_service.api_url}/sendMessage",
+                json={"chat_id": chat_id, "text": text}
+            )
+        return {"ok": True}
+
+    message = data.get("message", {})
+    text = message.get("text", "")
+    chat_id = message.get("chat", {}).get("id")
+
+    if text.startswith("/start") or text.startswith("/categories"):
+        keyboard = {
+            "inline_keyboard": [
+                [{"text": "GPU", "callback_data": "toggle_gpu"}, {"text": "CPU", "callback_data": "toggle_cpu"}],
+                [{"text": "RAM", "callback_data": "toggle_ram"}, {"text": "SSD", "callback_data": "toggle_storage"}],
+                [{"text": "Готові ПК", "callback_data": "toggle_pc"}, {"text": "БЖ", "callback_data": "toggle_psu"}]
+            ]
+        }
+        async with httpx.AsyncClient() as client:
+            await client.post(
+                f"{tg_service.api_url}/sendMessage",
+                json={
+                    "chat_id": chat_id,
+                    "text": "Оберіть категорії, за якими хочете отримувати вигідні пропозиції:",
+                    "reply_markup": keyboard
+                }
+            )
+
+    return {"ok": True}
+
 
 
 @app.get("/api/ads")

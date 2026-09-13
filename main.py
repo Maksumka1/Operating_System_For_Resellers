@@ -6,19 +6,12 @@ main.py — Асинхронний Оркестратор 24/7
   • AIMD Rate Limiter з DATADOME захистом
   • Graceful shutdown
   • Фонові демони (архів + прайси)
-  • Запуск FastAPI + Broadcast
-
-Покращення:
-  • Класова архітектура, типізація
-  • Базова безпека (валідація, обмеження)
-  • Конфігурація через dataclass
-  • Відсутність глобального mutable-стану
+  • Запуск FastAPI + Broadcast (Websocket + Telegram)
 """
 
 from __future__ import annotations
 
 import asyncio
-import atexit
 import inspect
 import logging
 import os
@@ -28,14 +21,14 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Awaitable, Callable, List, Optional, Union
 
 import requests
 from dotenv import load_dotenv
 from supabase import Client, create_client
 
 # ---------------------------------------------------------------------------
-# 0. ENV & PATH SETUP (як в оригіналі)
+# 0. ENV & PATH SETUP
 # ---------------------------------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -50,9 +43,10 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY", "")
 OLX_PROXY_URL = os.getenv("OLX_PROXY_URL", "") or None
 INTERNAL_SECRET_KEY = os.getenv("INTERNAL_SECRET_KEY", "").strip()
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 
 # ---------------------------------------------------------------------------
-# 1. MODULE IMPORTS (як в оригіналі — з fallback)
+# 1. MODULE IMPORTS
 # ---------------------------------------------------------------------------
 
 try:
@@ -64,6 +58,7 @@ try:
     import core.seller_analyzer as seller_analyzer
     import core.competitor_finder as competitor_finder
     import core.price_hardware as price_hardware
+    from services.telegram_notifier import TelegramNotifierService
     from core import hardware_evaluator
 except ImportError as e:
     print(f"[ПОМИЛКА ІМПОРТУ] Переконайся в правильності шляхів: {e}")
@@ -76,12 +71,12 @@ except ImportError as e:
 
 @dataclass(frozen=True)
 class AppConfig:
-    """Всі налаштування, які раніше були розкидані по коду."""
     project_root: Path = PROJECT_ROOT
     supabase_url: str = SUPABASE_URL
     supabase_key: str = SUPABASE_KEY or ""
     olx_proxy_url: Optional[str] = OLX_PROXY_URL
     internal_secret_key: str = INTERNAL_SECRET_KEY or ""
+    telegram_bot_token: str = TELEGRAM_BOT_TOKEN
 
     debug_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "debug")
     log_file: Path = field(default_factory=lambda: PROJECT_ROOT / "debug" / "main-debug.md")
@@ -108,16 +103,14 @@ class AppConfig:
     def __post_init__(self) -> None:
         self.debug_dir.mkdir(parents=True, exist_ok=True)
         if not self.supabase_key:
-            raise RuntimeError("SUPABASE_SECRET_KEY або SUPABASE_PUBLISHABLE_KEY має бути встановлено")
+            raise RuntimeError("SUPABASE_SECRET_KEY має бути встановлено")
 
 
 # ---------------------------------------------------------------------------
-# 3. LOGGER — файл (Markdown) + консоль (як в оригіналі)
+# 3. LOGGER
 # ---------------------------------------------------------------------------
 
 class DebugLogger:
-    """Пише одночасно у debug/main-debug.md та stdout (через print/logging)."""
-
     def __init__(self, config: AppConfig) -> None:
         self._cfg = config
         self._file = config.log_file
@@ -140,7 +133,6 @@ class DebugLogger:
         return datetime.now().strftime("%H:%M:%S")
 
     def log(self, message: str, level: str = "INFO", to_file: bool = True, to_console: bool = True) -> None:
-        """Універсальний лог: файл + консоль."""
         ts = self._now()
         if to_console:
             log_level = getattr(logging, level.upper(), logging.INFO)
@@ -158,19 +150,16 @@ class DebugLogger:
             f.write(text)
 
     def print_banner(self, text: str) -> None:
-        """Для стартового банера."""
         print(text)
         with open(self._file, "a", encoding="utf-8") as f:
             f.write(text + "\n")
 
 
 # ---------------------------------------------------------------------------
-# 4. RESULT FORMATTER (оригінальна логіка)
+# 4. RESULT FORMATTER
 # ---------------------------------------------------------------------------
 
 class ResultFormatter:
-    """Форматує вхідні аргументи та результати для логів."""
-
     @staticmethod
     def format_input_args(kwargs: dict[str, Any]) -> str:
         clean = {k: v for k, v in kwargs.items() if k not in ("db_lock", "rate_limiter")}
@@ -192,12 +181,10 @@ class ResultFormatter:
 
 
 # ---------------------------------------------------------------------------
-# 5. RATE LIMITER (оригінальна AIMD логіка)
+# 5. RATE LIMITER
 # ---------------------------------------------------------------------------
 
 class AdaptiveRateLimiter:
-    """Динамічний контроль частоти запитів до OLX."""
-
     def __init__(
         self,
         logger: DebugLogger,
@@ -256,65 +243,21 @@ class AdaptiveRateLimiter:
         self._consecutive_403 = 0
         self._is_cooldown = False
 
-# ---------------------------------------------------------------------------
-# 6. WEB SERVER MANAGER
-# ---------------------------------------------------------------------------
-
-class WebServerManager:
-    """Запускає та зупиняє uvicorn (як в оригіналі)."""
-
-    def __init__(self, config: AppConfig, logger: DebugLogger) -> None:
-        self._cfg = config
-        self._logger = logger
-        self._process: Optional[subprocess.Popen] = None
-
-    def start(self) -> None:
-        server_dir = self._cfg.project_root / "server"
-        msg = f"\n🌐 [{self._logger._now()}] [SERVERS] Запуск FastAPI бекенду (uvicorn)..."
-        print(msg)
-
-        cmd = [
-            sys.executable, "-m", "uvicorn",
-            "server:app", "--reload",
-            "--port", str(self._cfg.server_port),
-        ]
-        try:
-            self._process = subprocess.Popen(
-                cmd,
-                cwd=str(server_dir),
-                shell=(os.name == "nt"),
-            )
-            self._logger.log(
-                f"🌐 **[{self._logger._now()}] [SERVERS]** Успішно запущено FastAPI (uvicorn).",
-                "INFO",
-            )
-        except Exception as e:
-            err = f"❌ Не вдалося запустити сервер: {e}"
-            print(err)
-            self._logger.log(f"❌ **[{self._logger._now()}] [SERVERS]** Помилка запуску: `{e}`", "ERROR")
-        time.sleep(3)
-
-    def stop(self) -> None:
-        if self._process and self._process.poll() is None:
-            self._process.terminate()
-
 
 # ---------------------------------------------------------------------------
-# 7. SUPABASE REPOSITORY
+# 6. SUPABASE REPOSITORY
 # ---------------------------------------------------------------------------
 
 class SupabaseRepo:
-    """Всі запити до Supabase в одному місці."""
-
     def __init__(self, config: AppConfig, logger: DebugLogger) -> None:
-        self._client: Client = create_client(config.supabase_url, config.supabase_key)
+        self.client: Client = create_client(config.supabase_url, config.supabase_key)
         self._logger = logger
 
     async def count_unprocessed_ads(self) -> int:
         def _query() -> int:
             try:
                 res = (
-                    self._client.table("ads")
+                    self.client.table("ads")
                     .select("id", count="exact")
                     .eq("status", "active")
                     .or_("seller_risk_score.is.null,estimated_fair_price.is.null")
@@ -332,7 +275,7 @@ class SupabaseRepo:
         def _query() -> List[dict[str, Any]]:
             try:
                 res = (
-                    self._client.table("ads")
+                    self.client.table("ads")
                     .select("*")
                     .in_("ad_id", ad_ids)
                     .eq("status", "active")
@@ -345,12 +288,10 @@ class SupabaseRepo:
 
 
 # ---------------------------------------------------------------------------
-# 8. BROADCAST SERVICE
+# 7. BROADCAST SERVICE
 # ---------------------------------------------------------------------------
 
 class BroadcastService:
-    """Відправляє оновлення на локальний endpoint."""
-
     def __init__(self, config: AppConfig, logger: DebugLogger) -> None:
         self._url = config.websocket_url
         self._logger = logger
@@ -371,12 +312,10 @@ class BroadcastService:
 
 
 # ---------------------------------------------------------------------------
-# 9. MODULE RUNNER (оригінальна обгортка run_logged_module)
+# 8. MODULE RUNNER
 # ---------------------------------------------------------------------------
 
 class ModuleRunner:
-    """Запускає модулі з детальним логуванням (як у оригіналі)."""
-
     def __init__(self, logger: DebugLogger, formatter: ResultFormatter) -> None:
         self._log = logger
         self._fmt = formatter
@@ -392,7 +331,6 @@ class ModuleRunner:
         start_ts = self._log._now()
         input_desc = self._fmt.format_input_args(kwargs)
 
-        # 1. Лог старту
         self._log.log(
             f"⏳ **[{start_ts}]** `СТАРТ` **{name}** | Вхідні дані: {input_desc}",
             "INFO",
@@ -408,7 +346,6 @@ class ModuleRunner:
             end_ts = self._log._now()
             result_desc = self._fmt.summarize(result)
 
-            # 2. Лог успіху
             self._log.log(
                 f"  - ✅ **[{end_ts}]** `УСПІХ` **{name}** | Тривалість: `{duration:.2f}s` | Результат: {result_desc}",
                 "INFO",
@@ -419,7 +356,6 @@ class ModuleRunner:
             duration = time.perf_counter() - start_perf
             end_ts = self._log._now()
 
-            # 3. Лог помилки
             self._log.log(
                 f"  - ❌ **[{end_ts}]** `ПОМИЛКА` **{name}** | Тривалість: `{duration:.2f}s` | Причина: `{e}`",
                 "ERROR",
@@ -428,12 +364,10 @@ class ModuleRunner:
 
 
 # ---------------------------------------------------------------------------
-# 10. BACKGROUND TASKS
+# 9. BACKGROUND TASKS
 # ---------------------------------------------------------------------------
 
 class BackgroundTaskManager:
-    """Керує фоновими демонами (архів + прайси)."""
-
     def __init__(
         self,
         runner: ModuleRunner,
@@ -445,7 +379,6 @@ class BackgroundTaskManager:
         self._shutdown = shutdown_event
 
     async def archive_checker(self) -> None:
-        """Фонова перевірка архівних оголошень кожні 5 хвилин."""
         while not self._shutdown.is_set():
             try:
                 await asyncio.wait_for(
@@ -460,7 +393,6 @@ class BackgroundTaskManager:
                 )
 
     async def price_hardware(self) -> None:
-        """Фоновий перерахунок ринкових цін заліза кожні 5 хвилин."""
         while not self._shutdown.is_set():
             try:
                 await asyncio.wait_for(
@@ -474,13 +406,12 @@ class BackgroundTaskManager:
                     db_lock=asyncio.Lock(),
                 )
 
+
 # ---------------------------------------------------------------------------
-# 11. PIPELINE ORCHESTRATOR (оригінальна логіка run_pipeline_iteration)
+# 10. PIPELINE ORCHESTRATOR
 # ---------------------------------------------------------------------------
 
 class PipelineOrchestrator:
-    """Головний цикл обробки — точна копія логіки оригіналу."""
-
     def __init__(
         self,
         config: AppConfig,
@@ -489,6 +420,7 @@ class PipelineOrchestrator:
         limiter: AdaptiveRateLimiter,
         runner: ModuleRunner,
         broadcaster: BroadcastService,
+        tg_notifier: Optional[TelegramNotifierService] = None,
     ) -> None:
         self._cfg = config
         self._log = logger
@@ -496,11 +428,11 @@ class PipelineOrchestrator:
         self._limiter = limiter
         self._runner = runner
         self._broadcaster = broadcaster
+        self._tg_notifier = tg_notifier
         self._iteration_count = 0
         self._shutdown = asyncio.Event()
 
     async def run(self) -> None:
-        """Основний while-true цикл (як у оригіналі)."""
         is_first_run = True
         while not self._shutdown.is_set():
             try:
@@ -530,7 +462,6 @@ class PipelineOrchestrator:
                 await asyncio.sleep(self._cfg.error_pause_sec)
 
     async def _iteration(self, is_first_run: bool) -> None:
-        """Одна ітерація = точна копія run_pipeline_iteration."""
         self._iteration_count += 1
         pages_to_parse = self._cfg.first_run_pages if is_first_run else self._cfg.regular_pages
         today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -566,7 +497,7 @@ class PipelineOrchestrator:
             "FILTER_ADS", filter_ads.main_async, db_lock=asyncio.Lock()
         )
 
-        # 3. Аналіз
+        # 3. Перевірка наявності нових лотів
         unprocessed_count = await self._repo.count_unprocessed_ads()
         self._log.log(
             f"📊 **[{self._log._now()}] [АНАЛІЗ]** Нових релевантних лотів для обробки: `{unprocessed_count}`",
@@ -589,23 +520,32 @@ class PipelineOrchestrator:
             ),
         )
 
-        # 5. Продавці (миттєвий аналіз та бродкаст)
+        # 5. Продавці (аналіз)
         updated_seller_ids = await self._runner.run(
             "SELLER_ANALYZER",
             seller_analyzer.main_async,
             db_lock=asyncio.Lock(),
         )
 
+        # 6. Бродкаст результатів (Websocket + Telegram)
         if updated_seller_ids:
             seller_rows = await self._repo.fetch_active_ads(updated_seller_ids[:50])
             if seller_rows:
+                # Внутрішній вебсокет-сервер
                 await self._runner.run(
                     "WEBSOCKET_BROADCAST",
                     self._broadcaster.send,
                     seller_rows,
                 )
+                # Telegram сповіщення підписникам
+                if self._tg_notifier and self._cfg.telegram_bot_token:
+                    await self._runner.run(
+                        "TELEGRAM_BROADCAST",
+                        self._tg_notifier.broadcast_deals,
+                        seller_rows,
+                    )
 
-        # 6. Конкуренти ПК
+        # 7. Конкуренти ПК
         await self._runner.run(
             "COMPETITOR_FINDER",
             competitor_finder.main_async,
@@ -617,14 +557,13 @@ class PipelineOrchestrator:
 
 
 # ---------------------------------------------------------------------------
-# 12. MAIN ENTRY POINT
+# 11. MAIN ENTRY POINT
 # ---------------------------------------------------------------------------
 
 async def main() -> None:
     config = AppConfig()
     logger = DebugLogger(config)
 
-    # Стартовий банер
     banner = (
         "==========================================================\n"
         f" 🚀 [{logger._now()}] СТАРТ АСИНХРОННОГО ОРКЕСТРАТОРА 24/7 \n"
@@ -633,8 +572,12 @@ async def main() -> None:
     logger.print_banner(banner)
     logger.section(f"[СТАРТ СИСТЕМИ] Асинхронний Оркестратор ({logger._now()})")
 
-    # Залежності
+    # Створюємо репозиторій спочатку
     repo = SupabaseRepo(config, logger)
+    
+    # Ініціалізуємо Telegram-сервіс із передачею supabase client
+    tg_notifier = TelegramNotifierService(bot_token=config.telegram_bot_token, client=repo.client)
+
     limiter = AdaptiveRateLimiter(
         logger,
         min_rate=config.rate_limiter_min,
@@ -654,9 +597,9 @@ async def main() -> None:
         limiter=limiter,
         runner=runner,
         broadcaster=broadcaster,
+        tg_notifier=tg_notifier,
     )
 
-    # Graceful shutdown
     loop = asyncio.get_running_loop()
     for sig_name in ("SIGINT", "SIGTERM"):
         try:
@@ -666,7 +609,6 @@ async def main() -> None:
         except (AttributeError, NotImplementedError):
             pass
 
-    # Фонові задачі
     bg_manager = BackgroundTaskManager(runner, config, orchestrator._shutdown)
     bg_tasks = [
         asyncio.create_task(bg_manager.archive_checker()),

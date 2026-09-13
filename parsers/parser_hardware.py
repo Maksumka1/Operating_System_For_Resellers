@@ -262,6 +262,7 @@ class ParsedAd(BaseModel):
     has_defects: int = Field(default=0, ge=0, le=1)
     city: str = "Невідомо"
     created_at_olx: str = "Невідомо"
+    last_refresh_time: str | None = None
     photo_url: str = "Невідомо"
     all_photos: str | None = None
     parsed_date: str = Field(min_length=1)
@@ -743,6 +744,8 @@ class OlxGraphqlParser:
             created_raw = str(item.get("created_time") or "")
             ad_date = created_raw if created_raw else "Невідомо"
 
+            last_refresh = str(item.get("last_refresh_time")) if item.get("last_refresh_time") else None
+
             photos = item.get("photos", []) or []
             photo_urls = []
             for p in photos:
@@ -780,6 +783,7 @@ class OlxGraphqlParser:
                 has_defects=has_defects,
                 city=city,
                 created_at_olx=ad_date,
+                last_refresh_time=last_refresh,
                 photo_url=photo_urls[0] if photo_urls else "Невідомо",
                 all_photos=",".join(photo_urls) if photo_urls else None,
                 parsed_date=self._today,
