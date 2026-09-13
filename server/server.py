@@ -406,22 +406,27 @@ async def telegram_webhook(request: Request):
     chat_id = message.get("chat", {}).get("id")
 
     if text.startswith("/start") or text.startswith("/categories"):
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+        logger.info(f"📩 Отримано /start від {chat_id}. Токен присутній: {bool(token)}")
+
         keyboard = {
             "inline_keyboard": [
-                [{"text": "GPU", "callback_data": "toggle_gpu"}, {"text": "CPU", "callback_data": "toggle_cpu"}],
-                [{"text": "RAM", "callback_data": "toggle_ram"}, {"text": "SSD", "callback_data": "toggle_storage"}],
-                [{"text": "Готові ПК", "callback_data": "toggle_pc"}, {"text": "БЖ", "callback_data": "toggle_psu"}]
+                [{"text": "🎮 GPU", "callback_data": "toggle_gpu"}, {"text": "⚡ CPU", "callback_data": "toggle_cpu"}],
+                [{"text": "💾 RAM", "callback_data": "toggle_ram"}, {"text": "💿 SSD", "callback_data": "toggle_storage"}],
+                [{"text": "🖥️ Готові ПК", "callback_data": "toggle_pc"}, {"text": "🔌 БЖ", "callback_data": "toggle_psu"}]
             ]
         }
         async with httpx.AsyncClient() as client:
-            await client.post(
-                f"{tg_service.api_url}/sendMessage",
+            resp = await client.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
                 json={
                     "chat_id": chat_id,
                     "text": "Оберіть категорії, за якими хочете отримувати вигідні пропозиції:",
                     "reply_markup": keyboard
-                }
+                },
+                timeout=5.0
             )
+            logger.info(f"📤 Відповідь Telegram API: status={resp.status_code}, body={resp.text}")
 
     return {"ok": True}
 
