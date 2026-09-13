@@ -30,6 +30,7 @@ services:
     environment:
       # Перевизначаємо адресу бродкасту на внутрішній docker-сервіс
       - WEBSOCKET_URL=http://backend:8000/api/trigger-new-ad
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
     volumes:
       - ./data:/app/data
       - ./debug:/app/debug

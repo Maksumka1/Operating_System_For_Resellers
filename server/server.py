@@ -18,6 +18,7 @@ from typing import Any, List, Union
 import jwt
 from dotenv import load_dotenv
 from fastapi import (
+    BackgroundTasks,
     Body,
     Depends,
     FastAPI,
@@ -377,38 +378,38 @@ async def get_my_subscription(
     }
 
 
-@app.post("/api/telegram/webhook")
-async def telegram_webhook(request: Request):
-    """Обробляє натискання кнопок та команди вибору категорій у боті."""
-    data = await request.json()
-
+async def process_telegram_update(data: dict):
+    """Фонова обробка повідомлень, щоб не блокувати відповідь 200 OK для Telegram."""
     if "callback_query" in data:
         cq = data["callback_query"]
         chat_id = cq["from"]["id"]
         category = cq["data"].replace("toggle_", "")
         
         updated_categories = await handle_category_toggle(chat_id, category)
-        
         text = f"Оновлено! Ваші активні категорії: {', '.join(updated_categories).upper()}"
+        
         async with httpx.AsyncClient() as client:
             await client.post(
                 f"{tg_service.api_url}/answerCallbackQuery",
-                json={"callback_query_id": cq["id"], "text": f"Перемкнуто: {category.upper()}"}
+                json={"callback_query_id": cq["id"], "text": f"Перемкнуто: {category.upper()}"},
+                timeout=5.0
             )
             await client.post(
                 f"{tg_service.api_url}/sendMessage",
-                json={"chat_id": chat_id, "text": text}
+                json={"chat_id": chat_id, "text": text},
+                timeout=5.0
             )
-        return {"ok": True}
+        return
 
     message = data.get("message", {})
     text = message.get("text", "")
     chat_id = message.get("chat", {}).get("id")
 
+    if not chat_id:
+        return
+
     if text.startswith("/start") or text.startswith("/categories"):
         token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-        logger.info(f"📩 Отримано /start від {chat_id}. Токен присутній: {bool(token)}")
-
         keyboard = {
             "inline_keyboard": [
                 [{"text": "🎮 GPU", "callback_data": "toggle_gpu"}, {"text": "⚡ CPU", "callback_data": "toggle_cpu"}],
@@ -417,7 +418,7 @@ async def telegram_webhook(request: Request):
             ]
         }
         async with httpx.AsyncClient() as client:
-            resp = await client.post(
+            await client.post(
                 f"https://api.telegram.org/bot{token}/sendMessage",
                 json={
                     "chat_id": chat_id,
@@ -426,10 +427,13 @@ async def telegram_webhook(request: Request):
                 },
                 timeout=5.0
             )
-            logger.info(f"📤 Відповідь Telegram API: status={resp.status_code}, body={resp.text}")
 
+@app.post("/api/telegram/webhook")
+async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
+    """Миттєво відповідає 200 OK і делегує роботу фоновій задачі."""
+    data = await request.json()
+    background_tasks.add_task(process_telegram_update, data)
     return {"ok": True}
-
 
 
 @app.get("/api/ads")
