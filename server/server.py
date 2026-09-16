@@ -595,6 +595,14 @@ async def process_telegram_update(data: dict):
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }, on_conflict="chat_id").execute()
 
+                try:
+                    supabase.table("profiles").update({
+                        "telegram_connected": True,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }).eq("id", user_id).execute()
+                except Exception as e:
+                    logger.warning(f"Не вдалося оновити profiles.telegram_connected: {e}")
+
             try:
                 await asyncio.to_thread(_link_sub)
                 logger.info(f"✅ [TG DB] Успішно записано в telegram_subscribers: user_id={user_id}, chat_id={chat_id}")
