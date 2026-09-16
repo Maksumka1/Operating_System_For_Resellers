@@ -1,4 +1,4 @@
-api.maksimkaa.online {
+api.huntingsmarter.com {
     reverse_proxy backend:8000 {
         flush_interval -1
     }
