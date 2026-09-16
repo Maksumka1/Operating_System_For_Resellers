@@ -535,6 +535,50 @@ def get_categories_inline_keyboard(active_cats: list[str]):
         ]
     }
 
+def get_price_inline_keyboard():
+    """Інлайн-кнопки швидкого вибору популярних цінових діапазонів."""
+    return {
+        "inline_keyboard": [
+            [
+                {"text": "до 10 000 грн", "callback_data": "quick_price_0_10000"},
+                {"text": "10k – 25k грн", "callback_data": "quick_price_10000_25000"}
+            ],
+            [
+                {"text": "25k – 50k грн", "callback_data": "quick_price_25000_50000"},
+                {"text": "від 50 000 грн", "callback_data": "quick_price_50000_1000000"}
+            ],
+            [
+                {"text": "🔄 Зняти ліміт цін", "callback_data": "quick_price_0_1000000"}
+            ],
+            [
+                {"text": "⬅️ Назад до фільтрів", "callback_data": "back_to_filters_menu"}
+            ]
+        ]
+    }
+
+
+def get_keywords_inline_keyboard(current_keywords: list[str]):
+    """Інлайн-кнопки для популярних брендів/моделей + кнопка очищення."""
+    popular = ["rtx", "gtx", "rx", "ryzen", "intel", "i5", "i7"]
+    clean_kws = [k.lower().strip() for k in current_keywords]
+
+    rows = []
+    curr_row = []
+    for brand in popular:
+        checked = "✅ " if brand in clean_kws else "▫️ "
+        curr_row.append({"text": f"{checked}{brand.upper()}", "callback_data": f"toggle_brand_{brand}"})
+        if len(curr_row) == 2:
+            rows.append(curr_row)
+            curr_row = []
+    if curr_row:
+        rows.append(curr_row)
+
+    rows.append([
+        {"text": "🗑️ Очистити всі слова", "callback_data": "clear_all_keywords"},
+        {"text": "⬅️ Назад до фільтрів", "callback_data": "back_to_filters_menu"}
+    ])
+    return {"inline_keyboard": rows}
+
 
 async def check_telegram_subscriber_access(chat_id: int) -> dict[str, Any]:
     """Перевіряє доступ до бота без виклику потенційно відсутніх колонок."""
@@ -764,6 +808,92 @@ async def process_telegram_update(data: dict):
                     json={"chat_id": chat_id, "message_id": message_id, "text": format_user_filters_view(sub_fresh), "parse_mode": "HTML", "reply_markup": get_filters_dashboard_keyboard()}
                 )
                 return
+
+            # --- МЕНЮ ЦІНИ ---
+            if cb_data == "menu_price":
+                sub = access["subscriber"] or {}
+                min_p = sub.get("min_price") or 0
+                max_p = sub.get("max_price") or 1000000
+                price_status = f"від {min_p:,} до {max_p:,} грн".replace(",", " ") if (min_p > 0 or max_p < 1000000) else "Будь-яка"
+
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": message_id,
+                        "text": (
+                            f"💰 <b>Налаштування цінового діапазону</b>\n\n"
+                            f"Поточний ліміт: <code>{price_status}</code>\n\n"
+                            "Оберіть готовий діапазон кнопкою або надішліть команду:\n"
+                            "<code>/price 5000 25000</code>"
+                        ),
+                        "parse_mode": "HTML",
+                        "reply_markup": get_price_inline_keyboard()
+                    }
+                )
+                await client.post(f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery", json={"callback_query_id": cq_id})
+                return
+
+            if cb_data.startswith("quick_price_"):
+                _, _, p_min_s, p_max_s = cb_data.split("_")
+                p_min, p_max = int(p_min_s), int(p_max_s)
+                await asyncio.to_thread(lambda: supabase.table("telegram_subscribers").update({"min_price": p_min, "max_price": p_max}).eq("chat_id", chat_id).execute())
+                await client.post(f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery", json={"callback_query_id": cq_id, "text": "Ціну оновлено!"})
+                res = (await asyncio.to_thread(lambda: supabase.table("telegram_subscribers").select("*").eq("chat_id", chat_id).execute())).data
+                sub_fresh = res[0] if res else access["subscriber"]
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                    json={"chat_id": chat_id, "message_id": message_id, "text": format_user_filters_view(sub_fresh), "parse_mode": "HTML", "reply_markup": get_filters_dashboard_keyboard()}
+                )
+                return
+
+            # --- МЕНЮ МОДЕЛЕЙ ТА СЛІВ ---
+            if cb_data == "menu_keywords":
+                curr_kws = (access["subscriber"] or {}).get("target_brands") or []
+                kws_str = ", ".join(curr_kws) if curr_kws else "Не задано (всі моделі)"
+
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": message_id,
+                        "text": (
+                            f"🏷️ <b>Фільтр за моделями та назвами</b>\n\n"
+                            f"Активні слова: <code>{kws_str}</code>\n\n"
+                            "Оберіть потрібний тег нижче або надішліть власні моделі через кому:\n"
+                            "<code>/keywords ryzen 5600, rtx 3060</code>"
+                        ),
+                        "parse_mode": "HTML",
+                        "reply_markup": get_keywords_inline_keyboard(curr_kws)
+                    }
+                )
+                await client.post(f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery", json={"callback_query_id": cq_id})
+                return
+
+            if cb_data.startswith("toggle_brand_"):
+                brand = cb_data.replace("toggle_brand_", "").lower()
+                curr_kws = list((access["subscriber"] or {}).get("target_brands") or [])
+                if brand in curr_kws:
+                    curr_kws.remove(brand)
+                else:
+                    curr_kws.append(brand)
+                await asyncio.to_thread(lambda: supabase.table("telegram_subscribers").update({"target_brands": curr_kws}).eq("chat_id", chat_id).execute())
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/editMessageReplyMarkup",
+                    json={"chat_id": chat_id, "message_id": message_id, "reply_markup": get_keywords_inline_keyboard(curr_kws)}
+                )
+                await client.post(f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery", json={"callback_query_id": cq_id, "text": f"Тег: {brand.upper()}"})
+                return
+
+            if cb_data == "clear_all_keywords":
+                await asyncio.to_thread(lambda: supabase.table("telegram_subscribers").update({"target_brands": []}).eq("chat_id", chat_id).execute())
+                await client.post(f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery", json={"callback_query_id": cq_id, "text": "Фільтр моделей скинуто"})
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/editMessageReplyMarkup",
+                    json={"chat_id": chat_id, "message_id": message_id, "reply_markup": get_keywords_inline_keyboard([])}
+                )
+                return
+
 
             if cb_data == "reset_all_filters":
                 await asyncio.to_thread(lambda: supabase.table("telegram_subscribers").update({
