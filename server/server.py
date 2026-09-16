@@ -377,22 +377,62 @@ async def get_my_subscription(
         "subscription_end": sub.get("subscription_end"),
     }
 
+    # --- ДОПОМІЖНІ ФУНКЦІЇ ДЛЯ TELEGRAM BOT ---
+
+def get_main_menu_keyboard():
+    """Постійна клавіатура головного меню бота."""
+    return {
+        "keyboard": [
+            [{"text": "⚙️ Мої фільтри"}, {"text": "🔧 Змінити категорії"}],
+            [{"text": "ℹ️ Що робить бот?"}, {"text": "🌐 Мій кабінет"}]
+        ],
+        "resize_keyboard": True,
+        "is_persistent": True
+    }
+
+
+def get_categories_inline_keyboard(active_cats: list[str]):
+    """Інлайн-клавіатура з вибором категорій та кнопкою збереження."""
+    return {
+        "inline_keyboard": [
+            [
+                {"text": f"{'✅' if 'gpu' in active_cats else '▫️'} GPU", "callback_data": "toggle_gpu"},
+                {"text": f"{'✅' if 'cpu' in active_cats else '▫️'} CPU", "callback_data": "toggle_cpu"},
+            ],
+            [
+                {"text": f"{'✅' if 'ram' in active_cats else '▫️'} RAM", "callback_data": "toggle_ram"},
+                {"text": f"{'✅' if 'storage' in active_cats else '▫️'} SSD/HDD", "callback_data": "toggle_storage"},
+            ],
+            [
+                {"text": f"{'✅' if 'pc' in active_cats else '▫️'} Готові ПК", "callback_data": "toggle_pc"},
+                {"text": f"{'✅' if 'psu' in active_cats else '▫️'} БЖ", "callback_data": "toggle_psu"},
+            ],
+            [
+                {"text": "💾 Зберегти налаштування", "callback_data": "close_categories"}
+            ]
+        ]
+    }
+
 
 async def check_telegram_subscriber_access(chat_id: int) -> dict[str, Any]:
-    """Перевіряє, чи прив'язаний акаунт і чи активна підписка/тріал."""
+    """Перевіряє доступ до бота без виклику потенційно відсутніх колонок."""
     def _fetch():
-        sub_res = supabase.table("telegram_subscribers").select("user_id, categories, min_price, max_price, condition_type").eq("chat_id", chat_id).execute()
-        if not sub_res.data or not sub_res.data[0].get("user_id"):
+        try:
+            sub_res = supabase.table("telegram_subscribers").select("user_id, categories").eq("chat_id", chat_id).execute()
+            if not sub_res.data or not sub_res.data[0].get("user_id"):
+                return None, None
+
+            user_id = sub_res.data[0]["user_id"]
+            plan_res = supabase.table("subscriptions").select("status, trial_end, subscription_end").eq("user_id", user_id).limit(1).execute()
+            plan = plan_res.data[0] if plan_res.data else None
+            return sub_res.data[0], plan
+        except Exception as e:
+            logger.error(f"Помилка check_telegram_subscriber_access (chat_id: {chat_id}): {e}")
             return None, None
-        
-        user_id = sub_res.data[0]["user_id"]
-        plan_res = supabase.table("subscriptions").select("status, trial_end, subscription_end").eq("user_id", user_id).limit(1).execute()
-        plan = plan_res.data[0] if plan_res.data else None
-        return sub_res.data[0], plan
 
     subscriber, plan = await asyncio.to_thread(_fetch)
     if not subscriber or not plan:
-        return {"allowed": False, "reason": "unauthorized"}
+        return {"allowed": False, "reason": "unauthorized", "subscriber": None}
 
     now = datetime.now(timezone.utc)
     has_access = False
@@ -420,246 +460,254 @@ async def check_telegram_subscriber_access(chat_id: int) -> dict[str, Any]:
     }
 
 
-def get_main_menu_keyboard():
-    return {
-        "keyboard": [
-            [{"text": "⚙️ Мої фільтри"}, {"text": "🔧 Змінити категорії"}],
-            [{"text": "ℹ️ Що робить бот?"}, {"text": "🌐 Мій кабінет"}]
-        ],
-        "resize_keyboard": True
-    }
-
-
 async def process_telegram_update(data: dict):
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     if not bot_token:
         return
 
-    async with httpx.AsyncClient(timeout=8.0) as client:
-        # 1. ОБРОБКА КНОПОК ФІЛЬТРІВ (CALLBACK QUERY)
-        if "callback_query" in data:
-            cq = data["callback_query"]
-            cq_id = cq["id"]
-            chat_id = cq["from"]["id"]
-            cb_data = cq.get("data", "")
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            # 1. ОБРОБКА CALLBACK QUERY (Інлайн кнопки)
+            if "callback_query" in data:
+                cq = data["callback_query"]
+                cq_id = cq["id"]
+                chat_id = cq["from"]["id"]
+                cb_data = cq.get("data", "")
+                message_id = cq.get("message", {}).get("message_id")
 
-            access = await check_telegram_subscriber_access(chat_id)
-            if not access["allowed"]:
-                await client.post(
-                    f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery",
-                    json={"callback_query_id": cq_id, "text": "🔒 Потрібна активна підписка на сайті!", "show_alert": True}
-                )
+                access = await check_telegram_subscriber_access(chat_id)
+                if not access["allowed"]:
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery",
+                        json={"callback_query_id": cq_id, "text": "🔒 Потрібна активна підписка на сайті!", "show_alert": True}
+                    )
+                    return
+
+                if cb_data == "close_categories":
+                    cats = access["subscriber"].get("categories") or ["gpu", "cpu", "pc"]
+                    cats_str = ", ".join(c.upper() for c in cats)
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery",
+                        json={"callback_query_id": cq_id, "text": "✅ Категорії збережено!"}
+                    )
+                    if message_id:
+                        await client.post(
+                            f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                            json={
+                                "chat_id": chat_id,
+                                "message_id": message_id,
+                                "text": f"✅ <b>Налаштування збережено!</b>\n\nАктивні категорії: <code>{cats_str}</code>",
+                                "parse_mode": "HTML"
+                            }
+                        )
+                    return
+
+                if cb_data.startswith("toggle_"):
+                    category = cb_data.replace("toggle_", "")
+                    updated_cats = await handle_category_toggle(chat_id, category, client=supabase)
+                    keyboard = get_categories_inline_keyboard(updated_cats)
+
+                    if message_id:
+                        await client.post(
+                            f"https://api.telegram.org/bot{bot_token}/editMessageReplyMarkup",
+                            json={
+                                "chat_id": chat_id,
+                                "message_id": message_id,
+                                "reply_markup": keyboard
+                            }
+                        )
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery",
+                        json={"callback_query_id": cq_id, "text": f"Перемкнуто: {category.upper()}"}
+                    )
                 return
 
-            if cb_data.startswith("toggle_"):
-                category = cb_data.replace("toggle_", "")
-                updated_cats = await handle_category_toggle(chat_id, category)
-                
-                # Формуємо динамічний inline список з галочками
-                keyboard = {
-                    "inline_keyboard": [
-                        [
-                            {"text": f"{'✅' if 'gpu' in updated_cats else '▫️'} GPU", "callback_data": "toggle_gpu"},
-                            {"text": f"{'✅' if 'cpu' in updated_cats else '▫️'} CPU", "callback_data": "toggle_cpu"},
-                        ],
-                        [
-                            {"text": f"{'✅' if 'ram' in updated_cats else '▫️'} RAM", "callback_data": "toggle_ram"},
-                            {"text": f"{'✅' if 'storage' in updated_cats else '▫️'} SSD/HDD", "callback_data": "toggle_storage"},
-                        ],
-                        [
-                            {"text": f"{'✅' if 'pc' in updated_cats else '▫️'} Готові ПК", "callback_data": "toggle_pc"},
-                            {"text": f"{'✅' if 'psu' in updated_cats else '▫️'} БЖ", "callback_data": "toggle_psu"},
-                        ]
-                    ]
-                }
-                await client.post(
-                    f"https://api.telegram.org/bot{bot_token}/editMessageReplyMarkup",
-                    json={
+            # 2. ОБРОБКА ПОВІДОМЛЕНЬ ТА КОМАНД
+            message = data.get("message", {})
+            chat_id = message.get("chat", {}).get("id")
+            text = (message.get("text") or "").strip()
+
+            if not chat_id:
+                return
+
+            # СТАРТ З ТОКЕНОМ АВТОРИЗАЦІЇ: /start auth_<token>
+            if text.startswith("/start auth_"):
+                token = text.replace("/start auth_", "").strip()
+
+                def _consume():
+                    return supabase.rpc("consume_telegram_token", {"target_token": token}).execute()
+
+                try:
+                    rpc_res = await asyncio.to_thread(_consume)
+                    user_id = rpc_res.data
+                except Exception as exc:
+                    logger.error(f"Помилка RPC consume_telegram_token: {exc}")
+                    user_id = None
+
+                # Захист від повторного виклику / ретраю мережі: перевіряємо, чи цей chat_id вже прив'язаний
+                if not user_id:
+                    existing_sub = await asyncio.to_thread(
+                        lambda: supabase.table("telegram_subscribers").select("user_id").eq("chat_id", chat_id).execute()
+                    )
+                    if existing_sub.data and existing_sub.data[0].get("user_id"):
+                        await client.post(
+                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                            json={
+                                "chat_id": chat_id,
+                                "text": "✅ <b>Ваш акаунт вже успішно прив'язано до HuntingSmarter!</b>",
+                                "parse_mode": "HTML",
+                                "reply_markup": get_main_menu_keyboard()
+                            }
+                        )
+                        return
+
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                        json={
+                            "chat_id": chat_id,
+                            "text": "❌ <b>Посилання застаріло або вже використане.</b>\n\nЗгенеруйте нове посилання в кабінеті на сайті.",
+                            "parse_mode": "HTML"
+                        }
+                    )
+                    return
+
+                # Атомарна чистка старих прив'язок цього користувача для гарантії 1:1
+                def _link_sub():
+                    supabase.table("telegram_subscribers").delete().eq("user_id", user_id).neq("chat_id", chat_id).execute()
+                    supabase.table("telegram_subscribers").upsert({
                         "chat_id": chat_id,
-                        "message_id": cq["message"]["message_id"],
-                        "reply_markup": keyboard
-                    }
+                        "user_id": user_id,
+                        "is_active": True,
+                        "categories": ["gpu", "cpu", "pc"],
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }, on_conflict="chat_id").execute()
+
+                await asyncio.to_thread(_link_sub)
+
+                welcome_text = (
+                    "<b>✅ Акаунт успішно прив'язано до HuntingSmarter!</b>\n\n"
+                    "Бот активовано. Ви отримуватимете найвигідніші пропозиції заліза з дисконтом у реальному часі.\n\n"
+                    "Керуйте сповіщеннями за допомогою меню нижче:"
                 )
-                await client.post(
-                    f"https://api.telegram.org/bot{bot_token}/answerCallbackQuery",
-                    json={"callback_query_id": cq_id, "text": f"Перемкнуто: {category.upper()}"}
-                )
-            return
-
-        # 2. ОБРОБКА ПОВІДОМЛЕНЬ ТА КОМАНД
-        message = data.get("message", {})
-        chat_id = message.get("chat", {}).get("id")
-        text = (message.get("text") or "").strip()
-
-        if not chat_id:
-            return
-
-        # АВТОРИЗАЦІЯ ЧЕРЕЗ ТОКЕН: /start auth_<token>
-        if text.startswith("/start auth_"):
-            token = text.replace("/start auth_", "").strip()
-            
-            def _consume():
-                return supabase.rpc("consume_telegram_token", {"target_token": token}).execute()
-
-            try:
-                rpc_res = await asyncio.to_thread(_consume)
-                user_id = rpc_res.data
-            except Exception as exc:
-                logger.error(f"Помилка RPC consume_telegram_token: {exc}")
-                user_id = None
-
-            if not user_id:
                 await client.post(
                     f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                    json={"chat_id": chat_id, "text": "❌ Посилання застаріло або недійсне. Згенеруйте нове в особистому кабінеті на сайті."}
+                    json={
+                        "chat_id": chat_id,
+                        "text": welcome_text,
+                        "parse_mode": "HTML",
+                        "reply_markup": get_main_menu_keyboard()
+                    }
                 )
                 return
 
-            def _link_sub():
-                supabase.table("telegram_subscribers").upsert({
-                    "chat_id": chat_id,
-                    "user_id": user_id,
-                    "is_active": True,
-                    "categories": ["gpu", "cpu", "pc"],
-                    "condition_type": "all",
-                    "min_price": 0,
-                    "max_price": 1000000
-                }, on_conflict="chat_id").execute()
+            # ПЕРЕВІРКА АВТОРИЗАЦІЇ ТА ПІДПИСКИ
+            access = await check_telegram_subscriber_access(chat_id)
 
-            await asyncio.to_thread(_link_sub)
+            if not access["allowed"]:
+                if access["reason"] == "unauthorized":
+                    msg = (
+                        "<b>🔒 Доступ обмежено</b>\n\n"
+                        "Цей бот працює для авторизованих користувачів сервісу <b>HuntingSmarter</b>.\n\n"
+                        "Увійдіть у свій Профіль на сайті та натисніть кнопку <b>«Під'єднати Telegram»</b>."
+                    )
+                else:
+                    msg = (
+                        "<b>⚠️ Термін дії підписки або тріалу завершився</b>\n\n"
+                        "Щоб відновити отримання сповіщень та керування фільтрами, продовжіть підписку в особистому кабінеті."
+                    )
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"}
+                )
+                return
 
-            welcome_text = (
-                "<b>✅ Акаунт успішно прив'язано до HuntingSmarter!</b>\n\n"
-                "Тепер ви миттєво отримуватимете вигідні лоти комп'ютерного заліза з ринковим дисконтом.\n\n"
-                "Скористайтеся меню нижче для налаштування сповіщень:"
-            )
+            # КОМАНДА: Що робить бот
+            if text in ("/help", "ℹ️ Що робить бот?"):
+                help_text = (
+                    "<b>🤖 Що робить HuntingSmarter Bot?</b>\n\n"
+                    "• <b>24/7 Сканування:</b> Моніторить нові оголошення OLX кожні 3–5 секунд.\n"
+                    "• <b>Fair Price:</b> Розраховує справедливу ринкову ціну комплектуючих та ПК.\n"
+                    "• <b>Фільтрація:</b> Відсікає переоцінені лоти та ненадійних продавців.\n"
+                    "• <b>Миттєвий пуш:</b> Надсилає картку товару з прямою кнопкою купівлі."
+                )
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": help_text,
+                        "parse_mode": "HTML",
+                        "reply_markup": get_main_menu_keyboard()
+                    }
+                )
+                return
+
+            # КОМАНДА: Мої фільтри
+            if text in ("/status", "⚙️ Мої фільтри"):
+                sub = access["subscriber"]
+                cats_list = sub.get("categories") or ["gpu", "cpu", "pc"]
+                cats_formatted = ", ".join([c.upper() for c in cats_list])
+
+                status_text = (
+                    "<b>📋 Ваші налаштування сповіщень:</b>\n\n"
+                    f"• <b>Активні категорії:</b> <code>{cats_formatted}</code>\n"
+                    f"• <b>Мінімальний дисконт:</b> від 10%\n"
+                    f"• <b>Статус моніторингу:</b> Активний 🟢\n\n"
+                    "Щоб змінити відстежувані комплектуючі, натисніть <b>«🔧 Змінити категорії»</b> нижче."
+                )
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": status_text,
+                        "parse_mode": "HTML",
+                        "reply_markup": get_main_menu_keyboard()
+                    }
+                )
+                return
+
+            # КОМАНДА: Змінити категорії
+            if text in ("/categories", "🔧 Змінити категорії"):
+                sub = access["subscriber"]
+                active_cats = sub.get("categories") or ["gpu", "cpu", "pc"]
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": "<b>Оберіть категорії комплектуючих для сповіщень:</b>\n<i>(Натискайте на кнопки для ввімкнення / вимкнення)</i>",
+                        "parse_mode": "HTML",
+                        "reply_markup": get_categories_inline_keyboard(active_cats)
+                    }
+                )
+                return
+
+            # ДЕФОЛТНА ВІДПОВІДЬ / МІЙ КАБІНЕТ / /start
+            profile_url = f"{FRONTEND_URL}/profile"
             await client.post(
                 f"https://api.telegram.org/bot{bot_token}/sendMessage",
                 json={
                     "chat_id": chat_id,
-                    "text": welcome_text,
+                    "text": f"Головне меню активно. Оберіть дію на клавіатурі нижче або відкрийте <a href=\"{profile_url}\">особистий кабінет</a>:",
                     "parse_mode": "HTML",
                     "reply_markup": get_main_menu_keyboard()
                 }
             )
-            return
 
-        # ПЕРЕВІРКА АВТОРИЗАЦІЇ ТА ПІДПИСКИ ДЛЯ ВСІХ ІНШИХ ДІЙ
-        access = await check_telegram_subscriber_access(chat_id)
+        except Exception as e:
+            logger.error(f"Помилка в process_telegram_update: {e}", exc_info=True)
 
-        if not access["allowed"]:
-            if access["reason"] == "unauthorized":
-                msg = (
-                    "<b>🔒 Доступ обмежено</b>\n\n"
-                    "Бот працює виключно для авторизованих користувачів сервісу HuntingSmarter.\n\n"
-                    "Увійдіть на сайт, відкрийте свій Профіль і натисніть кнопку <b>«Під'єднати Telegram»</b>."
-                )
-            else:
-                msg = (
-                    "<b>⚠️ Термін дії підписки закінчився</b>\n\n"
-                    "Щоб відновити доступ до сповіщень у реальному часі та керування фільтрами, продовжіть підписку на сайті."
-                )
-            await client.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"}
-            )
-            return
-
-        # КОМАНДА: Що робить бот
-        if text in ("/help", "ℹ️ Що робить бот?"):
-            help_text = (
-                "<b>🤖 Що робить HuntingSmarter Bot?</b>\n\n"
-                "• Сканує нові оголошення OLX кожні 3–5 секунд.\n"
-                "• Оцінює справедливу ринкову ціну комплектуючих.\n"
-                "• Відфільтровує переоцінені товари та ненадійних продавців.\n"
-                "• Надсилає тільки ті лоти, де економія становить від 10% і більше."
-            )
-            await client.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json={"chat_id": chat_id, "text": help_text, "parse_mode": "HTML"}
-            )
-            return
-
-        # КОМАНДА: Мої фільтри
-        if text in ("/status", "⚙️ Мої фільтри"):
-            sub = access["subscriber"]
-            cats = ", ".join(sub.get("categories") or []).upper() or "Всі"
-            min_p = sub.get("min_price", 0)
-            max_p = sub.get("max_price", 100000)
-            cond = sub.get("condition_type", "all")
-
-            cond_map = {"all": "Всі", "clean": "Лише робочі", "defects_only": "Лише на ремонт/запчастини"}
-            status_text = (
-                "<b>📋 Ваші поточні налаштування фільтрів:</b>\n\n"
-                f"• <b>Категорії:</b> {cats}\n"
-                f"• <b>Діапазон цін:</b> {min_p} – {max_p} грн\n"
-                f"• <b>Стан:</b> {cond_map.get(cond, 'Всі')}\n\n"
-                "Натисніть <b>«🔧 Змінити категорії»</b> нижче, щоб вибрати потрібне залізо."
-            )
-            await client.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json={"chat_id": chat_id, "text": status_text, "parse_mode": "HTML"}
-            )
-            return
-
-        # КОМАНДА: Змінити категорії
-        if text in ("/categories", "🔧 Змінити категорії"):
-            sub = access["subscriber"]
-            active_cats = sub.get("categories") or []
-            keyboard = {
-                "inline_keyboard": [
-                    [
-                        {"text": f"{'✅' if 'gpu' in active_cats else '▫️'} GPU", "callback_data": "toggle_gpu"},
-                        {"text": f"{'✅' if 'cpu' in active_cats else '▫️'} CPU", "callback_data": "toggle_cpu"},
-                    ],
-                    [
-                        {"text": f"{'✅' if 'ram' in active_cats else '▫️'} RAM", "callback_data": "toggle_ram"},
-                        {"text": f"{'✅' if 'storage' in active_cats else '▫️'} SSD/HDD", "callback_data": "toggle_storage"},
-                    ],
-                    [
-                        {"text": f"{'✅' if 'pc' in active_cats else '▫️'} Готові ПК", "callback_data": "toggle_pc"},
-                        {"text": f"{'✅' if 'psu' in active_cats else '▫️'} БЖ", "callback_data": "toggle_psu"},
-                    ]
-                ]
-            }
-            await client.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": "Оберіть категорії комплектуючих (зелені з ✅ активні):",
-                    "reply_markup": keyboard
-                }
-            )
-            return
-
-        # КОМАНДА: Мій кабінет / Дефолт
-        link = f'<a href="{FRONTEND_URL}/profile">Перейти в кабінет HuntingSmarter</a>'
-        await client.post(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            json={
-                "chat_id": chat_id,
-                "text": f"Використовуйте кнопки клавіатури або перейдіть у свій {link}.",
-                "parse_mode": "HTML",
-                "reply_markup": get_main_menu_keyboard()
-            }
-        )
-
-@app.post("/api/telegram/webhook")
-async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
-    """Миттєво відповідає 200 OK і делегує роботу фоновій задачі."""
-    data = await request.json()
-    background_tasks.add_task(process_telegram_update, data)
-    return {"ok": True}
 
 # --- TELEGRAM LINK GENERATION ---
 @app.post("/api/telegram/generate-link")
 @limiter.limit("10/minute")
 async def generate_telegram_link(
     request: Request,
-    current_user: dict = Depends(verify_active_subscription),
+    current_user: dict = Depends(get_current_user),
 ) -> dict[str, str]:
     """Генерує одноразовий токен (15 хв) для авторизації Telegram бота."""
     user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неавторизований користувач")
+
     token = secrets.token_urlsafe(32)
     expires_at = (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
 
@@ -674,10 +722,21 @@ async def generate_telegram_link(
         await asyncio.to_thread(_save_token)
     except Exception as exc:
         logger.error(f"Помилка збереження токена для {user_id}: {exc}")
-        raise HTTPException(status_code=500, detail="Не вдалося згенерувати токен")
+        raise HTTPException(status_code=500, detail="Не вдалося згенерувати токен підключення")
 
     bot_username = os.getenv("TELEGRAM_BOT_USERNAME", "HuntingSmarterBot").lstrip("@")
     return {"link": f"https://t.me/{bot_username}?start=auth_{token}"}
+
+
+
+
+
+@app.post("/api/telegram/webhook")
+async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
+    """Миттєво відповідає 200 OK і делегує роботу фоновій задачі."""
+    data = await request.json()
+    background_tasks.add_task(process_telegram_update, data)
+    return {"ok": True}
 
 
 
