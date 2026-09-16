@@ -34,46 +34,30 @@ class TelegramNotifierService:
         self._client = client
 
     def format_deal_message(self, ad: dict[str, Any]) -> str:
-        # 1. Базові поля
+        # 1. Назва товару (єдиний жирний заголовок)
         title = ad.get("title") or ad.get("component_name") or "Товар"
+        clean_title = html.escape(title.strip())
+
+        # 2. Ціна, ринкова вартість та відсоток економії
         price = f"{int(ad.get('price', 0)):,}".replace(",", " ")
-        
         fair_price_raw = ad.get("estimated_fair_price") or ad.get("competitor_price") or 0
         fair_price = f"{int(fair_price_raw):,}".replace(",", " ")
+        saving_pct = int(ad.get("saving_percent") or 0)
         
-        saving_pct = ad.get("saving_percent") or 0
-        url = ad.get("url") or "https://www.olx.ua"
-        seller_name = ad.get("seller_name") or "Приватна особа"
-        deals = ad.get("seller_successful_deals") or 0
+        pct_sign = "−" if saving_pct >= 0 else "+"
+        price_line = f"<b>{price} грн</b> · ринок {fair_price} грн · {pct_sign}{abs(saving_pct)}%"
 
-        # 2. Розрахунок часу публікації (⏱ Опубліковано)
-        time_since_post = "тільки що"
-        created_at_raw = ad.get("created_at_olx")
-        if created_at_raw:
-            try:
-                dt = datetime.fromisoformat(created_at_raw.replace("Z", "+00:00"))
-                now = datetime.now(timezone.utc)
-                diff_sec = int((now - dt).total_seconds())
-                if diff_sec < 60:
-                    time_since_post = f"{max(1, diff_sec)} сек тому"
-                elif diff_sec < 3600:
-                    time_since_post = f"{diff_sec // 60} хв тому"
-                elif diff_sec < 86400:
-                    time_since_post = f"{diff_sec // 3600} год тому"
-                else:
-                    time_since_post = f"{diff_sec // 86400} дн тому"
-            except Exception:
-                time_since_post = "нещодавно"
-
-        # 3. Онлайн продавця (береться з last_refresh_time або дефолт)
-        last_seen = "нещодавно"
+        # 3. Онлайн продавця (парсинг last_refresh_time)
+        last_seen = "щойно"
         refresh_raw = ad.get("last_refresh_time")
         if refresh_raw:
             try:
                 dt_ref = datetime.fromisoformat(refresh_raw.replace("Z", "+00:00"))
                 diff_ref_sec = int((datetime.now(timezone.utc) - dt_ref).total_seconds())
-                if diff_ref_sec < 3600:
-                    last_seen = f"{max(1, diff_ref_sec // 60)} хв тому"
+                if diff_ref_sec < 60:
+                    last_seen = "щойно"
+                elif diff_ref_sec < 3600:
+                    last_seen = f"{diff_ref_sec // 60} хв тому"
                 elif diff_ref_sec < 86400:
                     last_seen = f"{diff_ref_sec // 3600} год тому"
                 else:
@@ -81,36 +65,31 @@ class TelegramNotifierService:
             except Exception:
                 last_seen = "нещодавно"
 
-        # 4. Оцінка безпеки та технічний стан
+        seller_name = html.escape(ad.get("seller_name") or "Приватна особа")
+        deals = ad.get("seller_successful_deals") or 0
+        seller_line = f"{seller_name} · угод {deals} · онлайн {last_seen}"
+
+        # 4. Єдиний сигнал-вердикт
         is_safe = ad.get("seller_risk_score") == "safe"
         is_broken = int(ad.get("has_defects") or 0) > 0
-
-        # 5. Рекомендація на основі deal_status та відсотка економії
         deal_status = ad.get("deal_status") or "regular"
-        if is_broken:
-            verdict = "⚠️ Обережно (є дефекти)"
-        elif deal_status == "🔥 SUPER DEAL" or saving_pct >= 20:
-            verdict = "🚀 Забирати негайно (Super Deal)"
-        elif deal_status == "⭐ GOOD DEAL" or saving_pct >= 10:
-            verdict = "👍 Хороша ціна (Варто уваги)"
-        elif deal_status == "❌ OVERPRICED" or saving_pct < 0:
-            verdict = "❌ Дорого (Переплата)"
-        else:
-            verdict = "⚖️ Середня ринкова ціна"
 
-        # 6. Збирання повідомлення
-        msg = (
-            f"🔥 <b>{html.escape(title)}</b>\n"
-            f"💰 Ціна: <b>{price} грн</b>  |  📊 Ринкова: <b>{fair_price} грн</b>\n"
-            f"📉 Вигідно на: <b>{saving_pct}%</b>  |  ⏱ Опубліковано: {time_since_post}\n"
-            f"👤 Продавець: {html.escape(seller_name)}\n"
-            f"   • Угод: {deals}  |  • Онлайн: {last_seen}\n"
-            f"   • Оцінка: {'🟢 Безпечний' if is_safe else '🔴 Ризик'}\n"
-            f"⚠️ Стан: {'🔧 Неробочий' if is_broken else '✅ Робочий'}\n"
-            f"🎯 Рекомендація: <b>{verdict}</b>\n"
-            f"🔗 <a href='{url}'>Відкрити оголошення</a>"
-        )
-        return msg
+        if is_broken:
+            verdict = "🔧 Потребує ремонту"
+        elif not is_safe or deals == 0:
+            verdict = "⚠️ Ризик продавця"
+        elif deal_status == "🔥 SUPER DEAL" or saving_pct >= 20:
+            verdict = "🔥 Брати негайно"
+        elif deal_status == "⭐ GOOD DEAL" or saving_pct >= 10:
+            verdict = "👍 Варто уваги"
+        else:
+            verdict = "🔹 Звичайна ціна"
+
+        # 5. Посилання внизу
+        url = ad.get("url") or "https://www.olx.ua"
+        link_line = f'<a href="{url}">Відкрити</a>'
+
+        return f"<b>{clean_title}</b>\n\n{price_line}\n\n{seller_line}\n\n{verdict}\n\n{link_line}"
 
     async def fetch_subscribers_for_deal(self, item_type: str, saving_percent: int) -> List[int]:
         """Отримує chat_id активних користувачів з валідною підпискою та відповідними фільтрами."""
@@ -118,7 +97,6 @@ class TelegramNotifierService:
             return []
 
         def _query() -> List[int]:
-            # Перевіряємо активних підписників, у кого обрана дана категорія та підходить поріг вигоди
             res = (
                 self._client.table("telegram_subscribers")
                 .select("chat_id, user_id, min_saving_percent, categories")
@@ -131,7 +109,6 @@ class TelegramNotifierService:
             if not data:
                 return []
 
-            # Фільтруємо за наявністю активної підписки/тріалу в subscriptions
             user_ids = [row["user_id"] for row in data if row.get("user_id")]
             if not user_ids:
                 return [row["chat_id"] for row in data]
@@ -142,26 +119,56 @@ class TelegramNotifierService:
                 .in_("user_id", user_ids)
                 .execute()
             )
-            # Дозволяємо надсилати користувачам з активною підпискою
             allowed_users = {
-                s["user_id"] for s in (sub_res.data or [])
+                s["user_id"]
+                for s in (sub_res.data or [])
                 if s.get("status") in ("trial", "month_1", "month_6", "active")
             }
             return [row["chat_id"] for row in data if row.get("user_id") in allowed_users]
 
         return await asyncio.to_thread(_query)
 
-    async def send_notification(self, chat_id: int, text: str, http_client: httpx.AsyncClient) -> bool:
-        """Надсилає повідомлення конкретному chat_id."""
-        url = f"{self.api_url}/sendMessage"
-        payload = {
-            "chat_id": chat_id,
-            "text": text,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": False,
-        }
+    async def send_notification(
+        self,
+        chat_id: int,
+        text: str,
+        http_client: httpx.AsyncClient,
+        photo_url: str | None = None
+    ) -> bool:
+        """Надсилає картку з фото (sendPhoto) або резервне текстове повідомлення (sendMessage)."""
+        # Спроба відправити фотографію з підписом
+        if photo_url:
+            try:
+                photo_payload = {
+                    "chat_id": chat_id,
+                    "photo": photo_url,
+                    "caption": text,
+                    "parse_mode": "HTML",
+                }
+                resp = await http_client.post(
+                    f"{self.api_url}/sendPhoto",
+                    json=photo_payload,
+                    timeout=8.0
+                )
+                if resp.status_code == 200:
+                    return True
+                logger.warning(f"sendPhoto failed ({resp.status_code}): {resp.text}. Спроба fallback на sendMessage.")
+            except Exception as e:
+                logger.warning(f"Помилка відправки фото: {e}. Спроба fallback на sendMessage.")
+
+        # Fallback: звичайне повідомлення без фото
         try:
-            resp = await http_client.post(url, json=payload, timeout=5.0)
+            msg_payload = {
+                "chat_id": chat_id,
+                "text": text,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": False,
+            }
+            resp = await http_client.post(
+                f"{self.api_url}/sendMessage",
+                json=msg_payload,
+                timeout=5.0
+            )
             return resp.status_code == 200
         except Exception as e:
             logger.warning(f"Помилка надсилання в Telegram ({chat_id}): {e}")
@@ -178,7 +185,6 @@ class TelegramNotifierService:
                 saving_pct = ad.get("saving_percent") or 0
                 item_type = (ad.get("item_type") or "").lower()
 
-                # Сповіщаємо тільки про реальні вигідні пропозиції (від 10% економії або deal_status)
                 if saving_pct < 10 and ad.get("deal_status") not in ("🔥 SUPER DEAL", "⭐ GOOD DEAL"):
                     continue
 
@@ -187,17 +193,26 @@ class TelegramNotifierService:
                     continue
 
                 message_text = self.format_deal_message(ad)
+                
+                # Отримання фото з полів оголошення
+                photos_list = ad.get("photos") or []
+                photo_url = ad.get("photo_url") or (photos_list[0] if photos_list else None)
+
                 for chat_id in recipients:
-                    success = await self.send_notification(chat_id, message_text, http_client)
+                    success = await self.send_notification(
+                        chat_id=chat_id,
+                        text=message_text,
+                        http_client=http_client,
+                        photo_url=photo_url
+                    )
                     if success:
                         sent_count += 1
-                    # Захист від Telegram Rate Limit (макс 30 msg/sec)
+                    # Telegram Rate Limit: до 30 повідомлень/сек
                     await asyncio.sleep(0.04)
 
         return sent_count
 
 
-# Інтерфейс для зміни категорій через кнопки бота
 async def handle_category_toggle(chat_id: int, category: str) -> list[str]:
     """Перемикає категорію у підписника в базі."""
     if not supabase:
@@ -206,7 +221,7 @@ async def handle_category_toggle(chat_id: int, category: str) -> list[str]:
     def _db_op():
         res = supabase.table("telegram_subscribers").select("categories").eq("chat_id", chat_id).execute()
         current = res.data[0]["categories"] if res.data else ["gpu", "cpu", "pc"]
-        
+
         if category in current:
             current.remove(category)
         else:
