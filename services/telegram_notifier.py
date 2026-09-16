@@ -191,15 +191,26 @@ class TelegramNotifierService:
 
         return {"inline_keyboard": [buttons]}
 
-    async def fetch_subscribers_for_deal(self, item_type: str, saving_percent: int) -> List[int]:
+    async def fetch_subscribers_for_deal(self, ad: dict[str, Any]) -> List[int]:
+        """Отримує chat_id активних користувачів, чиї розширені фільтри відповідають оголошенню."""
         if not self._client:
             return []
 
+        item_type = str(ad.get("item_type") or "").lower()
+        price = int(ad.get("price") or 0)
+        saving_percent = int(ad.get("saving_percent") or 0)
+        title_and_comp = f"{ad.get('title', '')} {ad.get('component_name', '')} {ad.get('description', '')}".lower()
+        ad_socket = str(ad.get("socket") or "").lower().replace("socket", "").replace("-", "").strip()
+
         def _query() -> List[int]:
             try:
+                # Отримуємо активних підписників з усіма налаштованими фільтрами
                 res = (
                     self._client.table("telegram_subscribers")
-                    .select("chat_id, user_id, min_saving_percent, categories")
+                    .select(
+                        "chat_id, user_id, min_saving_percent, categories, min_price, max_price, "
+                        "target_sockets, target_brands, min_vram_gb, min_cores"
+                    )
                     .eq("is_active", True)
                     .lte("min_saving_percent", saving_percent)
                     .contains("categories", [item_type])
@@ -209,52 +220,106 @@ class TelegramNotifierService:
                 logger.error(f"Помилка вибірки підписників: {e}")
                 return []
 
-            data = res.data or []
-            if not data:
+            candidates = res.data or []
+            if not candidates:
                 return []
 
-            user_ids = [row["user_id"] for row in data if row.get("user_id")]
-            if not user_ids:
-                return [row["chat_id"] for row in data]
+            # 1. Перевіряємо статус підписки через таблицю subscriptions
+            user_ids = [row["user_id"] for row in candidates if row.get("user_id")]
+            allowed_users = set()
+            if user_ids:
+                try:
+                    sub_res = (
+                        self._client.table("subscriptions")
+                        .select("user_id, status, trial_end, subscription_end")
+                        .in_("user_id", user_ids)
+                        .execute()
+                    )
+                    now = datetime.now(timezone.utc)
+                    for s in (sub_res.data or []):
+                        u_id = s.get("user_id")
+                        st = s.get("status")
+                        t_end = s.get("trial_end")
+                        s_end = s.get("subscription_end")
 
-            try:
-                sub_res = (
-                    self._client.table("subscriptions")
-                    .select("user_id, status, trial_end, subscription_end")
-                    .in_("user_id", user_ids)
-                    .execute()
-                )
-                now = datetime.now(timezone.utc)
-                allowed_users = set()
-                for s in (sub_res.data or []):
-                    u_id = s.get("user_id")
-                    st = s.get("status")
-                    t_end = s.get("trial_end")
-                    s_end = s.get("subscription_end")
+                        is_valid = False
+                        if t_end:
+                            try:
+                                if now <= datetime.fromisoformat(t_end.replace("Z", "+00:00")):
+                                    is_valid = True
+                            except Exception:
+                                pass
+                        if s_end and not is_valid:
+                            try:
+                                if now <= datetime.fromisoformat(s_end.replace("Z", "+00:00")):
+                                    is_valid = True
+                            except Exception:
+                                pass
+                        if not t_end and not s_end and st in ("active", "trial", "month_1", "month_6"):
+                            is_valid = True
 
-                    is_valid = False
-                    if t_end:
-                        try:
-                            if now <= datetime.fromisoformat(t_end.replace("Z", "+00:00")):
-                                is_valid = True
-                        except Exception:
-                            pass
-                    if s_end and not is_valid:
-                        try:
-                            if now <= datetime.fromisoformat(s_end.replace("Z", "+00:00")):
-                                is_valid = True
-                        except Exception:
-                            pass
-                    if not t_end and not s_end and st in ("active", "trial", "month_1", "month_6"):
-                        is_valid = True
+                        if is_valid and u_id:
+                            allowed_users.add(u_id)
+                except Exception as e:
+                    logger.error(f"Помилка перевірки subscriptions: {e}")
 
-                    if is_valid and u_id:
-                        allowed_users.add(u_id)
+            # 2. Фільтруємо кандидатів за розширеними критеріями лоту
+            matched_chat_ids: List[int] = []
+            for sub in candidates:
+                # Перевірка авторизованої підписки
+                if sub.get("user_id") and sub.get("user_id") not in allowed_users:
+                    continue
 
-                return [row["chat_id"] for row in data if row.get("user_id") in allowed_users]
-            except Exception as e:
-                logger.error(f"Помилка перевірки підписок для розсилки: {e}")
-                return [row["chat_id"] for row in data]
+                # Фільтр за ціною
+                min_p = sub.get("min_price")
+                if min_p is not None and min_p > 0 and price < min_p:
+                    continue
+                max_p = sub.get("max_price")
+                if max_p is not None and max_p > 0 and price > max_p:
+                    continue
+
+                # Фільтр за сокетом (для CPU, Motherboard, PC)
+                target_sockets = sub.get("target_sockets")
+                if target_sockets and len(target_sockets) > 0:
+                    clean_targets = [s.lower().replace("socket", "").replace("-", "").strip() for s in target_sockets]
+                    # Якщо у лота розпізнано сокет, він має входити у список бажаних
+                    if ad_socket and not any(t in ad_socket for t in clean_targets):
+                        continue
+                    # Якщо сокет у лоті не розпізнано взагалі, шукаємо прямий збіг ключа сокета в тексті
+                    if not ad_socket and not any(t in title_and_comp for t in clean_targets):
+                        continue
+
+                # Фільтр за ключовими словами / брендами / моделями (target_brands)
+                target_brands = sub.get("target_brands")
+                if target_brands and len(target_brands) > 0:
+                    keywords = [b.lower().strip() for b in target_brands if b.strip()]
+                    if keywords:
+                        # Лот повинен містити хоча б одне з бажаних ключових слів
+                        if not any(kw in title_and_comp for kw in keywords):
+                            continue
+
+                # Фільтр за VRAM (відеопам'ять для GPU/PC)
+                min_vram = sub.get("min_vram_gb")
+                if min_vram and float(min_vram) > 0:
+                    # Шукаємо згадку гігабайт поруч з GPU або в назві
+                    vram_match = re.search(r"(\d{1,2})\s*(?:gb|гб)", title_and_comp)
+                    if vram_match:
+                        detected_vram = float(vram_match.group(1))
+                        if detected_vram < float(min_vram):
+                            continue
+
+                # Фільтр за ядрами CPU
+                min_cores = sub.get("min_cores")
+                if min_cores and int(min_cores) > 0:
+                    cores_match = re.search(r"(\d{1,2})\s*(?:ядер|core|ядра)", title_and_comp)
+                    if cores_match:
+                        detected_cores = int(cores_match.group(1))
+                        if detected_cores < int(min_cores):
+                            continue
+
+                matched_chat_ids.append(sub["chat_id"])
+
+            return matched_chat_ids
 
         return await asyncio.to_thread(_query)
 
@@ -334,7 +399,7 @@ class TelegramNotifierService:
                 if saving_pct < 10 and ad.get("deal_status") not in ("🔥 SUPER DEAL", "⭐ GOOD DEAL"):
                     continue
 
-                recipients = await self.fetch_subscribers_for_deal(item_type, saving_pct)
+                recipients = await self.fetch_subscribers_for_deal(ad)
                 if not recipients:
                     continue
 
